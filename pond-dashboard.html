@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pond Monitor Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .last-update {
+            font-size: 0.9em;
+            opacity: 0.9;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-online {
+            background: #4ade80;
+            box-shadow: 0 0 10px #4ade80;
+        }
+
+        .status-offline {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .sensor-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .sensor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .sensor-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .sensor-label {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .sensor-value {
+            font-size: 3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .sensor-unit {
+            font-size: 1.2em;
+            color: #999;
+        }
+
+        .sensor-status {
+            margin-top: 15px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-normal {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .refresh-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            .sensor-value {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐟 Pond Monitor</h1>
+            <div class="last-update">
+                <span class="status-indicator status-online" id="statusIndicator"></span>
+                <span id="lastUpdate">Loading...</span>
+            </div>
+        </div>
+
+        <div id="errorMessage" style="display: none;" class="error"></div>
+
+        <div class="sensor-card">
+            <div class="sensor-icon">🌡️</div>
+            <div class="sensor-label">Temperature</div>
+            <div class="sensor-value" id="tempValue">--</div>
+            <div class="sensor-unit">°C</div>
+            <div class="sensor-status status-normal" id="tempStatus">Normal</div>
+        </div>
+
+        <div class="sensor-card">
+            <div class="sensor-icon">💧</div>
+            <div class="sensor-label">pH Level</div>
+            <div class="sensor-value" id="phValue">--</div>
+            <div class="sensor-unit">pH</div>
+            <div class="sensor-status status-normal" id="phStatus">Normal</div>
+        </div>
+
+        <div class="sensor-card">
+            <div class="sensor-icon">📊</div>
+            <div class="sensor-label">TDS (Total Dissolved Solids)</div>
+            <div class="sensor-value" id="tdsValue">--</div>
+            <div class="sensor-unit">ppm</div>
+            <div class="sensor-status status-normal" id="tdsStatus">Normal</div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">📈 Temperature History (24h)</div>
+            <canvas id="tempChart"></canvas>
+        </div>
+
+        <button class="refresh-btn" onclick="fetchData()">🔄 Refresh Now</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // ⚠️ IMPORTANT: Replace this with your actual Google Sheets published CSV URL
+        // To get this URL:
+        // 1. Open your Google Sheet
+        // 2. Click File → Share → Publish to web
+        // 3. Choose "SensorData" sheet and "Comma-separated values (.csv)"
+        // 4. Click Publish and copy the URL
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
+
+        // Thresholds for alerts
+        const TEMP_MIN = 20;
+        const TEMP_MAX = 32;
+        const PH_MIN = 6.5;
+        const PH_MAX = 8.5;
+        const TDS_MIN = 300;
+        const TDS_MAX = 800;
+
+        let tempChart;
+
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n');
+            const headers = lines[0].split(',');
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                if (values.length >= 4) {
+                    data.push({
+                        timestamp: values[0],
+                        temp: parseFloat(values[1]),
+                        ph: parseFloat(values[2]),
+                        tds: parseFloat(values[3])
+                    });
+                }
+            }
+            return data;
+        }
+
+        function updateStatus(value, min, max, elementId) {
+            const statusEl = document.getElementById(elementId);
+            if (value < min) {
+                statusEl.className = 'sensor-status status-warning';
+                statusEl.textContent = 'Low';
+            } else if (value > max) {
+                statusEl.className = 'sensor-status status-danger';
+                statusEl.textContent = 'High';
+            } else {
+                statusEl.className = 'sensor-status status-normal';
+                statusEl.textContent = 'Normal';
+            }
+        }
+
+        function formatTimeAgo(timestamp) {
+            const now = new Date();
+            const time = new Date(timestamp);
+            const diffMs = now - time;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            return time.toLocaleDateString();
+        }
+
+        function createChart(labels, data) {
+            const ctx = document.getElementById('tempChart').getContext('2d');
+            
+            if (tempChart) {
+                tempChart.destroy();
+            }
+
+            tempChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 2,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 6
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function fetchData() {
+            try {
+                document.getElementById('errorMessage').style.display = 'none';
+                
+                const response = await fetch(SHEET_CSV_URL);
+                if (!response.ok) throw new Error('Failed to fetch data');
+                
+                const csv = await response.text();
+                const data = parseCSV(csv);
+                
+                if (data.length === 0) {
+                    throw new Error('No data available');
+                }
+
+                // Get latest reading
+                const latest = data[data.length - 1];
+                
+                // Update sensor values
+                document.getElementById('tempValue').textContent = latest.temp.toFixed(1);
+                document.getElementById('phValue').textContent = latest.ph.toFixed(2);
+                document.getElementById('tdsValue').textContent = Math.round(latest.tds);
+                
+                // Update status
+                updateStatus(latest.temp, TEMP_MIN, TEMP_MAX, 'tempStatus');
+                updateStatus(latest.ph, PH_MIN, PH_MAX, 'phStatus');
+                updateStatus(latest.tds, TDS_MIN, TDS_MAX, 'tdsStatus');
+                
+                // Update last update time
+                document.getElementById('lastUpdate').textContent = formatTimeAgo(latest.timestamp);
+                document.getElementById('statusIndicator').className = 'status-indicator status-online';
+                
+                // Prepare chart data (last 24 hours or 50 points)
+                const chartData = data.slice(-50);
+                const labels = chartData.map(d => {
+                    const time = new Date(d.timestamp);
+                    return time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                });
+                const temps = chartData.map(d => d.temp);
+                
+                createChart(labels, temps);
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                document.getElementById('errorMessage').textContent = 
+                    '⚠️ Error loading data. Please check your Google Sheets URL and make sure the sheet is published.';
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('statusIndicator').className = 'status-indicator status-offline';
+            }
+        }
+
+        // Initial load
+        fetchData();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(fetchData, 30000);
+    </script>
+</body>
+</html>
