@@ -253,7 +253,8 @@
         // 2. Click File → Share → Publish to web
         // 3. Choose "SensorData" sheet and "Comma-separated values (.csv)"
         // 4. Click Publish and copy the URL
-        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
+        const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK
+QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv ';
 
         // Thresholds for alerts
         const TEMP_MIN = 20;
@@ -304,11 +305,22 @@
             const diffMs = now - time;
             const diffMins = Math.floor(diffMs / 60000);
             const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
             
             if (diffMins < 1) return 'Just now';
             if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
             if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
             return time.toLocaleDateString();
+        }
+        
+        function isSystemOnline(timestamp) {
+            const now = new Date();
+            const time = new Date(timestamp);
+            const diffMins = Math.floor((now - time) / 60000);
+            
+            // Consider offline if no data for more than 2 minutes
+            return diffMins < 2;
         }
 
         function createChart(labels, data) {
@@ -379,6 +391,9 @@
                 // Get latest reading
                 const latest = data[data.length - 1];
                 
+                // Check if system is online (last data within 2 minutes)
+                const online = isSystemOnline(latest.timestamp);
+                
                 // Update sensor values
                 document.getElementById('tempValue').textContent = latest.temp.toFixed(1);
                 document.getElementById('phValue').textContent = latest.ph.toFixed(2);
@@ -389,9 +404,33 @@
                 updateStatus(latest.ph, PH_MIN, PH_MAX, 'phStatus');
                 updateStatus(latest.tds, TDS_MIN, TDS_MAX, 'tdsStatus');
                 
-                // Update last update time
-                document.getElementById('lastUpdate').textContent = formatTimeAgo(latest.timestamp);
-                document.getElementById('statusIndicator').className = 'status-indicator status-online';
+                // Update last update time and online status
+                const timeAgo = formatTimeAgo(latest.timestamp);
+                document.getElementById('lastUpdate').textContent = timeAgo;
+                
+                // Update status indicator based on online/offline
+                const statusIndicator = document.getElementById('statusIndicator');
+                if (online) {
+                    statusIndicator.className = 'status-indicator status-online';
+                } else {
+                    statusIndicator.className = 'status-indicator status-offline';
+                    // Show warning if offline
+                    if (!document.getElementById('offlineWarning')) {
+                        const warning = document.createElement('div');
+                        warning.id = 'offlineWarning';
+                        warning.className = 'error';
+                        warning.style.display = 'block';
+                        warning.innerHTML = '⚠️ System Offline - Last data received ' + timeAgo;
+                        document.querySelector('.container').insertBefore(warning, document.querySelector('.sensor-card'));
+                    } else {
+                        document.getElementById('offlineWarning').innerHTML = '⚠️ System Offline - Last data received ' + timeAgo;
+                    }
+                }
+                
+                // Remove offline warning if back online
+                if (online && document.getElementById('offlineWarning')) {
+                    document.getElementById('offlineWarning').remove();
+                }
                 
                 // Prepare chart data (last 24 hours or 50 points)
                 const chartData = data.slice(-50);
