@@ -248,11 +248,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
         // ⚠️ IMPORTANT: Replace this with your actual Google Sheets published CSV URL
-        // To get this URL:
-        // 1. Open your Google Sheet
-        // 2. Click File → Share → Publish to web
-        // 3. Choose "SensorData" sheet and "Comma-separated values (.csv)"
-        // 4. Click Publish and copy the URL
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK
 QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv ';
 
@@ -268,7 +263,6 @@ QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv ';
 
         function parseCSV(csv) {
             const lines = csv.trim().split('\n');
-            const headers = lines[0].split(',');
             const data = [];
             
             for (let i = 1; i < lines.length; i++) {
@@ -318,8 +312,6 @@ QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv ';
             const now = new Date();
             const time = new Date(timestamp);
             const diffMins = Math.floor((now - time) / 60000);
-            
-            // Consider offline if no data for more than 2 minutes
             return diffMins < 2;
         }
 
@@ -376,63 +368,66 @@ QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv ';
 
         async function fetchData() {
             try {
+                console.log('Fetching data from:', SHEET_CSV_URL);
+                
+                if (SHEET_CSV_URL === 'YOUR_GOOGLE_SHEET_CSV_URL_HERE') {
+                    throw new Error('Please update SHEET_CSV_URL with your actual Google Sheets CSV URL');
+                }
+                
                 document.getElementById('errorMessage').style.display = 'none';
                 
                 const response = await fetch(SHEET_CSV_URL);
-                if (!response.ok) throw new Error('Failed to fetch data');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data. Status: ' + response.status);
+                }
                 
                 const csv = await response.text();
+                console.log('CSV data received, length:', csv.length);
+                
                 const data = parseCSV(csv);
+                console.log('Parsed data rows:', data.length);
                 
                 if (data.length === 0) {
-                    throw new Error('No data available');
+                    throw new Error('No data available in the sheet');
                 }
 
-                // Get latest reading
                 const latest = data[data.length - 1];
+                console.log('Latest data:', latest);
                 
-                // Check if system is online (last data within 2 minutes)
                 const online = isSystemOnline(latest.timestamp);
                 
-                // Update sensor values
                 document.getElementById('tempValue').textContent = latest.temp.toFixed(1);
                 document.getElementById('phValue').textContent = latest.ph.toFixed(2);
                 document.getElementById('tdsValue').textContent = Math.round(latest.tds);
                 
-                // Update status
                 updateStatus(latest.temp, TEMP_MIN, TEMP_MAX, 'tempStatus');
                 updateStatus(latest.ph, PH_MIN, PH_MAX, 'phStatus');
                 updateStatus(latest.tds, TDS_MIN, TDS_MAX, 'tdsStatus');
                 
-                // Update last update time and online status
                 const timeAgo = formatTimeAgo(latest.timestamp);
                 document.getElementById('lastUpdate').textContent = timeAgo;
                 
-                // Update status indicator based on online/offline
                 const statusIndicator = document.getElementById('statusIndicator');
                 if (online) {
                     statusIndicator.className = 'status-indicator status-online';
+                    const offlineWarning = document.getElementById('offlineWarning');
+                    if (offlineWarning) {
+                        offlineWarning.remove();
+                    }
                 } else {
                     statusIndicator.className = 'status-indicator status-offline';
-                    // Show warning if offline
-                    if (!document.getElementById('offlineWarning')) {
-                        const warning = document.createElement('div');
-                        warning.id = 'offlineWarning';
-                        warning.className = 'error';
-                        warning.style.display = 'block';
-                        warning.innerHTML = '⚠️ System Offline - Last data received ' + timeAgo;
-                        document.querySelector('.container').insertBefore(warning, document.querySelector('.sensor-card'));
-                    } else {
-                        document.getElementById('offlineWarning').innerHTML = '⚠️ System Offline - Last data received ' + timeAgo;
+                    let warningEl = document.getElementById('offlineWarning');
+                    if (!warningEl) {
+                        warningEl = document.createElement('div');
+                        warningEl.id = 'offlineWarning';
+                        warningEl.className = 'error';
+                        warningEl.style.display = 'block';
+                        const firstCard = document.querySelector('.sensor-card');
+                        firstCard.parentNode.insertBefore(warningEl, firstCard);
                     }
+                    warningEl.innerHTML = '⚠️ System Offline - Last data received ' + timeAgo;
                 }
                 
-                // Remove offline warning if back online
-                if (online && document.getElementById('offlineWarning')) {
-                    document.getElementById('offlineWarning').remove();
-                }
-                
-                // Prepare chart data (last 24 hours or 50 points)
                 const chartData = data.slice(-50);
                 const labels = chartData.map(d => {
                     const time = new Date(d.timestamp);
@@ -442,19 +437,18 @@ QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv ';
                 
                 createChart(labels, temps);
                 
+                console.log('Dashboard updated successfully');
+                
             } catch (error) {
                 console.error('Error fetching data:', error);
                 document.getElementById('errorMessage').textContent = 
-                    '⚠️ Error loading data. Please check your Google Sheets URL and make sure the sheet is published.';
+                    '⚠️ Error: ' + error.message + '. Check browser console (F12) for details.';
                 document.getElementById('errorMessage').style.display = 'block';
                 document.getElementById('statusIndicator').className = 'status-indicator status-offline';
             }
         }
 
-        // Initial load
         fetchData();
-        
-        // Auto-refresh every 30 seconds
         setInterval(fetchData, 30000);
     </script>
 </body>
