@@ -431,8 +431,6 @@
                 <div class="ai-badge">Groq AI</div>
             </div>
 
-            <div id="apiStatus" class="api-status api-error" style="display: none;">⚠️ API Key Required</div>
-
             <div class="quick-questions">
                 <button class="quick-question-btn" onclick="askQuestion('How is my pond doing?')">How's my pond?</button>
                 <button class="quick-question-btn" onclick="askQuestion('Should I feed my fish now?')">Feed fish?</button>
@@ -520,21 +518,7 @@
         let tempChart;
         let currentSensorData = {};
 
-        // Check API key on load
-        function checkApiKey() {
-            const apiKey = "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";
-            const statusEl = document.getElementById('apiStatus');
-            
-            if (apiKey && apiKey.startsWith('gsk_')) {
-                statusEl.style.display = 'none';
-                return true;
-            } else {
-                statusEl.style.display = 'inline-block';
-                statusEl.className = 'api-status api-error';
-                statusEl.textContent = '⚠️ API Key Required';
-                return false;
-            }
-        }
+        // API key is hardcoded in askGroqAI function
 
         function parseCSV(csv) {
             const lines = csv.trim().split('\n');
@@ -676,10 +660,11 @@
         }
 
         async function askGroqAI(question) {
-            const apiKey = localStorage.getItem('groqApiKey');
             
-            if (!apiKey || !apiKey.startsWith('gsk_')) {
-                throw new Error('API key not configured. Press F12 and type: localStorage.setItem("groqApiKey", "YOUR_KEY")');
+            const apiKey = "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";  
+            
+            if (!apiKey || apiKey === "gsk_YOUR_ACTUAL_API_KEY_HERE") {
+                throw new Error('API key not configured in code');
             }
 
             const systemPrompt = `You are an AI assistant for a tilapia pond monitoring system. 
@@ -743,11 +728,6 @@ dissolved oxygen (5+ mg/L), and water quality.`;
             const question = input.value.trim();
             
             if (!question) return;
-            
-            if (!checkApiKey()) {
-                alert('Please set your Groq API key first.\n\nIn browser console (F12), type:\nlocalStorage.setItem(\'groqApiKey\', \'YOUR_KEY\')');
-                return;
-            }
 
             // Add user message
             addMessage(question, true);
@@ -842,11 +822,8 @@ dissolved oxygen (5+ mg/L), and water quality.`;
         }
 
         // Initialize
-        checkApiKey();
         fetchData();
         setInterval(fetchData, 30000);
     </script>
 </body>
 </html>
-
-
