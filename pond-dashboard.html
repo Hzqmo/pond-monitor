@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pond Monitor Dashboard</title>
+    <title>Pond Monitor Dashboard with AI</title>
     <style>
         * {
             margin: 0;
@@ -131,6 +131,203 @@
             color: #991b1b;
         }
 
+        /* AI Chat Styles */
+        .ai-chat-container {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .ai-chat-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .ai-chat-header h2 {
+            font-size: 1.5em;
+            color: #333;
+            flex: 1;
+        }
+
+        .ai-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 12px;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .user-avatar {
+            background: #667eea;
+        }
+
+        .ai-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-text {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            line-height: 1.5;
+        }
+
+        .user-message .message-text {
+            background: #667eea;
+            color: white;
+        }
+
+        .message-time {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 5px;
+            margin-left: 5px;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 1em;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-btn:active {
+            transform: translateY(0);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .quick-question-btn {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 8px 14px;
+            border-radius: 16px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-question-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            width: fit-content;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
         .chart-container {
             background: white;
             border-radius: 20px;
@@ -182,13 +379,27 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.3);
         }
 
-        .refresh-btn:active {
-            transform: translateY(0);
-        }
-
         canvas {
             max-width: 100%;
             height: auto !important;
+        }
+
+        .api-status {
+            font-size: 0.85em;
+            padding: 6px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .api-ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .api-error {
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         @media (max-width: 480px) {
@@ -204,7 +415,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🐟 Pond Monitor</h1>
+            <h1>🐟 AI Pond Monitor</h1>
             <div class="last-update">
                 <span class="status-indicator status-online" id="statusIndicator"></span>
                 <span id="lastUpdate">Loading...</span>
@@ -213,6 +424,53 @@
 
         <div id="errorMessage" style="display: none;" class="error"></div>
 
+        <!-- AI Chat Section -->
+        <div class="ai-chat-container">
+            <div class="ai-chat-header">
+                <h2>🤖 Ask AI Assistant</h2>
+                <div class="ai-badge">Groq AI</div>
+            </div>
+
+            <div id="apiStatus" class="api-status api-error" style="display: none;">⚠️ API Key Required</div>
+
+            <div class="quick-questions">
+                <button class="quick-question-btn" onclick="askQuestion('How is my pond doing?')">How's my pond?</button>
+                <button class="quick-question-btn" onclick="askQuestion('Should I feed my fish now?')">Feed fish?</button>
+                <button class="quick-question-btn" onclick="askQuestion('What should I check today?')">What to check?</button>
+                <button class="quick-question-btn" onclick="askQuestion('Any problems I should worry about?')">Any issues?</button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message">
+                    <div class="message-avatar ai-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            Hi! I'm your AI pond assistant. I can help you understand your pond conditions, troubleshoot issues, and give advice about tilapia farming. What would you like to know?
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-message" style="margin-bottom: 15px;">
+                <div class="message-avatar ai-avatar">🤖</div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <input 
+                    type="text" 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Ask anything about your pond..."
+                    onkeypress="if(event.key==='Enter') sendMessage()"
+                >
+                <button class="send-btn" onclick="sendMessage()" id="sendBtn">Send</button>
+            </div>
+        </div>
+
+        <!-- Sensor Cards -->
         <div class="sensor-card">
             <div class="sensor-icon">🌡️</div>
             <div class="sensor-label">Temperature</div>
@@ -242,15 +500,16 @@
             <canvas id="tempChart"></canvas>
         </div>
 
-        <button class="refresh-btn" onclick="fetchData()">🔄 Refresh Now</button>
+        <button class="refresh-btn" onclick="fetchData()">🔄 Refresh Data</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-        // ⚠️ IMPORTANT: Replace this with your actual Google Sheets published CSV URL
+        // Configuration
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
+        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-        // Thresholds for alerts
+        // Thresholds
         const TEMP_MIN = 20;
         const TEMP_MAX = 32;
         const PH_MIN = 6.5;
@@ -259,6 +518,23 @@
         const TDS_MAX = 800;
 
         let tempChart;
+        let currentSensorData = {};
+
+        // Check API key on load
+        function checkApiKey() {
+            const apiKey = localStorage.getItem('groqApiKey');
+            const statusEl = document.getElementById('apiStatus');
+            
+            if (apiKey && apiKey.startsWith('gsk_')) {
+                statusEl.style.display = 'none';
+                return true;
+            } else {
+                statusEl.style.display = 'inline-block';
+                statusEl.className = 'api-status api-error';
+                statusEl.textContent = '⚠️ API Key Required';
+                return false;
+            }
+        }
 
         function parseCSV(csv) {
             const lines = csv.trim().split('\n');
@@ -312,9 +588,6 @@
             const time = new Date(timestamp);
             const diffMs = now - time;
             const diffMins = Math.floor(diffMs / 60000);
-            
-            // Consider online if last data within 5 minutes
-            // This accounts for ESP32 sending interval (30s) + network delays + Google Sheets cache
             return diffMins < 5;
         }
 
@@ -369,39 +642,173 @@
             });
         }
 
+        function getSensorContext() {
+            let context = "Current pond conditions:\n";
+            context += `- Temperature: ${currentSensorData.temp}°C`;
+            
+            if (currentSensorData.temp >= TEMP_MAX) {
+                context += ` (HIGH - above ${TEMP_MAX}°C)`;
+            } else if (currentSensorData.temp < TEMP_MIN) {
+                context += ` (LOW - below ${TEMP_MIN}°C)`;
+            } else {
+                context += ` (Normal)`;
+            }
+            
+            context += `\n- pH: ${currentSensorData.ph}`;
+            if (currentSensorData.ph < PH_MIN) {
+                context += ` (LOW - below ${PH_MIN})`;
+            } else if (currentSensorData.ph > PH_MAX) {
+                context += ` (HIGH - above ${PH_MAX})`;
+            } else {
+                context += ` (Normal range)`;
+            }
+            
+            context += `\n- TDS: ${currentSensorData.tds} ppm`;
+            if (currentSensorData.tds > TDS_MAX) {
+                context += ` (HIGH - above ${TDS_MAX} ppm)`;
+            } else if (currentSensorData.tds < TDS_MIN) {
+                context += ` (LOW - below ${TDS_MIN} ppm)`;
+            } else {
+                context += ` (Normal)`;
+            }
+            
+            return context;
+        }
+
+        async function askGroqAI(question) {
+            const apiKey = localStorage.getItem('groqApiKey');
+            
+            if (!apiKey || !apiKey.startsWith('gsk_')) {
+                throw new Error('API key not configured. Press F12 and type: localStorage.setItem("groqApiKey", "YOUR_KEY")');
+            }
+
+            const systemPrompt = `You are an AI assistant for a tilapia pond monitoring system. 
+Provide helpful, concise advice about tilapia farming based on the sensor data. 
+Keep responses brief (2-3 sentences) and practical. 
+You are knowledgeable about optimal tilapia pond conditions: 
+temperature (28-30°C ideal, max 32°C), pH (6.5-8.5 ideal), 
+dissolved oxygen (5+ mg/L), and water quality.`;
+
+            const userMessage = getSensorContext() + "\n\nQuestion: " + question;
+
+            const response = await fetch(GROQ_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.3-70b-versatile',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userMessage }
+                    ],
+                    max_tokens: 300,
+                    temperature: 0.7
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error?.message || 'API request failed');
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        function addMessage(text, isUser = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message' + (isUser ? ' user-message' : '');
+            
+            const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar ${isUser ? 'user-avatar' : 'ai-avatar'}">
+                    ${isUser ? '👤' : '🤖'}
+                </div>
+                <div class="message-content">
+                    <div class="message-text">${text}</div>
+                    <div class="message-time">${now}</div>
+                </div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const question = input.value.trim();
+            
+            if (!question) return;
+            
+            if (!checkApiKey()) {
+                alert('Please set your Groq API key first.\n\nIn browser console (F12), type:\nlocalStorage.setItem(\'groqApiKey\', \'YOUR_KEY\')');
+                return;
+            }
+
+            // Add user message
+            addMessage(question, true);
+            input.value = '';
+            
+            // Show typing indicator
+            const typingIndicator = document.getElementById('typingIndicator');
+            typingIndicator.classList.add('active');
+            
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Thinking...';
+            
+            try {
+                const response = await askGroqAI(question);
+                addMessage(response, false);
+            } catch (error) {
+                addMessage(`Sorry, I encountered an error: ${error.message}`, false);
+                console.error('AI Error:', error);
+            } finally {
+                typingIndicator.classList.remove('active');
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('chatInput').value = question;
+            sendMessage();
+        }
+
         async function fetchData() {
             try {
-                console.log('Fetching data from:', SHEET_CSV_URL);
-                
-                if (SHEET_CSV_URL === 'YOUR_GOOGLE_SHEET_CSV_URL_HERE') {
-                    throw new Error('Please update SHEET_CSV_URL with your actual Google Sheets CSV URL');
-                }
-                
                 document.getElementById('errorMessage').style.display = 'none';
                 
                 const response = await fetch(SHEET_CSV_URL);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch data. Status: ' + response.status);
+                    throw new Error('Failed to fetch data');
                 }
                 
                 const csv = await response.text();
-                console.log('CSV data received, length:', csv.length);
-                
                 const data = parseCSV(csv);
-                console.log('Parsed data rows:', data.length);
                 
                 if (data.length === 0) {
-                    throw new Error('No data available in the sheet');
+                    throw new Error('No data available');
                 }
 
                 const latest = data[data.length - 1];
-                console.log('Latest data:', latest);
+                
+                // Store current sensor data for AI
+                currentSensorData = {
+                    temp: latest.temp.toFixed(1),
+                    ph: latest.ph.toFixed(2),
+                    tds: Math.round(latest.tds)
+                };
                 
                 const online = isSystemOnline(latest.timestamp);
                 
-                document.getElementById('tempValue').textContent = latest.temp.toFixed(1);
-                document.getElementById('phValue').textContent = latest.ph.toFixed(2);
-                document.getElementById('tdsValue').textContent = Math.round(latest.tds);
+                document.getElementById('tempValue').textContent = currentSensorData.temp;
+                document.getElementById('phValue').textContent = currentSensorData.ph;
+                document.getElementById('tdsValue').textContent = currentSensorData.tds;
                 
                 updateStatus(latest.temp, TEMP_MIN, TEMP_MAX, 'tempStatus');
                 updateStatus(latest.ph, PH_MIN, PH_MAX, 'phStatus');
@@ -413,22 +820,8 @@
                 const statusIndicator = document.getElementById('statusIndicator');
                 if (online) {
                     statusIndicator.className = 'status-indicator status-online';
-                    const offlineWarning = document.getElementById('offlineWarning');
-                    if (offlineWarning) {
-                        offlineWarning.remove();
-                    }
                 } else {
                     statusIndicator.className = 'status-indicator status-offline';
-                    let warningEl = document.getElementById('offlineWarning');
-                    if (!warningEl) {
-                        warningEl = document.createElement('div');
-                        warningEl.id = 'offlineWarning';
-                        warningEl.className = 'error';
-                        warningEl.style.display = 'block';
-                        const firstCard = document.querySelector('.sensor-card');
-                        firstCard.parentNode.insertBefore(warningEl, firstCard);
-                    }
-                    warningEl.innerHTML = '⚠️ System Offline - Last data received ' + timeAgo;
                 }
                 
                 const chartData = data.slice(-50);
@@ -440,17 +833,16 @@
                 
                 createChart(labels, temps);
                 
-                console.log('Dashboard updated successfully');
-                
             } catch (error) {
                 console.error('Error fetching data:', error);
                 document.getElementById('errorMessage').textContent = 
-                    '⚠️ Error: ' + error.message + '. Check browser console (F12) for details.';
+                    '⚠️ Error: ' + error.message;
                 document.getElementById('errorMessage').style.display = 'block';
-                document.getElementById('statusIndicator').className = 'status-indicator status-offline';
             }
         }
 
+        // Initialize
+        checkApiKey();
         fetchData();
         setInterval(fetchData, 30000);
     </script>
