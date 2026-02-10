@@ -131,6 +131,39 @@
             color: #991b1b;
         }
 
+        /* Audio Init Banner */
+        .audio-init-banner {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            color: #92400e;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .audio-init-banner.show {
+            display: block;
+        }
+
+        .audio-init-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+
+        .audio-init-btn:active {
+            transform: scale(0.95);
+        }
+
         /* AI Chat Styles */
         .ai-chat-container {
             background: white;
@@ -608,6 +641,13 @@
             </div>
         </div>
 
+        <!-- Audio Initialization Banner -->
+        <div class="audio-init-banner" id="audioInitBanner">
+            📢 Tap here to enable voice (Required for iOS/Mobile)
+            <br>
+            <button class="audio-init-btn" onclick="enableAudio()">🔊 Enable Sound</button>
+        </div>
+
         <div id="errorMessage" style="display: none;" class="error"></div>
 
         <!-- AI Chat Section -->
@@ -732,6 +772,41 @@
         let currentLanguage = 'ms-MY';
         let availableVoices = [];
         let audioContext = null;
+        let audioInitialized = false;
+
+        // Check if we need to show the audio init banner (mainly for iOS)
+        function checkAudioInit() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isIOS || isMobile) {
+                document.getElementById('audioInitBanner').classList.add('show');
+            }
+        }
+
+        // Enable audio - this must be called from a user interaction
+        function enableAudio() {
+            initAudioContext();
+            
+            // Play a silent sound to unlock audio on iOS
+            const utterance = new SpeechSynthesisUtterance('');
+            utterance.volume = 0;
+            window.speechSynthesis.speak(utterance);
+            
+            audioInitialized = true;
+            document.getElementById('audioInitBanner').classList.remove('show');
+            
+            // Test sound
+            const testMessages = {
+                'ms-MY': 'Bunyi sudah aktif',
+                'en-US': 'Sound is now active',
+                'id-ID': 'Suara sudah aktif'
+            };
+            
+            setTimeout(() => {
+                speak(testMessages[currentLanguage]);
+            }, 500);
+        }
 
         // Initialize Audio Context for mobile (must be triggered by user interaction)
         function initAudioContext() {
@@ -742,9 +817,12 @@
                     if (audioContext.state === 'suspended') {
                         audioContext.resume();
                     }
+                    console.log('Audio context initialized:', audioContext.state);
                 } catch (e) {
                     console.warn('Audio context not available:', e);
                 }
+            } else if (audioContext.state === 'suspended') {
+                audioContext.resume();
             }
         }
 
@@ -848,7 +926,9 @@
 
         function toggleVoiceInput() {
             // Initialize audio context on first interaction
-            initAudioContext();
+            if (!audioInitialized) {
+                enableAudio();
+            }
             
             if (!recognition) {
                 alert('Voice input is not supported in your browser. Please use Chrome, Edge, or Safari.');
@@ -868,7 +948,9 @@
 
         function toggleSpeaker() {
             // Initialize audio context on first interaction
-            initAudioContext();
+            if (!audioInitialized) {
+                enableAudio();
+            }
             
             voiceEnabled = !voiceEnabled;
             const speakerIcon = document.getElementById('speakerIcon');
@@ -895,12 +977,24 @@
 
         function loadVoices() {
             availableVoices = window.speechSynthesis.getVoices();
+            console.log('Available voices loaded:', availableVoices.length);
         }
 
         function speak(text) {
-            if (!voiceEnabled) return;
+            if (!voiceEnabled) {
+                console.log('Voice disabled by user');
+                return;
+            }
+            
+            console.log('Attempting to speak:', text);
             
             // Initialize audio context if not already done
+            if (!audioInitialized) {
+                console.log('Audio not initialized, showing banner');
+                document.getElementById('audioInitBanner').classList.add('show');
+                return;
+            }
+            
             initAudioContext();
             
             // Cancel any ongoing speech
@@ -909,49 +1003,73 @@
             // Small delay to ensure cancellation completes (helps on mobile)
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 0.95;
+                utterance.rate = 0.9;
                 utterance.pitch = 1.0;
                 utterance.volume = 1.0;
                 
                 // Select appropriate voice based on language
                 const langVoiceMap = {
                     'ms-MY': ['ms-MY', 'ms_MY', 'Malay'],
-                    'en-US': ['en-US', 'en_US', 'English'],
-                    'id-ID': ['id-ID', 'id_ID', 'Indonesian']
+                    'en-US': ['en-US', 'en_US', 'English', 'United States'],
+                    'id-ID': ['id-ID', 'id_ID', 'Indonesian', 'Indonesia']
                 };
                 
                 const preferredVoices = langVoiceMap[currentLanguage] || langVoiceMap['ms-MY'];
                 
+                // Try to find exact match first
                 let selectedVoice = availableVoices.find(voice => 
                     preferredVoices.some(pref => 
-                        voice.lang.includes(pref) || voice.name.includes(pref)
+                        voice.lang.toLowerCase().includes(pref.toLowerCase()) || 
+                        voice.name.toLowerCase().includes(pref.toLowerCase())
                     )
                 );
                 
                 // Fallback to any voice that matches the main language code
                 if (!selectedVoice) {
                     const mainLang = currentLanguage.split('-')[0];
-                    selectedVoice = availableVoices.find(voice => voice.lang.startsWith(mainLang));
+                    selectedVoice = availableVoices.find(voice => 
+                        voice.lang.toLowerCase().startsWith(mainLang.toLowerCase())
+                    );
                 }
                 
                 if (selectedVoice) {
                     utterance.voice = selectedVoice;
                     utterance.lang = selectedVoice.lang;
+                    console.log('Using voice:', selectedVoice.name, selectedVoice.lang);
                 } else {
                     utterance.lang = currentLanguage;
+                    console.log('Using default language:', currentLanguage);
                 }
                 
-                // Add error handler for mobile
+                // Add handlers for debugging
+                utterance.onstart = function() {
+                    console.log('Speech started');
+                };
+                
+                utterance.onend = function() {
+                    console.log('Speech ended');
+                };
+                
                 utterance.onerror = function(event) {
                     console.error('Speech synthesis error:', event);
+                    if (event.error === 'not-allowed') {
+                        document.getElementById('audioInitBanner').classList.add('show');
+                    }
                 };
                 
                 // Resume audio context if suspended (important for mobile)
-                if (audioContext && audioContext.state === 'suspended') {
-                    audioContext.resume().then(() => {
+                if (audioContext) {
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume().then(() => {
+                            console.log('Audio context resumed, speaking...');
+                            window.speechSynthesis.speak(utterance);
+                        });
+                    } else {
+                        console.log('Audio context active, speaking...');
                         window.speechSynthesis.speak(utterance);
-                    });
+                    }
                 } else {
+                    console.log('No audio context, speaking directly...');
                     window.speechSynthesis.speak(utterance);
                 }
             }, 100);
@@ -1214,7 +1332,6 @@ oksigen terlarut (5+ mg/L), dan kualitas air.`
                 };
                 const errorMsg = errorMsgs[currentLanguage];
                 addMessage(errorMsg, false);
-                speak(errorMsg);
                 console.error('AI Error:', error);
             } finally {
                 typingIndicator.classList.remove('active');
@@ -1289,13 +1406,8 @@ oksigen terlarut (5+ mg/L), dan kualitas air.`
             }
         }
 
-        // Initialize audio on first user interaction
-        document.addEventListener('click', function initOnClick() {
-            initAudioContext();
-            document.removeEventListener('click', initOnClick);
-        }, { once: true });
-
         // Initialize
+        checkAudioInit();
         fetchData();
         setInterval(fetchData, 30000);
         updateVoiceStatus('ready');
