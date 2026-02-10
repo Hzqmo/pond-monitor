@@ -1118,9 +1118,7 @@ oksigen terlarut (5+ mg/L), dan kualitas air.`
             }
 
             const data = await response.json();
-            return data.choices[0].message.content;
-        }
-        // --- BAHAGIAN DEBUGGING (PENTING) ---
+            // --- BAHAGIAN DEBUGGING (PENTING) ---
             console.log("Respon Penuh dari Worker:", data); 
 
             // 1. Semak jika Worker memulangkan Error dari Groq
@@ -1278,4 +1276,5 @@ oksigen terlarut (5+ mg/L), dan kualitas air.`
     </script>
 </body>
 </html>
+
 
