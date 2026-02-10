@@ -1120,6 +1120,23 @@ oksigen terlarut (5+ mg/L), dan kualitas air.`
             const data = await response.json();
             return data.choices[0].message.content;
         }
+        // --- BAHAGIAN DEBUGGING (PENTING) ---
+            console.log("Respon Penuh dari Worker:", data); 
+
+            // 1. Semak jika Worker memulangkan Error dari Groq
+            if (data.error) {
+                // Ini akan memberitahu anda KENAPA ia gagal (contoh: "Invalid API Key")
+                throw new Error(data.error.message || 'Ralat tidak diketahui dari Groq');
+            }
+
+            // 2. Semak jika format 'choices' wujud
+            if (!data.choices || !data.choices.length) {
+                // Jika data kosong atau format salah
+                throw new Error('Format respon API tidak sah. Sila semak Console (F12).');
+            }
+
+            return data.choices[0].message.content;
+        }
 
         function addMessage(text, isUser = false) {
             const messagesDiv = document.getElementById('chatMessages');
@@ -1261,3 +1278,4 @@ oksigen terlarut (5+ mg/L), dan kualitas air.`
     </script>
 </body>
 </html>
+
