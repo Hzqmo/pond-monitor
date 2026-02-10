@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pond Monitor Dashboard with Voice AI</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700&display=swap');
+
         * {
             margin: 0;
             padding: 0;
@@ -12,504 +14,550 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        :root {
+            --bg: #0a1628;
+            --surface: #0f2040;
+            --surface2: #162a50;
+            --border: rgba(100, 160, 255, 0.12);
+            --accent: #3d8bff;
+            --accent2: #00e5c8;
+            --accent3: #ff6b6b;
+            --text: #e8f0ff;
+            --text-muted: #7899cc;
+            --success: #00c9a7;
+            --warning: #ffbe5c;
+            --danger: #ff5f5f;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
             min-height: 100vh;
             padding: 20px;
-            color: #333;
+            color: var(--text);
             -webkit-font-smoothing: antialiased;
         }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 80% 60% at 20% -10%, rgba(61,139,255,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 110%, rgba(0,229,200,0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
         }
 
+        .container {
+            max-width: 620px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
         .header {
             text-align: center;
-            color: white;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
+            padding-top: 10px;
+        }
+
+        .header-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .logo-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7em;
+            box-shadow: 0 0 24px rgba(61,139,255,0.35);
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 1.9em;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text);
         }
 
         .last-update {
-            font-size: 0.9em;
-            opacity: 0.9;
-            background: rgba(255,255,255,0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-top: 10px;
+            font-size: 0.82em;
+            color: var(--text-muted);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 7px 16px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
+        .status-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            margin-right: 8px;
-            animation: pulse 2s infinite;
+            background: var(--success);
+            animation: blink 2s infinite;
         }
 
-        .status-online {
-            background: #4ade80;
-            box-shadow: 0 0 10px #4ade80;
-        }
+        .status-dot.offline { background: var(--danger); animation: none; }
 
-        .status-offline {
-            background: #ef4444;
-        }
-
-        @keyframes pulse {
+        @keyframes blink {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 18px;
+            transition: border-color 0.3s, transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .card:hover {
+            border-color: rgba(61,139,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Sensor grid */
+        .sensors-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 18px;
         }
 
         .sensor-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 20px 16px;
+            text-align: center;
+            transition: border-color 0.3s, transform 0.3s;
+            position: relative;
+            overflow: hidden;
         }
 
         .sensor-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            border-color: rgba(61,139,255,0.3);
+            transform: translateY(-2px);
         }
 
+        .sensor-card.normal { --glow: rgba(0,201,167,0.12); }
+        .sensor-card.warning { --glow: rgba(255,190,92,0.12); }
+        .sensor-card.danger { --glow: rgba(255,95,95,0.12); }
+
+        .sensor-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--glow-line, transparent);
+            transition: opacity 0.3s;
+        }
+
+        .sensor-card.normal::after { background: var(--success); opacity: 0.6; }
+        .sensor-card.warning::after { background: var(--warning); opacity: 0.8; }
+        .sensor-card.danger::after { background: var(--danger); opacity: 0.8; }
+
         .sensor-icon {
-            font-size: 3em;
-            margin-bottom: 10px;
+            font-size: 1.7em;
+            margin-bottom: 8px;
+            display: block;
         }
 
         .sensor-label {
-            font-size: 1.1em;
-            color: #666;
-            margin-bottom: 10px;
-            font-weight: 500;
+            font-size: 0.72em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+            margin-bottom: 8px;
         }
 
         .sensor-value {
-            font-size: 3em;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
+            font-family: 'DM Mono', monospace;
+            font-size: 2em;
+            font-weight: 500;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 4px;
         }
 
         .sensor-unit {
-            font-size: 1.2em;
-            color: #999;
+            font-size: 0.72em;
+            color: var(--text-muted);
+            margin-bottom: 10px;
         }
 
-        .sensor-status {
-            margin-top: 15px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: 600;
+        .sensor-badge {
             display: inline-block;
-        }
-
-        .status-normal {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .status-warning {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-danger {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .ai-chat-container {
-            background: white;
+            padding: 3px 10px;
             border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            font-size: 0.7em;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
+        .badge-normal { background: rgba(0,201,167,0.15); color: var(--success); }
+        .badge-warning { background: rgba(255,190,92,0.15); color: var(--warning); }
+        .badge-danger { background: rgba(255,95,95,0.15); color: var(--danger); }
+
+        /* AI Chat */
         .ai-chat-header {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            gap: 10px;
+            margin-bottom: 18px;
         }
 
         .ai-chat-header h2 {
-            font-size: 1.5em;
-            color: #333;
+            font-size: 1.15em;
+            font-weight: 600;
             flex: 1;
         }
 
         .ai-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-
-        .chat-messages {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #f9fafb;
-            border-radius: 12px;
-        }
-
-        .chat-message {
-            margin-bottom: 15px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .message-avatar {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-            flex-shrink: 0;
-        }
-
-        .user-avatar {
-            background: #667eea;
-        }
-
-        .ai-avatar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .message-content {
-            flex: 1;
-        }
-
-        .message-text {
-            background: white;
-            padding: 12px 16px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            line-height: 1.5;
-        }
-
-        .user-message .message-text {
-            background: #667eea;
-            color: white;
-        }
-
-        .message-time {
-            font-size: 0.75em;
-            color: #999;
-            margin-top: 5px;
-            margin-left: 5px;
-        }
-
-        .chat-input-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 25px;
-            font-size: 1em;
-            font-family: inherit;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        .chat-input:focus {
-            border-color: #667eea;
-        }
-
-        .voice-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-size: 1.5em;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            touch-action: manipulation;
-        }
-
-        .voice-btn:active {
-            transform: scale(0.95);
-        }
-
-        .voice-btn.listening {
-            background: #ef4444;
-            animation: voicePulse 1.5s infinite;
-        }
-
-        .voice-btn.speaking {
-            background: #10b981;
-            animation: speakPulse 1.5s infinite;
-        }
-
-        @keyframes voicePulse {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-            50% {
-                box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
-            }
-        }
-
-        @keyframes speakPulse {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-            }
-            50% {
-                box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
-            }
-        }
-
-        .send-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-            touch-action: manipulation;
-        }
-
-        .send-btn:active {
-            transform: translateY(0);
-        }
-
-        .send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .quick-questions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .quick-question-btn {
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            padding: 8px 14px;
-            border-radius: 16px;
-            font-size: 0.85em;
-            cursor: pointer;
-            transition: all 0.2s;
-            touch-action: manipulation;
-        }
-
-        .quick-question-btn:active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .typing-indicator {
-            display: none;
-            padding: 12px 16px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            width: fit-content;
-        }
-
-        .typing-indicator.active {
-            display: block;
-        }
-
-        .typing-indicator span {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #999;
-            margin: 0 2px;
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-10px); }
-        }
-
-        .chart-container {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .chart-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: white;
-            font-size: 1.2em;
-        }
-
-        .error {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 20px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            padding: 4px 12px;
             border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
+            font-size: 0.72em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
-        .refresh-btn {
-            background: white;
-            color: #667eea;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-            display: block;
-            margin: 20px auto;
-            touch-action: manipulation;
+        .setup-notice {
+            background: rgba(61,139,255,0.1);
+            color: #90b8ff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            margin-bottom: 14px;
+            border: 1px solid rgba(61,139,255,0.2);
         }
 
-        canvas {
-            max-width: 100%;
-            height: auto !important;
+        .setup-notice code {
+            background: rgba(61,139,255,0.25);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'DM Mono', monospace;
         }
 
         .voice-controls {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 12px;
-            background: #f9fafb;
-            border-radius: 12px;
             align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding: 10px 14px;
+            background: var(--surface2);
+            border-radius: 12px;
+            border: 1px solid var(--border);
             flex-wrap: wrap;
         }
 
         .voice-status {
             flex: 1;
-            font-size: 0.9em;
-            color: #666;
-            min-width: 200px;
-        }
-
-        .voice-control-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
+            font-size: 0.82em;
+            color: var(--text-muted);
+            min-width: 160px;
         }
 
         .speaker-btn {
-            background: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            padding: 8px 16px;
-            border-radius: 16px;
-            font-size: 0.85em;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.78em;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 6px;
-            touch-action: manipulation;
+            gap: 5px;
+            font-family: 'Outfit', sans-serif;
         }
 
         .speaker-btn.active {
-            background: #4ade80;
-            color: white;
-            border-color: #4ade80;
+            background: rgba(0,201,167,0.15);
+            color: var(--success);
+            border-color: rgba(0,201,167,0.3);
         }
 
-        .setup-notice {
-            background: #dbeafe;
-            color: #1e40af;
-            padding: 12px 16px;
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-bottom: 14px;
+        }
+
+        .quick-question-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.78em;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .quick-question-btn:hover, .quick-question-btn:active {
+            background: rgba(61,139,255,0.15);
+            color: var(--accent);
+            border-color: rgba(61,139,255,0.3);
+        }
+
+        .chat-messages {
+            max-height: 280px;
+            overflow-y: auto;
+            margin-bottom: 14px;
+            padding: 10px;
+            background: var(--surface2);
             border-radius: 12px;
-            font-size: 0.85em;
-            margin-bottom: 15px;
-            border: 1px solid #93c5fd;
+            border: 1px solid var(--border);
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
         }
 
-        .setup-notice code {
-            background: #1e40af;
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .chat-message {
+            margin-bottom: 14px;
+            display: flex;
+            gap: 9px;
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1em;
+            flex-shrink: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .user-avatar { background: rgba(61,139,255,0.2); border-color: rgba(61,139,255,0.3); }
+
+        .message-content { flex: 1; }
+
+        .message-text {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: 12px;
+            line-height: 1.55;
+            font-size: 0.88em;
+        }
+
+        .user-message .message-text {
+            background: rgba(61,139,255,0.15);
+            border-color: rgba(61,139,255,0.25);
+            color: var(--text);
+        }
+
+        .message-time {
+            font-size: 0.68em;
+            color: var(--text-muted);
+            margin-top: 4px;
+            margin-left: 4px;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 14px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .typing-indicator.active { display: block; }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            margin: 0 2px;
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 9px;
+            align-items: center;
+        }
+
+        .voice-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(61,139,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            touch-action: manipulation;
         }
 
-        /* Mobile audio unlock overlay */
+        .voice-btn:active { transform: scale(0.93); }
+
+        .voice-btn.listening {
+            background: linear-gradient(135deg, var(--danger), #ff3366);
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        .voice-btn.speaking {
+            background: linear-gradient(135deg, var(--success), var(--accent2));
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(61,139,255,0.5); }
+            50% { box-shadow: 0 0 0 14px rgba(61,139,255,0); }
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 11px 16px;
+            border: 1px solid var(--border);
+            border-radius: 23px;
+            font-size: 0.9em;
+            font-family: 'Outfit', sans-serif;
+            outline: none;
+            background: var(--surface2);
+            color: var(--text);
+            transition: border-color 0.3s;
+        }
+
+        .chat-input::placeholder { color: var(--text-muted); }
+
+        .chat-input:focus { border-color: rgba(61,139,255,0.4); }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: white;
+            border: none;
+            padding: 11px 22px;
+            border-radius: 23px;
+            font-size: 0.88em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(61,139,255,0.25);
+            font-family: 'Outfit', sans-serif;
+            touch-action: manipulation;
+        }
+
+        .send-btn:active { transform: scale(0.97); }
+        .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+        /* Chart */
+        .chart-title {
+            font-size: 1em;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-size: 0.78em;
+        }
+
+        canvas { max-width: 100%; height: auto !important; }
+
+        /* Refresh */
+        .refresh-btn {
+            background: var(--surface);
+            color: var(--accent);
+            border: 1px solid rgba(61,139,255,0.25);
+            padding: 12px 28px;
+            border-radius: 23px;
+            font-size: 0.88em;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            margin: 8px auto 28px;
+            transition: all 0.3s;
+            font-family: 'Outfit', sans-serif;
+            touch-action: manipulation;
+        }
+
+        .refresh-btn:hover { background: rgba(61,139,255,0.12); border-color: rgba(61,139,255,0.4); }
+
+        /* Error */
+        .error {
+            background: rgba(255,95,95,0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255,95,95,0.25);
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            font-size: 0.88em;
+        }
+
+        /* Audio unlock overlay */
         .audio-unlock-overlay {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            inset: 0;
+            background: rgba(0,0,0,0.75);
             z-index: 9999;
             align-items: center;
             justify-content: center;
         }
 
-        .audio-unlock-overlay.show {
-            display: flex;
-        }
+        .audio-unlock-overlay.show { display: flex; }
 
         .audio-unlock-dialog {
-            background: white;
+            background: var(--surface);
+            border: 1px solid var(--border);
             padding: 30px;
             border-radius: 20px;
             text-align: center;
@@ -517,52 +565,37 @@
             margin: 20px;
         }
 
-        .audio-unlock-dialog h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .audio-unlock-dialog p {
-            margin-bottom: 20px;
-            color: #666;
-            line-height: 1.5;
-        }
+        .audio-unlock-dialog h3 { margin-bottom: 12px; font-size: 1.1em; }
+        .audio-unlock-dialog p { margin-bottom: 20px; color: var(--text-muted); line-height: 1.5; font-size: 0.9em; }
 
         .unlock-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 1.1em;
+            padding: 14px 28px;
+            border-radius: 23px;
+            font-size: 1em;
             font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
             width: 100%;
+            font-family: 'Outfit', sans-serif;
         }
 
         @media (max-width: 480px) {
-            .header h1 {
-                font-size: 2em;
-            }
-            .sensor-value {
-                font-size: 2.5em;
-            }
-            .voice-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .voice-status {
-                min-width: auto;
-            }
-            .voice-control-group {
-                justify-content: space-between;
-            }
+            .sensors-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .sensor-value { font-size: 1.6em; }
+            .sensor-label { font-size: 0.65em; }
+            .header h1 { font-size: 1.5em; }
+            .voice-controls { flex-direction: column; align-items: stretch; }
+        }
+
+        @media (max-width: 360px) {
+            .sensors-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
 <body>
-    <!-- Audio unlock overlay for mobile -->
+
     <div class="audio-unlock-overlay" id="audioUnlockOverlay">
         <div class="audio-unlock-dialog">
             <h3>🔊 Aktifkan Audio</h3>
@@ -573,38 +606,60 @@
 
     <div class="container">
         <div class="header">
-            <h1>🐟 AI Pond Monitor</h1>
+            <div class="header-logo">
+                <div class="logo-icon">🐟</div>
+                <h1>AI Pond Monitor</h1>
+            </div>
             <div class="last-update">
-                <span class="status-indicator status-online" id="statusIndicator"></span>
-                <span id="lastUpdate">Loading...</span>
+                <span class="status-dot" id="statusDot"></span>
+                <span id="lastUpdate">Memuatkan...</span>
             </div>
         </div>
 
-        <div id="errorMessage" style="display: none;" class="error"></div>
+        <div id="errorMessage" style="display:none;" class="error"></div>
 
-        <!-- AI Chat Section -->
-        <div class="ai-chat-container">
+        <!-- Sensor Cards -->
+        <div class="sensors-grid">
+            <div class="sensor-card normal" id="tempCard">
+                <span class="sensor-icon">🌡️</span>
+                <div class="sensor-label">Suhu</div>
+                <div class="sensor-value" id="tempValue">--</div>
+                <div class="sensor-unit">°C</div>
+                <span class="sensor-badge badge-normal" id="tempStatus">Normal</span>
+            </div>
+            <div class="sensor-card normal" id="phCard">
+                <span class="sensor-icon">💧</span>
+                <div class="sensor-label">pH</div>
+                <div class="sensor-value" id="phValue">--</div>
+                <div class="sensor-unit">pH</div>
+                <span class="sensor-badge badge-normal" id="phStatus">Normal</span>
+            </div>
+            <div class="sensor-card normal" id="tdsCard">
+                <span class="sensor-icon">📊</span>
+                <div class="sensor-label">TDS</div>
+                <div class="sensor-value" id="tdsValue">--</div>
+                <div class="sensor-unit">ppm</div>
+                <span class="sensor-badge badge-normal" id="tdsStatus">Normal</span>
+            </div>
+        </div>
+
+        <!-- AI Chat -->
+        <div class="card">
             <div class="ai-chat-header">
-                <h2>🤖 Voice AI Assistant</h2>
-                <div class="ai-badge">Secure API</div>
+                <h2>🤖 Pembantu Suara AI</h2>
+                <div class="ai-badge">VERCEL</div>
             </div>
 
-            <!-- Setup Notice -->
             <div class="setup-notice" id="setupNotice">
-                ⚙️ <strong>Setup:</strong> Update <code>WORKER_URL</code> in code (line ~540) to your Cloudflare Worker URL
+                ⚙️ <strong>Setup:</strong> Tukar <code>VERCEL_URL</code> dalam kod (baris ~430) kepada URL Vercel anda
             </div>
 
-            <!-- Voice Controls -->
             <div class="voice-controls">
-                <div class="voice-status" id="voiceStatus">
-                    🎤 Tekan mikrofon untuk bercakap
-                </div>
-                <div class="voice-control-group">
-                    <button class="speaker-btn active" id="speakerToggle" onclick="toggleSpeaker()">
-                        <span id="speakerIcon">🔊</span>
-                        <span id="speakerText">Suara ON</span>
-                    </button>
-                </div>
+                <div class="voice-status" id="voiceStatus">🎤 Tekan mikrofon untuk bercakap</div>
+                <button class="speaker-btn active" id="speakerToggle" onclick="toggleSpeaker()">
+                    <span id="speakerIcon">🔊</span>
+                    <span id="speakerText">Suara ON</span>
+                </button>
             </div>
 
             <div class="quick-questions">
@@ -619,13 +674,14 @@
                     <div class="message-avatar ai-avatar">🤖</div>
                     <div class="message-content">
                         <div class="message-text">
-                            Hai! Saya pembantu AI kolam anda dengan suara semula jadi. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?
+                            Hai! Saya pembantu AI kolam anda. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?
                         </div>
+                        <div class="message-time">Sekarang</div>
                     </div>
                 </div>
             </div>
 
-            <div class="chat-message" style="margin-bottom: 15px;">
+            <div class="chat-message" style="margin-bottom:14px;">
                 <div class="message-avatar ai-avatar">🤖</div>
                 <div class="typing-indicator" id="typingIndicator">
                     <span></span><span></span><span></span>
@@ -636,44 +692,20 @@
                 <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()" title="Tekan untuk bercakap">
                     🎤
                 </button>
-                <input 
-                    type="text" 
-                    class="chat-input" 
-                    id="chatInput" 
-                    placeholder="Taip atau tekan mikrofon untuk bercakap..."
+                <input
+                    type="text"
+                    class="chat-input"
+                    id="chatInput"
+                    placeholder="Taip atau tekan mikrofon..."
                     onkeypress="if(event.key==='Enter') sendMessage()"
                 >
                 <button class="send-btn" onclick="sendMessage()" id="sendBtn">Hantar</button>
             </div>
         </div>
 
-        <!-- Sensor Cards -->
-        <div class="sensor-card">
-            <div class="sensor-icon">🌡️</div>
-            <div class="sensor-label">Suhu</div>
-            <div class="sensor-value" id="tempValue">--</div>
-            <div class="sensor-unit">°C</div>
-            <div class="sensor-status status-normal" id="tempStatus">Normal</div>
-        </div>
-
-        <div class="sensor-card">
-            <div class="sensor-icon">💧</div>
-            <div class="sensor-label">Tahap pH</div>
-            <div class="sensor-value" id="phValue">--</div>
-            <div class="sensor-unit">pH</div>
-            <div class="sensor-status status-normal" id="phStatus">Normal</div>
-        </div>
-
-        <div class="sensor-card">
-            <div class="sensor-icon">📊</div>
-            <div class="sensor-label">TDS (Jumlah Pepejal Terlarut)</div>
-            <div class="sensor-value" id="tdsValue">--</div>
-            <div class="sensor-unit">ppm</div>
-            <div class="sensor-status status-normal" id="tdsStatus">Normal</div>
-        </div>
-
-        <div class="chart-container">
-            <div class="chart-title">📈 Sejarah Suhu (24j)</div>
+        <!-- Chart -->
+        <div class="card">
+            <div class="chart-title">📈 Sejarah Suhu — 24 Jam Terkini</div>
             <canvas id="tempChart"></canvas>
         </div>
 
@@ -682,604 +714,401 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
-        // ⚙️ CONFIGURATION - UPDATE THIS WITH YOUR CLOUDFLARE WORKER URL
-        const WORKER_URL = 'https://pond-monitor-iw24a3o26-hzqmos-projects.vercel.app';
-        // Get this URL after deploying the Cloudflare Worker
-        // Example: https://pond-monitor-api.yourname.workers.dev
-        
+        // =========================================================
+        // ⚙️  CONFIGURATION — UPDATE THESE VALUES
+        // =========================================================
+
+        // Your Vercel deployment URL (no trailing slash)
+        // Example: 'https://pond-monitor.vercel.app'
+        const VERCEL_URL = 'https://pond-monitor-o68t16umb-hzqmos-projects.vercel.app';
+
+        // Google Sheets CSV export URL
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
 
+        // =========================================================
         // Thresholds
-        const TEMP_MIN = 20;
-        const TEMP_MAX = 32;
-        const PH_MIN = 6.5;
-        const PH_MAX = 8.5;
-        const TDS_MIN = 300;
-        const TDS_MAX = 800;
+        const TEMP_MIN = 20, TEMP_MAX = 32;
+        const PH_MIN = 6.5,  PH_MAX = 8.5;
+        const TDS_MIN = 300,  TDS_MAX = 800;
 
+        // =========================================================
+        // State
         let tempChart;
         let currentSensorData = {};
-        
-        // Voice recognition setup
         let recognition;
         let isListening = false;
         let voiceEnabled = true;
         let isSpeaking = false;
-        let currentLanguage = 'ms-MY';
         let availableVoices = [];
         let audioContext = null;
         let audioUnlocked = false;
+        const LANG = 'ms-MY';
 
-        // Check if worker URL is configured
-        if (WORKER_URL === 'https://your-worker-name.your-subdomain.workers.dev') {
-            console.warn('Cloudflare Worker URL not configured');
-        } else {
-            document.getElementById('setupNotice').style.display = 'none';
-        }
+        // =========================================================
+        // Vercel API call — uses /api/chat route
+        // =========================================================
+        async function askAI(question) {
+            const systemPrompt = `Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia.
+Berikan nasihat yang berguna dan ringkas tentang ternakan tilapia berdasarkan data sensor.
+Beri respons yang pendek (2-3 ayat) dan praktikal dalam Bahasa Melayu.
+Keadaan optimum tilapia: suhu 28-30°C (maksimum 32°C), pH 6.5-8.5, TDS 300-800 ppm.`;
 
-        // Initialize Audio Context for mobile
-        function initAudioContext() {
-            if (!audioContext) {
-                try {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                } catch (e) {
-                    console.error('Web Audio API not supported', e);
-                }
-            }
-        }
-
-        // Unlock audio for mobile browsers (iOS Safari requires user interaction)
-        function unlockAudio() {
-            initAudioContext();
-            
-            if (audioContext && audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-            
-            // Create and play a silent sound to unlock
-            const silentAudio = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhAC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAA4T/vE0YAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAYDwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==');
-            silentAudio.play().then(() => {
-                audioUnlocked = true;
-                document.getElementById('audioUnlockOverlay').classList.remove('show');
-                console.log('Audio unlocked successfully');
-            }).catch(err => {
-                console.error('Failed to unlock audio:', err);
-            });
-        }
-
-        // Check if we need to show audio unlock on mobile
-        function checkMobileAudioUnlock() {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (isMobile && !audioUnlocked) {
-                // Show unlock dialog after a short delay
-                setTimeout(() => {
-                    document.getElementById('audioUnlockOverlay').classList.add('show');
-                }, 1000);
-            }
-        }
-
-        // Initialize speech recognition
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'ms-MY';
-
-            recognition.onstart = function() {
-                isListening = true;
-                document.getElementById('voiceBtn').classList.add('listening');
-                document.getElementById('voiceStatus').textContent = '🎤 Mendengar...';
-            };
-
-            recognition.onend = function() {
-                isListening = false;
-                document.getElementById('voiceBtn').classList.remove('listening');
-                document.getElementById('voiceStatus').textContent = '🎤 Tekan mikrofon untuk bercakap';
-            };
-
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('chatInput').value = transcript;
-                document.getElementById('voiceStatus').textContent = `🎤 Anda berkata: "${transcript}"`;
-                sendMessage();
-            };
-
-            recognition.onerror = function(event) {
-                console.error('Speech recognition error:', event.error);
-                document.getElementById('voiceStatus').textContent = '🎤 Ralat: ' + event.error;
-                isListening = false;
-                document.getElementById('voiceBtn').classList.remove('listening');
-            };
-        } else {
-            console.warn('Speech recognition not supported');
-            document.getElementById('voiceBtn').disabled = true;
-        }
-
-        function toggleVoiceInput() {
-            if (!recognition) {
-                alert('Voice input tidak disokong di pelayar ini. Sila guna Chrome, Edge, atau Safari.');
-                return;
-            }
-
-            if (isListening) {
-                recognition.stop();
-            } else {
-                try {
-                    recognition.start();
-                } catch (error) {
-                    console.error('Error starting recognition:', error);
-                }
-            }
-        }
-
-        function toggleSpeaker() {
-            voiceEnabled = !voiceEnabled;
-            const speakerIcon = document.getElementById('speakerIcon');
-            const speakerText = document.getElementById('speakerText');
-            const speakerBtn = document.getElementById('speakerToggle');
-            
-            if (voiceEnabled) {
-                speakerIcon.textContent = '🔊';
-                speakerText.textContent = 'Suara ON';
-                speakerBtn.classList.add('active');
-            } else {
-                speakerIcon.textContent = '🔇';
-                speakerText.textContent = 'Suara OFF';
-                speakerBtn.classList.remove('active');
-                if (currentAudio) {
-                    currentAudio.pause();
-                    currentAudio = null;
-                    isSpeaking = false;
-                    document.getElementById('voiceBtn').classList.remove('speaking');
-                }
-            }
-        }
-
-        async function speakWithBrowserTTS(text) {
-            if (!voiceEnabled) return;
-
-            // Check if mobile audio needs unlock
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            if (isMobile && !audioUnlocked) {
-                document.getElementById('audioUnlockOverlay').classList.add('show');
-                return;
-            }
-
-            try {
-                // Cancel any ongoing speech
-                window.speechSynthesis.cancel();
-                
-                // Small delay to ensure cancellation completes
-                setTimeout(() => {
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.rate = 0.9;
-                    utterance.pitch = 1.0;
-                    utterance.volume = 1.0;
-                    
-                    // Select appropriate voice based on language
-                    const langVoiceMap = {
-                        'ms-MY': ['ms-MY', 'ms_MY', 'Malay'],
-                        'en-US': ['en-US', 'en_US', 'English', 'United States'],
-                        'id-ID': ['id-ID', 'id_ID', 'Indonesian', 'Indonesia']
-                    };
-                    
-                    const preferredVoices = langVoiceMap[currentLanguage] || langVoiceMap['ms-MY'];
-                    
-                    // Try to find exact match first
-                    let selectedVoice = availableVoices.find(voice => 
-                        preferredVoices.some(pref => 
-                            voice.lang.toLowerCase().includes(pref.toLowerCase()) || 
-                            voice.name.toLowerCase().includes(pref.toLowerCase())
-                        )
-                    );
-                    
-                    // Fallback to any voice that matches the main language code
-                    if (!selectedVoice) {
-                        const mainLang = currentLanguage.split('-')[0];
-                        selectedVoice = availableVoices.find(voice => 
-                            voice.lang.toLowerCase().startsWith(mainLang.toLowerCase())
-                        );
-                    }
-                    
-                    if (selectedVoice) {
-                        utterance.voice = selectedVoice;
-                        utterance.lang = selectedVoice.lang;
-                        console.log('Using voice:', selectedVoice.name, selectedVoice.lang);
-                    } else {
-                        utterance.lang = currentLanguage;
-                        console.log('Using default language:', currentLanguage);
-                    }
-                    
-                    // Add handlers
-                    utterance.onstart = function() {
-                        isSpeaking = true;
-                        document.getElementById('voiceBtn').classList.add('speaking');
-                        console.log('Speech started');
-                    };
-                    
-                    utterance.onend = function() {
-                        isSpeaking = false;
-                        document.getElementById('voiceBtn').classList.remove('speaking');
-                        console.log('Speech ended');
-                    };
-                    
-                    utterance.onerror = function(event) {
-                        isSpeaking = false;
-                        document.getElementById('voiceBtn').classList.remove('speaking');
-                        console.error('Speech synthesis error:', event);
-                        if (event.error === 'not-allowed') {
-                            document.getElementById('audioUnlockOverlay').classList.add('show');
-                        }
-                    };
-                    
-                    // Resume audio context if suspended
-                    if (audioContext && audioContext.state === 'suspended') {
-                        audioContext.resume().then(() => {
-                            console.log('Audio context resumed, speaking...');
-                            window.speechSynthesis.speak(utterance);
-                        });
-                    } else {
-                        console.log('Speaking...');
-                        window.speechSynthesis.speak(utterance);
-                    }
-                }, 100);
-
-            } catch (error) {
-                console.error('TTS error:', error);
-                isSpeaking = false;
-                document.getElementById('voiceBtn').classList.remove('speaking');
-            }
-        }
-
-        function parseCSV(csv) {
-            const lines = csv.trim().split('\n');
-            const data = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',');
-                if (values.length >= 4) {
-                    data.push({
-                        timestamp: values[0],
-                        temp: parseFloat(values[1]),
-                        ph: parseFloat(values[2]),
-                        tds: parseFloat(values[3])
-                    });
-                }
-            }
-            return data;
-        }
-
-        function updateStatus(value, min, max, elementId) {
-            const statusEl = document.getElementById(elementId);
-            if (value < min) {
-                statusEl.className = 'sensor-status status-warning';
-                statusEl.textContent = 'Rendah';
-            } else if (value > max) {
-                statusEl.className = 'sensor-status status-danger';
-                statusEl.textContent = 'Tinggi';
-            } else {
-                statusEl.className = 'sensor-status status-normal';
-                statusEl.textContent = 'Normal';
-            }
-        }
-
-        function formatTimeAgo(timestamp) {
-            const now = new Date();
-            const time = new Date(timestamp);
-            const diffMs = now - time;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-            
-            if (diffMins < 1) return 'Baru sahaja';
-            if (diffMins < 60) return `${diffMins} minit lalu`;
-            if (diffHours < 24) return `${diffHours} jam lalu`;
-            if (diffDays < 7) return `${diffDays} hari lalu`;
-            return time.toLocaleDateString();
-        }
-        
-        function isSystemOnline(timestamp) {
-            const now = new Date();
-            const time = new Date(timestamp);
-            const diffMs = now - time;
-            const diffMins = Math.floor(diffMs / 60000);
-            return diffMins < 5;
-        }
-
-        function createChart(labels, data) {
-            const ctx = document.getElementById('tempChart').getContext('2d');
-            
-            if (tempChart) {
-                tempChart.destroy();
-            }
-
-            tempChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Suhu (°C)',
-                        data: data,
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 2,
-                        pointHoverRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                maxTicksLimit: 6
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function getSensorContext() {
-            let context = "Keadaan kolam semasa:\n";
-            context += `- Suhu: ${currentSensorData.temp}°C`;
-            
-            if (currentSensorData.temp >= TEMP_MAX) {
-                context += ` (TINGGI - melebihi ${TEMP_MAX}°C)`;
-            } else if (currentSensorData.temp < TEMP_MIN) {
-                context += ` (RENDAH - bawah ${TEMP_MIN}°C)`;
-            } else {
-                context += ` (Normal)`;
-            }
-            
-            context += `\n- pH: ${currentSensorData.ph}`;
-            if (currentSensorData.ph < PH_MIN) {
-                context += ` (RENDAH - bawah ${PH_MIN})`;
-            } else if (currentSensorData.ph > PH_MAX) {
-                context += ` (TINGGI - melebihi ${PH_MAX})`;
-            } else {
-                context += ` (Julat normal)`;
-            }
-            
-            context += `\n- TDS: ${currentSensorData.tds} ppm`;
-            if (currentSensorData.tds > TDS_MAX) {
-                context += ` (TINGGI - melebihi ${TDS_MAX} ppm)`;
-            } else if (currentSensorData.tds < TDS_MIN) {
-                context += ` (RENDAH - bawah ${TDS_MIN} ppm)`;
-            } else {
-                context += ` (Normal)`;
-            }
-            
-            return context;
-        }
-
-        async function askGroqAI(question) {
-            const systemPrompts = {
-                'ms-MY': `Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia. 
-Berikan nasihat yang berguna dan ringkas tentang ternakan tilapia berdasarkan data sensor. 
-Beri respons yang pendek (2-3 ayat) dan praktikal dalam Bahasa Melayu. 
-Anda berpengetahuan tentang keadaan kolam tilapia yang optimum: 
-suhu (28-30°C ideal, maksimum 32°C), pH (6.5-8.5 ideal), 
-oksigen terlarut (5+ mg/L), dan kualiti air.`,
-                'en-US': `You are an AI assistant for a tilapia pond monitoring system. 
-Provide helpful, concise advice about tilapia farming based on the sensor data. 
-Keep responses brief (2-3 sentences) and practical in English. 
-You are knowledgeable about optimal tilapia pond conditions: 
-temperature (28-30°C ideal, max 32°C), pH (6.5-8.5 ideal), 
-dissolved oxygen (5+ mg/L), and water quality.`,
-                'id-ID': `Anda adalah asisten AI untuk sistem pemantauan kolam tilapia. 
-Berikan saran yang berguna dan ringkas tentang budidaya tilapia berdasarkan data sensor. 
-Berikan tanggapan yang singkat (2-3 kalimat) dan praktis dalam Bahasa Indonesia. 
-Anda berpengetahuan tentang kondisi kolam tilapia yang optimal: 
-suhu (28-30°C ideal, maksimal 32°C), pH (6.5-8.5 ideal), 
-oksigen terlarut (5+ mg/L), dan kualitas air.`
-            };
-
-            const systemPrompt = systemPrompts[currentLanguage] || systemPrompts['ms-MY'];
             const userMessage = getSensorContext() + "\n\nSoalan: " + question;
 
-            const response = await fetch(`${WORKER_URL}/api/chat`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: userMessage }
-                    ],
-                    max_tokens: 300,
-                    temperature: 0.7
-                })
-            });
+            // -------------------------------------------------------
+            // Vercel Serverless Function endpoint is /api/chat
+            // Make sure your Vercel project has /api/chat.js (or .ts)
+            // -------------------------------------------------------
+            const endpoint = `${VERCEL_URL}/api/chat`;
 
+            let response;
+            try {
+                response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user',   content: userMessage  }
+                        ],
+                        max_tokens: 300,
+                        temperature: 0.7
+                    })
+                });
+            } catch (networkErr) {
+                throw new Error('Gagal sambung ke pelayan. Pastikan Vercel URL betul dan CORS dibenarkan.');
+            }
+
+            // Handle non-2xx HTTP
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error?.message || 'API request failed');
+                let errBody;
+                try { errBody = await response.json(); } catch { errBody = {}; }
+                const msg = errBody?.error?.message || errBody?.error || `HTTP ${response.status}`;
+                throw new Error(`Ralat API: ${msg}`);
             }
 
-            const data = await response.json();
-            // --- BAHAGIAN DEBUGGING (PENTING) ---
-            console.log("Respon Penuh dari Worker:", data); 
+            let data;
+            try { data = await response.json(); } catch {
+                throw new Error('Respons bukan JSON. Semak Vercel Function log anda.');
+            }
 
-            // 1. Semak jika Worker memulangkan Error dari Groq
+            console.log('Vercel API response:', data);
+
             if (data.error) {
-                // Ini akan memberitahu anda KENAPA ia gagal (contoh: "Invalid API Key")
-                throw new Error(data.error.message || 'Ralat tidak diketahui dari Groq');
+                throw new Error(data.error.message || 'Ralat tidak diketahui dari API');
             }
 
-            // 2. Semak jika format 'choices' wujud
-            if (!data.choices || !data.choices.length) {
-                // Jika data kosong atau format salah
-                throw new Error('Format respon API tidak sah. Sila semak Console (F12).');
+            if (!data.choices?.length) {
+                throw new Error('Format respons tidak sah. Semak Console (F12) untuk butiran.');
             }
 
             return data.choices[0].message.content;
         }
 
-        function addMessage(text, isUser = false) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'chat-message' + (isUser ? ' user-message' : '');
-            
-            const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            
-            messageDiv.innerHTML = `
-                <div class="message-avatar ${isUser ? 'user-avatar' : 'ai-avatar'}">
-                    ${isUser ? '👤' : '🤖'}
-                </div>
-                <div class="message-content">
-                    <div class="message-text">${text}</div>
-                    <div class="message-time">${now}</div>
-                </div>
-            `;
-            
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        // =========================================================
+        // Sensor helpers
+        // =========================================================
+        function getSensorContext() {
+            const t = currentSensorData.temp ?? '?';
+            const p = currentSensorData.ph   ?? '?';
+            const d = currentSensorData.tds  ?? '?';
+
+            const ts = +t >= TEMP_MAX ? '(TINGGI)' : +t < TEMP_MIN ? '(RENDAH)' : '(Normal)';
+            const ps = +p < PH_MIN   ? '(RENDAH)' : +p > PH_MAX   ? '(TINGGI)' : '(Normal)';
+            const ds = +d > TDS_MAX  ? '(TINGGI)' : +d < TDS_MIN  ? '(RENDAH)' : '(Normal)';
+
+            return `Keadaan kolam semasa:\n- Suhu: ${t}°C ${ts}\n- pH: ${p} ${ps}\n- TDS: ${d} ppm ${ds}`;
         }
 
-        async function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const question = input.value.trim();
-            
-            if (!question) return;
+        function updateSensorCard(cardId, valueId, badgeId, value, min, max) {
+            const card  = document.getElementById(cardId);
+            const badge = document.getElementById(badgeId);
 
-            addMessage(question, true);
-            input.value = '';
-            
-            const typingIndicator = document.getElementById('typingIndicator');
-            typingIndicator.classList.add('active');
-            
-            const sendBtn = document.getElementById('sendBtn');
-            sendBtn.disabled = true;
-            sendBtn.textContent = 'Berfikir...';
-            
-            try {
-                const response = await askGroqAI(question);
-                addMessage(response, false);
-                
-                // Speak the response with browser TTS
-                await speakWithBrowserTTS(response);
-                
-            } catch (error) {
-                const errorMsg = `Maaf, saya mengalami ralat: ${error.message}`;
-                addMessage(errorMsg, false);
-                console.error('AI Error:', error);
-            } finally {
-                typingIndicator.classList.remove('active');
-                sendBtn.disabled = false;
-                sendBtn.textContent = 'Hantar';
+            card.classList.remove('normal', 'warning', 'danger');
+            badge.classList.remove('badge-normal', 'badge-warning', 'badge-danger');
+
+            if (value < min) {
+                card.classList.add('warning');
+                badge.classList.add('badge-warning');
+                badge.textContent = 'Rendah';
+            } else if (value > max) {
+                card.classList.add('danger');
+                badge.classList.add('badge-danger');
+                badge.textContent = 'Tinggi';
+            } else {
+                card.classList.add('normal');
+                badge.classList.add('badge-normal');
+                badge.textContent = 'Normal';
             }
         }
 
-        function askQuestion(question) {
-            document.getElementById('chatInput').value = question;
-            sendMessage();
+        // =========================================================
+        // Data fetching
+        // =========================================================
+        function parseCSV(csv) {
+            return csv.trim().split('\n').slice(1).map(line => {
+                const v = line.split(',');
+                return v.length >= 4
+                    ? { timestamp: v[0], temp: parseFloat(v[1]), ph: parseFloat(v[2]), tds: parseFloat(v[3]) }
+                    : null;
+            }).filter(Boolean);
+        }
+
+        function formatTimeAgo(ts) {
+            const diff = Math.floor((new Date() - new Date(ts)) / 60000);
+            if (diff < 1)  return 'Baru sahaja';
+            if (diff < 60) return `${diff} minit lalu`;
+            const h = Math.floor(diff / 60);
+            if (h < 24)    return `${h} jam lalu`;
+            return `${Math.floor(h / 24)} hari lalu`;
         }
 
         async function fetchData() {
             try {
                 document.getElementById('errorMessage').style.display = 'none';
-                
-                const response = await fetch(SHEET_CSV_URL);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch data');
-                }
-                
-                const csv = await response.text();
-                const data = parseCSV(csv);
-                
-                if (data.length === 0) {
-                    throw new Error('No data available');
-                }
+                const res  = await fetch(SHEET_CSV_URL);
+                if (!res.ok) throw new Error('Gagal ambil data');
+                const data = parseCSV(await res.text());
+                if (!data.length) throw new Error('Tiada data');
 
                 const latest = data[data.length - 1];
-                
+
                 currentSensorData = {
                     temp: latest.temp.toFixed(1),
-                    ph: latest.ph.toFixed(2),
-                    tds: Math.round(latest.tds)
+                    ph:   latest.ph.toFixed(2),
+                    tds:  Math.round(latest.tds)
                 };
-                
-                const online = isSystemOnline(latest.timestamp);
-                
+
                 document.getElementById('tempValue').textContent = currentSensorData.temp;
-                document.getElementById('phValue').textContent = currentSensorData.ph;
-                document.getElementById('tdsValue').textContent = currentSensorData.tds;
-                
-                updateStatus(latest.temp, TEMP_MIN, TEMP_MAX, 'tempStatus');
-                updateStatus(latest.ph, PH_MIN, PH_MAX, 'phStatus');
-                updateStatus(latest.tds, TDS_MIN, TDS_MAX, 'tdsStatus');
-                
-                const timeAgo = formatTimeAgo(latest.timestamp);
-                document.getElementById('lastUpdate').textContent = timeAgo;
-                
-                const statusIndicator = document.getElementById('statusIndicator');
-                if (online) {
-                    statusIndicator.className = 'status-indicator status-online';
-                } else {
-                    statusIndicator.className = 'status-indicator status-offline';
-                }
-                
-                const chartData = data.slice(-50);
-                const labels = chartData.map(d => {
-                    const time = new Date(d.timestamp);
-                    return time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                });
-                const temps = chartData.map(d => d.temp);
-                
+                document.getElementById('phValue').textContent   = currentSensorData.ph;
+                document.getElementById('tdsValue').textContent  = currentSensorData.tds;
+
+                updateSensorCard('tempCard', 'tempValue', 'tempStatus', latest.temp, TEMP_MIN, TEMP_MAX);
+                updateSensorCard('phCard',   'phValue',   'phStatus',   latest.ph,   PH_MIN,   PH_MAX);
+                updateSensorCard('tdsCard',  'tdsValue',  'tdsStatus',  latest.tds,  TDS_MIN,  TDS_MAX);
+
+                document.getElementById('lastUpdate').textContent = formatTimeAgo(latest.timestamp);
+
+                const online = (new Date() - new Date(latest.timestamp)) < 5 * 60000;
+                const dot = document.getElementById('statusDot');
+                dot.classList.toggle('offline', !online);
+
+                // Chart — last 50 readings
+                const slice  = data.slice(-50);
+                const labels = slice.map(d => new Date(d.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+                const temps  = slice.map(d => d.temp);
                 createChart(labels, temps);
-                
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                document.getElementById('errorMessage').textContent = 
-                    '⚠️ Ralat: ' + error.message;
+
+            } catch (err) {
+                console.error('fetchData error:', err);
+                document.getElementById('errorMessage').textContent = '⚠️ ' + err.message;
                 document.getElementById('errorMessage').style.display = 'block';
             }
         }
 
-        function loadVoices() {
-            availableVoices = window.speechSynthesis.getVoices();
-            console.log('Available voices loaded:', availableVoices.length);
+        // =========================================================
+        // Chart
+        // =========================================================
+        function createChart(labels, data) {
+            const ctx = document.getElementById('tempChart').getContext('2d');
+            if (tempChart) tempChart.destroy();
+            tempChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Suhu (°C)',
+                        data,
+                        borderColor: '#3d8bff',
+                        backgroundColor: 'rgba(61,139,255,0.08)',
+                        borderWidth: 2.5,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 2,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid:   { color: 'rgba(100,160,255,0.06)' },
+                            ticks:  { color: '#7899cc', font: { family: 'DM Mono', size: 11 } }
+                        },
+                        x: {
+                            grid:  { display: false },
+                            ticks: { color: '#7899cc', maxTicksLimit: 6, font: { family: 'DM Mono', size: 11 } }
+                        }
+                    }
+                }
+            });
         }
 
-        // Load voices when available
+        // =========================================================
+        // Chat UI
+        // =========================================================
+        function addMessage(text, isUser = false) {
+            const wrap = document.getElementById('chatMessages');
+            const div  = document.createElement('div');
+            div.className = 'chat-message' + (isUser ? ' user-message' : '');
+            const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            div.innerHTML = `
+                <div class="message-avatar ${isUser ? 'user-avatar' : 'ai-avatar'}">${isUser ? '👤' : '🤖'}</div>
+                <div class="message-content">
+                    <div class="message-text">${text}</div>
+                    <div class="message-time">${time}</div>
+                </div>`;
+            wrap.appendChild(div);
+            wrap.scrollTop = wrap.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const q = input.value.trim();
+            if (!q) return;
+
+            addMessage(q, true);
+            input.value = '';
+
+            document.getElementById('typingIndicator').classList.add('active');
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.textContent = 'Berfikir...';
+
+            try {
+                const reply = await askAI(q);
+                addMessage(reply, false);
+                await speakWithBrowserTTS(reply);
+            } catch (err) {
+                addMessage(`Maaf, ralat: ${err.message}`, false);
+                console.error('AI Error:', err);
+            } finally {
+                document.getElementById('typingIndicator').classList.remove('active');
+                btn.disabled = false;
+                btn.textContent = 'Hantar';
+            }
+        }
+
+        function askQuestion(q) {
+            document.getElementById('chatInput').value = q;
+            sendMessage();
+        }
+
+        // =========================================================
+        // Text-to-speech
+        // =========================================================
+        function initAudioContext() {
+            if (!audioContext) {
+                try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
+            }
+        }
+
+        function unlockAudio() {
+            initAudioContext();
+            if (audioContext?.state === 'suspended') audioContext.resume();
+            const silent = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADhAC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAA4T/vE0YAAAAAAD/+xDEAAPAAAGkAAAAIAAANIAAAARMQU1FMy4xMDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==');
+            silent.play().then(() => {
+                audioUnlocked = true;
+                document.getElementById('audioUnlockOverlay').classList.remove('show');
+            }).catch(() => {});
+        }
+
+        function toggleSpeaker() {
+            voiceEnabled = !voiceEnabled;
+            document.getElementById('speakerIcon').textContent = voiceEnabled ? '🔊' : '🔇';
+            document.getElementById('speakerText').textContent = voiceEnabled ? 'Suara ON' : 'Suara OFF';
+            document.getElementById('speakerToggle').classList.toggle('active', voiceEnabled);
+            if (!voiceEnabled) { window.speechSynthesis.cancel(); isSpeaking = false; }
+        }
+
+        async function speakWithBrowserTTS(text) {
+            if (!voiceEnabled) return;
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            if (isMobile && !audioUnlocked) {
+                document.getElementById('audioUnlockOverlay').classList.add('show');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            setTimeout(() => {
+                const u = new SpeechSynthesisUtterance(text);
+                u.rate = 0.9; u.pitch = 1.0; u.volume = 1.0;
+                const voice = availableVoices.find(v => v.lang.startsWith('ms') || v.name.toLowerCase().includes('malay'));
+                if (voice) { u.voice = voice; u.lang = voice.lang; } else { u.lang = LANG; }
+                u.onstart  = () => { isSpeaking = true;  document.getElementById('voiceBtn').classList.add('speaking'); };
+                u.onend    = () => { isSpeaking = false; document.getElementById('voiceBtn').classList.remove('speaking'); };
+                u.onerror  = (e) => {
+                    isSpeaking = false;
+                    document.getElementById('voiceBtn').classList.remove('speaking');
+                    if (e.error === 'not-allowed') document.getElementById('audioUnlockOverlay').classList.add('show');
+                };
+                if (audioContext?.state === 'suspended') {
+                    audioContext.resume().then(() => window.speechSynthesis.speak(u));
+                } else {
+                    window.speechSynthesis.speak(u);
+                }
+            }, 100);
+        }
+
+        // =========================================================
+        // Voice input
+        // =========================================================
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SR();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = LANG;
+            recognition.onstart  = () => { isListening = true;  document.getElementById('voiceBtn').classList.add('listening'); document.getElementById('voiceStatus').textContent = '🎤 Mendengar...'; };
+            recognition.onend    = () => { isListening = false; document.getElementById('voiceBtn').classList.remove('listening'); document.getElementById('voiceStatus').textContent = '🎤 Tekan mikrofon untuk bercakap'; };
+            recognition.onresult = (e) => {
+                const t = e.results[0][0].transcript;
+                document.getElementById('chatInput').value = t;
+                document.getElementById('voiceStatus').textContent = `🎤 Anda berkata: "${t}"`;
+                sendMessage();
+            };
+            recognition.onerror = (e) => {
+                console.error('Speech error:', e.error);
+                document.getElementById('voiceStatus').textContent = '🎤 Ralat: ' + e.error;
+                isListening = false;
+                document.getElementById('voiceBtn').classList.remove('listening');
+            };
+        } else {
+            document.getElementById('voiceBtn').disabled = true;
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) { alert('Voice input tidak disokong. Guna Chrome, Edge, atau Safari.'); return; }
+            if (isListening) recognition.stop();
+            else try { recognition.start(); } catch {}
+        }
+
+        // =========================================================
+        // Setup notice
+        // =========================================================
+        const PLACEHOLDER = 'https://your-project.vercel.app';
+        if (VERCEL_URL && VERCEL_URL !== PLACEHOLDER) {
+            document.getElementById('setupNotice').style.display = 'none';
+        }
+
+        // =========================================================
+        // Boot
+        // =========================================================
         if (window.speechSynthesis) {
-            loadVoices();
-            window.speechSynthesis.onvoiceschanged = loadVoices;
+            availableVoices = window.speechSynthesis.getVoices();
+            window.speechSynthesis.onvoiceschanged = () => { availableVoices = window.speechSynthesis.getVoices(); };
         }
-
-        // Initialize
         initAudioContext();
         fetchData();
         setInterval(fetchData, 30000);
-        checkMobileAudioUnlock();
+
+        // Mobile audio unlock prompt
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            setTimeout(() => { if (!audioUnlocked) document.getElementById('audioUnlockOverlay').classList.add('show'); }, 1500);
+        }
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
