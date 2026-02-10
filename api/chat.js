@@ -5,7 +5,7 @@ export const config = {
 export default async function handler(req) {
   // Define CORS headers
   const corsHeaders = {
-    'Access-Control-Allow-Origin': 'https://hzqmo.github.io/pond-monitor/pond-dashboard.html',
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
