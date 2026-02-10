@@ -1,35 +1,40 @@
-// api/chat.js
 export const config = {
-  runtime: 'edge', // This makes it run fast like Cloudflare
+  runtime: 'edge',
 };
 
 export default async function handler(req) {
-  // 1. Handle CORS (Allow your frontend to talk to this)
+  // --- CORS HEADERS ---
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+
+  // 1. Handle Preflight (The Handshake)
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    });
+    return new Response(null, { status: 200, headers: corsHeaders });
   }
 
+  // 2. Allow only POST
   if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 });
+    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
+      status: 405,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 
   try {
     const body = await req.json();
-    
-    // Get the API Key safely from Vercel Environment Variables
-    const apiKey = process.env.GROQ_API_KEY; 
+    const apiKey = process.env.GROQ_API_KEY;
 
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'Server configuration error: No API Key' }), { status: 500 });
+      return new Response(JSON.stringify({ error: 'Missing API Key configuration' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
-    // 2. Prepare messages (Keep your logic)
+    // 3. Prepare messages
     let messagesToSend = [];
     if (body.messages) {
       messagesToSend = body.messages;
@@ -38,7 +43,7 @@ export default async function handler(req) {
       messagesToSend = [{ role: "user", content: text }];
     }
 
-    // 3. Forward to Groq
+    // 4. Send to Groq
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -53,11 +58,18 @@ export default async function handler(req) {
     });
 
     const data = await response.json();
+    
+    // 5. Return success with CORS headers
     return new Response(JSON.stringify(data), {
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    // 6. Return error with CORS headers
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 }
