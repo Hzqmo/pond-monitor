@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pond Monitor Dashboard with Voice AI</title>
+    <title>Pond Monitor Dashboard with Natural Voice AI</title>
     <style>
         * {
             margin: 0;
@@ -272,12 +272,26 @@
             animation: voicePulse 1.5s infinite;
         }
 
+        .voice-btn.speaking {
+            background: #10b981;
+            animation: speakPulse 1.5s infinite;
+        }
+
         @keyframes voicePulse {
             0%, 100% {
                 box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
             }
             50% {
                 box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+            }
+        }
+
+        @keyframes speakPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(16, 185, 129, 0);
             }
         }
 
@@ -473,24 +487,20 @@
             border-color: #4ade80;
         }
 
-        .language-select {
-            padding: 8px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
+        .api-setup-notice {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 12px 16px;
+            border-radius: 12px;
             font-size: 0.85em;
-            background: white;
-            cursor: pointer;
-            outline: none;
-            transition: all 0.2s;
+            margin-bottom: 15px;
+            border: 1px solid #fcd34d;
         }
 
-        .language-select:hover {
-            border-color: #667eea;
-        }
-
-        .language-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        .api-setup-notice a {
+            color: #92400e;
+            font-weight: 600;
+            text-decoration: underline;
         }
 
         @media (max-width: 480px) {
@@ -529,23 +539,25 @@
         <div class="ai-chat-container">
             <div class="ai-chat-header">
                 <h2>🤖 Voice AI Assistant</h2>
-                <div class="ai-badge">Groq AI + Voice</div>
+                <div class="ai-badge">ElevenLabs Voice</div>
+            </div>
+
+            <!-- API Setup Notice -->
+            <div class="api-setup-notice" id="apiNotice">
+                ⚙️ <strong>Setup Required:</strong> Add your ElevenLabs API key in the code (line ~670). 
+                Get a free key at <a href="https://elevenlabs.io" target="_blank">elevenlabs.io</a> 
+                (10,000 free characters/month)
             </div>
 
             <!-- Voice Controls -->
             <div class="voice-controls">
                 <div class="voice-status" id="voiceStatus">
-                    🎤 Click microphone to speak
+                    🎤 Tekan mikrofon untuk bercakap
                 </div>
                 <div class="voice-control-group">
-                    <select class="language-select" id="languageSelect" onchange="changeLanguage()">
-                        <option value="en-US">🇬🇧 English</option>
-                        <option value="ms-MY" selected>🇲🇾 Bahasa Melayu</option>
-                        <option value="id-ID">🇮🇩 Bahasa Indonesia</option>
-                    </select>
                     <button class="speaker-btn active" id="speakerToggle" onclick="toggleSpeaker()">
                         <span id="speakerIcon">🔊</span>
-                        <span id="speakerText">Voice ON</span>
+                        <span id="speakerText">Suara ON</span>
                     </button>
                 </div>
             </div>
@@ -562,7 +574,7 @@
                     <div class="message-avatar ai-avatar">🤖</div>
                     <div class="message-content">
                         <div class="message-text">
-                            Hai! Saya pembantu AI kolam anda. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?
+                            Hai! Saya pembantu AI kolam anda dengan suara semula jadi. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?
                         </div>
                     </div>
                 </div>
@@ -628,6 +640,11 @@
         // Configuration
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
         const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+        const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
+
+        // API Keys
+        const GROQ_API_KEY = "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";
+        const ELEVENLABS_API_KEY = "sk_64ee0b6095c22abda6afc9a41e76d89d174badd118b7fcde";  // Get free key at elevenlabs.io
 
         // Thresholds
         const TEMP_MIN = 20;
@@ -644,8 +661,8 @@
         let recognition;
         let isListening = false;
         let voiceEnabled = true;
-        let currentLanguage = 'ms-MY';
-        let availableVoices = [];
+        let isSpeaking = false;
+        let currentAudio = null;
 
         // Initialize speech recognition
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -653,30 +670,30 @@
             recognition = new SpeechRecognition();
             recognition.continuous = false;
             recognition.interimResults = false;
-            recognition.lang = currentLanguage;
+            recognition.lang = 'ms-MY';
 
             recognition.onstart = function() {
                 isListening = true;
                 document.getElementById('voiceBtn').classList.add('listening');
-                updateVoiceStatus('listening');
+                document.getElementById('voiceStatus').textContent = '🎤 Mendengar...';
             };
 
             recognition.onend = function() {
                 isListening = false;
                 document.getElementById('voiceBtn').classList.remove('listening');
-                updateVoiceStatus('ready');
+                document.getElementById('voiceStatus').textContent = '🎤 Tekan mikrofon untuk bercakap';
             };
 
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 document.getElementById('chatInput').value = transcript;
-                updateVoiceStatus('recognized', transcript);
+                document.getElementById('voiceStatus').textContent = `🎤 Anda berkata: "${transcript}"`;
                 sendMessage();
             };
 
             recognition.onerror = function(event) {
                 console.error('Speech recognition error:', event.error);
-                updateVoiceStatus('error', event.error);
+                document.getElementById('voiceStatus').textContent = '🎤 Ralat: ' + event.error;
                 isListening = false;
                 document.getElementById('voiceBtn').classList.remove('listening');
             };
@@ -685,66 +702,11 @@
             document.getElementById('voiceBtn').disabled = true;
         }
 
-        function updateVoiceStatus(state, data = '') {
-            const statusEl = document.getElementById('voiceStatus');
-            const statusMessages = {
-                'ms-MY': {
-                    ready: '🎤 Tekan mikrofon untuk bercakap',
-                    listening: '🎤 Mendengar...',
-                    recognized: `🎤 Anda berkata: "${data}"`,
-                    error: '🎤 Ralat: ' + data
-                },
-                'en-US': {
-                    ready: '🎤 Click microphone to speak',
-                    listening: '🎤 Listening...',
-                    recognized: `🎤 You said: "${data}"`,
-                    error: '🎤 Error: ' + data
-                },
-                'id-ID': {
-                    ready: '🎤 Klik mikrofon untuk berbicara',
-                    listening: '🎤 Mendengarkan...',
-                    recognized: `🎤 Anda berkata: "${data}"`,
-                    error: '🎤 Kesalahan: ' + data
-                }
-            };
-            
-            const messages = statusMessages[currentLanguage] || statusMessages['ms-MY'];
-            statusEl.textContent = messages[state] || messages.ready;
-        }
-
-        function changeLanguage() {
-            currentLanguage = document.getElementById('languageSelect').value;
-            if (recognition) {
-                recognition.lang = currentLanguage;
-            }
-            updateVoiceStatus('ready');
-            
-            // Update UI text based on language
-            updateUILanguage();
-        }
-
-        function updateUILanguage() {
-            const translations = {
-                'ms-MY': {
-                    placeholder: 'Taip atau tekan mikrofon untuk bercakap...',
-                    sendBtn: 'Hantar',
-                    initialMsg: 'Hai! Saya pembantu AI kolam anda. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?'
-                },
-                'en-US': {
-                    placeholder: 'Type or click microphone to speak...',
-                    sendBtn: 'Send',
-                    initialMsg: 'Hi! I\'m your AI pond assistant. I can help you understand your pond conditions, troubleshoot issues, and give advice about tilapia farming. What would you like to know?'
-                },
-                'id-ID': {
-                    placeholder: 'Ketik atau klik mikrofon untuk berbicara...',
-                    sendBtn: 'Kirim',
-                    initialMsg: 'Hai! Saya asisten AI kolam Anda. Saya dapat membantu Anda memahami kondisi kolam, mengatasi masalah, dan memberikan saran tentang budidaya tilapia. Apa yang ingin Anda ketahui?'
-                }
-            };
-            
-            const lang = translations[currentLanguage];
-            document.getElementById('chatInput').placeholder = lang.placeholder;
-            document.getElementById('sendBtn').textContent = lang.sendBtn;
+        // Check if ElevenLabs API key is configured
+        if (ELEVENLABS_API_KEY === "YOUR_ELEVENLABS_API_KEY_HERE") {
+            console.warn('ElevenLabs API key not configured');
+        } else {
+            document.getElementById('apiNotice').style.display = 'none';
         }
 
         function toggleVoiceInput() {
@@ -770,73 +732,112 @@
             const speakerText = document.getElementById('speakerText');
             const speakerBtn = document.getElementById('speakerToggle');
             
-            const buttonText = {
-                'ms-MY': { on: 'Suara ON', off: 'Suara OFF' },
-                'en-US': { on: 'Voice ON', off: 'Voice OFF' },
-                'id-ID': { on: 'Suara ON', off: 'Suara OFF' }
-            };
-            
             if (voiceEnabled) {
                 speakerIcon.textContent = '🔊';
-                speakerText.textContent = buttonText[currentLanguage].on;
+                speakerText.textContent = 'Suara ON';
                 speakerBtn.classList.add('active');
             } else {
                 speakerIcon.textContent = '🔇';
-                speakerText.textContent = buttonText[currentLanguage].off;
+                speakerText.textContent = 'Suara OFF';
                 speakerBtn.classList.remove('active');
-                window.speechSynthesis.cancel();
+                // Stop any ongoing speech
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                    isSpeaking = false;
+                    document.getElementById('voiceBtn').classList.remove('speaking');
+                }
             }
         }
 
-        function loadVoices() {
-            availableVoices = window.speechSynthesis.getVoices();
-        }
-
-        function speak(text) {
+        async function speakWithElevenLabs(text) {
             if (!voiceEnabled) return;
             
-            window.speechSynthesis.cancel();
+            if (ELEVENLABS_API_KEY === "YOUR_ELEVENLABS_API_KEY_HERE") {
+                console.warn('ElevenLabs API key not configured, skipping TTS');
+                return;
+            }
+
+            try {
+                // Stop any currently playing audio
+                if (currentAudio) {
+                    currentAudio.pause();
+                }
+
+                isSpeaking = true;
+                document.getElementById('voiceBtn').classList.add('speaking');
+                
+                // Using ElevenLabs Malay voice - you can get voice IDs from elevenlabs.io/voice-library
+                // This is a generic multilingual voice ID that supports Malay
+                const voiceId = 'pNInz6obpgDQGcFmaJgB'; // Adam - multilingual
+                
+                const response = await fetch(`${ELEVENLABS_API_URL}/${voiceId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'audio/mpeg',
+                        'Content-Type': 'application/json',
+                        'xi-api-key': ELEVENLABS_API_KEY
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        model_id: 'eleven_multilingual_v2',
+                        voice_settings: {
+                            stability: 0.5,
+                            similarity_boost: 0.75,
+                            style: 0.0,
+                            use_speaker_boost: true
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`ElevenLabs API error: ${response.status}`);
+                }
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                currentAudio = new Audio(audioUrl);
+                
+                currentAudio.onended = function() {
+                    isSpeaking = false;
+                    document.getElementById('voiceBtn').classList.remove('speaking');
+                    URL.revokeObjectURL(audioUrl);
+                };
+
+                currentAudio.onerror = function() {
+                    isSpeaking = false;
+                    document.getElementById('voiceBtn').classList.remove('speaking');
+                    console.error('Error playing audio');
+                };
+
+                await currentAudio.play();
+
+            } catch (error) {
+                console.error('ElevenLabs TTS error:', error);
+                isSpeaking = false;
+                document.getElementById('voiceBtn').classList.remove('speaking');
+                
+                // Fallback to browser TTS if ElevenLabs fails
+                fallbackToWebSpeech(text);
+            }
+        }
+
+        function fallbackToWebSpeech(text) {
+            if (!voiceEnabled) return;
             
             const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ms-MY';
             utterance.rate = 0.95;
             utterance.pitch = 1.0;
-            utterance.volume = 1.0;
             
-            // Select appropriate voice based on language
-            const langVoiceMap = {
-                'ms-MY': ['ms-MY', 'ms_MY', 'Malay'],
-                'en-US': ['en-US', 'en_US', 'English'],
-                'id-ID': ['id-ID', 'id_ID', 'Indonesian']
-            };
-            
-            const preferredVoices = langVoiceMap[currentLanguage] || langVoiceMap['ms-MY'];
-            
-            let selectedVoice = availableVoices.find(voice => 
-                preferredVoices.some(pref => 
-                    voice.lang.includes(pref) || voice.name.includes(pref)
-                )
-            );
-            
-            // Fallback to any voice that matches the main language code
-            if (!selectedVoice) {
-                const mainLang = currentLanguage.split('-')[0];
-                selectedVoice = availableVoices.find(voice => voice.lang.startsWith(mainLang));
-            }
-            
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-                utterance.lang = selectedVoice.lang;
-            } else {
-                utterance.lang = currentLanguage;
+            const voices = window.speechSynthesis.getVoices();
+            const malayVoice = voices.find(voice => voice.lang.includes('ms'));
+            if (malayVoice) {
+                utterance.voice = malayVoice;
             }
             
             window.speechSynthesis.speak(utterance);
-        }
-
-        // Load voices when available
-        if (window.speechSynthesis) {
-            loadVoices();
-            window.speechSynthesis.onvoiceschanged = loadVoices;
         }
 
         function parseCSV(csv) {
@@ -979,41 +980,24 @@
         }
 
         async function askGroqAI(question) {
-            const apiKey = "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";  
-            
-            if (!apiKey || apiKey === "gsk_YOUR_ACTUAL_API_KEY_HERE") {
+            if (!GROQ_API_KEY || GROQ_API_KEY === "gsk_YOUR_ACTUAL_API_KEY_HERE") {
                 throw new Error('API key not configured in code');
             }
 
-            const systemPrompts = {
-                'ms-MY': `Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia. 
+            const systemPrompt = `Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia. 
 Berikan nasihat yang berguna dan ringkas tentang ternakan tilapia berdasarkan data sensor. 
 Beri respons yang pendek (2-3 ayat) dan praktikal dalam Bahasa Melayu. 
 Anda berpengetahuan tentang keadaan kolam tilapia yang optimum: 
 suhu (28-30°C ideal, maksimum 32°C), pH (6.5-8.5 ideal), 
-oksigen terlarut (5+ mg/L), dan kualiti air.`,
-                'en-US': `You are an AI assistant for a tilapia pond monitoring system. 
-Provide helpful, concise advice about tilapia farming based on the sensor data. 
-Keep responses brief (2-3 sentences) and practical in English. 
-You are knowledgeable about optimal tilapia pond conditions: 
-temperature (28-30°C ideal, max 32°C), pH (6.5-8.5 ideal), 
-dissolved oxygen (5+ mg/L), and water quality.`,
-                'id-ID': `Anda adalah asisten AI untuk sistem pemantauan kolam tilapia. 
-Berikan saran yang berguna dan ringkas tentang budidaya tilapia berdasarkan data sensor. 
-Berikan tanggapan yang singkat (2-3 kalimat) dan praktis dalam Bahasa Indonesia. 
-Anda berpengetahuan tentang kondisi kolam tilapia yang optimal: 
-suhu (28-30°C ideal, maksimal 32°C), pH (6.5-8.5 ideal), 
-oksigen terlarut (5+ mg/L), dan kualitas air.`
-            };
+oksigen terlarut (5+ mg/L), dan kualiti air.`;
 
-            const systemPrompt = systemPrompts[currentLanguage] || systemPrompts['ms-MY'];
             const userMessage = getSensorContext() + "\n\nSoalan: " + question;
 
             const response = await fetch(GROQ_API_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
+                    'Authorization': `Bearer ${GROQ_API_KEY}`
                 },
                 body: JSON.stringify({
                     model: 'llama-3.3-70b-versatile',
@@ -1070,32 +1054,23 @@ oksigen terlarut (5+ mg/L), dan kualitas air.`
             
             const sendBtn = document.getElementById('sendBtn');
             sendBtn.disabled = true;
-            const thinkingText = {
-                'ms-MY': 'Berfikir...',
-                'en-US': 'Thinking...',
-                'id-ID': 'Berpikir...'
-            };
-            sendBtn.textContent = thinkingText[currentLanguage];
+            sendBtn.textContent = 'Berfikir...';
             
             try {
                 const response = await askGroqAI(question);
                 addMessage(response, false);
-                speak(response);
+                
+                // Speak the response with ElevenLabs
+                await speakWithElevenLabs(response);
                 
             } catch (error) {
-                const errorMsgs = {
-                    'ms-MY': `Maaf, saya mengalami ralat: ${error.message}`,
-                    'en-US': `Sorry, I encountered an error: ${error.message}`,
-                    'id-ID': `Maaf, saya mengalami kesalahan: ${error.message}`
-                };
-                const errorMsg = errorMsgs[currentLanguage];
+                const errorMsg = `Maaf, saya mengalami ralat: ${error.message}`;
                 addMessage(errorMsg, false);
-                speak(errorMsg);
                 console.error('AI Error:', error);
             } finally {
                 typingIndicator.classList.remove('active');
                 sendBtn.disabled = false;
-                updateUILanguage();
+                sendBtn.textContent = 'Hantar';
             }
         }
 
@@ -1168,7 +1143,6 @@ oksigen terlarut (5+ mg/L), dan kualitas air.`
         // Initialize
         fetchData();
         setInterval(fetchData, 30000);
-        updateVoiceStatus('ready');
     </script>
 </body>
 </html>
