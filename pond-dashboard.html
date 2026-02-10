@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pond Monitor Dashboard with AI</title>
+    <title>Pond Monitor Dashboard with Voice AI</title>
     <style>
         * {
             margin: 0;
@@ -224,6 +224,7 @@
         .chat-input-container {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
 
         .chat-input {
@@ -239,6 +240,45 @@
 
         .chat-input:focus {
             border-color: #667eea;
+        }
+
+        .voice-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .voice-btn:active {
+            transform: scale(0.95);
+        }
+
+        .voice-btn.listening {
+            background: #ef4444;
+            animation: voicePulse 1.5s infinite;
+        }
+
+        @keyframes voicePulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+            }
         }
 
         .send-btn {
@@ -384,22 +424,45 @@
             height: auto !important;
         }
 
-        .api-status {
-            font-size: 0.85em;
-            padding: 6px 12px;
+        .voice-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f9fafb;
             border-radius: 12px;
-            display: inline-block;
-            margin-bottom: 10px;
+            align-items: center;
         }
 
-        .api-ready {
-            background: #d1fae5;
-            color: #065f46;
+        .voice-status {
+            flex: 1;
+            font-size: 0.9em;
+            color: #666;
         }
 
-        .api-error {
-            background: #fee2e2;
-            color: #991b1b;
+        .speaker-btn {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .speaker-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .speaker-btn.active {
+            background: #4ade80;
+            color: white;
+            border-color: #4ade80;
         }
 
         @media (max-width: 480px) {
@@ -427,8 +490,19 @@
         <!-- AI Chat Section -->
         <div class="ai-chat-container">
             <div class="ai-chat-header">
-                <h2>🤖 Ask AI Assistant</h2>
-                <div class="ai-badge">Groq AI</div>
+                <h2>🤖 Voice AI Assistant</h2>
+                <div class="ai-badge">Groq AI + Voice</div>
+            </div>
+
+            <!-- Voice Controls -->
+            <div class="voice-controls">
+                <div class="voice-status" id="voiceStatus">
+                    🎤 Click microphone to speak
+                </div>
+                <button class="speaker-btn" id="speakerToggle" onclick="toggleSpeaker()">
+                    <span id="speakerIcon">🔊</span>
+                    <span id="speakerText">Voice ON</span>
+                </button>
             </div>
 
             <div class="quick-questions">
@@ -443,7 +517,7 @@
                     <div class="message-avatar ai-avatar">🤖</div>
                     <div class="message-content">
                         <div class="message-text">
-                            Hi! I'm your AI pond assistant. I can help you understand your pond conditions, troubleshoot issues, and give advice about tilapia farming. What would you like to know?
+                            Hi! I'm your AI pond assistant with voice support. You can type or speak to me, and I'll respond with voice. What would you like to know?
                         </div>
                     </div>
                 </div>
@@ -457,11 +531,14 @@
             </div>
 
             <div class="chat-input-container">
+                <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()" title="Click to speak">
+                    🎤
+                </button>
                 <input 
                     type="text" 
                     class="chat-input" 
                     id="chatInput" 
-                    placeholder="Ask anything about your pond..."
+                    placeholder="Type or click microphone to speak..."
                     onkeypress="if(event.key==='Enter') sendMessage()"
                 >
                 <button class="send-btn" onclick="sendMessage()" id="sendBtn">Send</button>
@@ -517,8 +594,120 @@
 
         let tempChart;
         let currentSensorData = {};
+        
+        // Voice recognition setup
+        let recognition;
+        let isListening = false;
+        let voiceEnabled = true;
 
-        // API key is hardcoded in askGroqAI function
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('voiceBtn').classList.add('listening');
+                document.getElementById('voiceStatus').textContent = '🎤 Listening...';
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                document.getElementById('voiceBtn').classList.remove('listening');
+                document.getElementById('voiceStatus').textContent = '🎤 Click microphone to speak';
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('chatInput').value = transcript;
+                document.getElementById('voiceStatus').textContent = `🎤 You said: "${transcript}"`;
+                sendMessage();
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                document.getElementById('voiceStatus').textContent = '🎤 Error: ' + event.error;
+                isListening = false;
+                document.getElementById('voiceBtn').classList.remove('listening');
+            };
+        } else {
+            console.warn('Speech recognition not supported');
+            document.getElementById('voiceStatus').textContent = '🎤 Voice input not supported in this browser';
+            document.getElementById('voiceBtn').disabled = true;
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                alert('Voice input is not supported in your browser. Please use Chrome, Edge, or Safari.');
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.error('Error starting recognition:', error);
+                }
+            }
+        }
+
+        function toggleSpeaker() {
+            voiceEnabled = !voiceEnabled;
+            const speakerIcon = document.getElementById('speakerIcon');
+            const speakerText = document.getElementById('speakerText');
+            const speakerBtn = document.getElementById('speakerToggle');
+            
+            if (voiceEnabled) {
+                speakerIcon.textContent = '🔊';
+                speakerText.textContent = 'Voice ON';
+                speakerBtn.classList.add('active');
+            } else {
+                speakerIcon.textContent = '🔇';
+                speakerText.textContent = 'Voice OFF';
+                speakerBtn.classList.remove('active');
+                // Stop any ongoing speech
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function speak(text) {
+            if (!voiceEnabled) return;
+            
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // Try to use a female voice if available
+            const voices = window.speechSynthesis.getVoices();
+            const femaleVoice = voices.find(voice => 
+                voice.name.includes('Female') || 
+                voice.name.includes('Samantha') ||
+                voice.name.includes('Victoria') ||
+                voice.name.includes('Karen')
+            );
+            
+            if (femaleVoice) {
+                utterance.voice = femaleVoice;
+            }
+            
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Load voices when available
+        if (window.speechSynthesis) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                window.speechSynthesis.getVoices();
+            };
+        }
 
         function parseCSV(csv) {
             const lines = csv.trim().split('\n');
@@ -660,7 +849,6 @@
         }
 
         async function askGroqAI(question) {
-            
             const apiKey = "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";  
             
             if (!apiKey || apiKey === "gsk_YOUR_ACTUAL_API_KEY_HERE") {
@@ -744,8 +932,14 @@ dissolved oxygen (5+ mg/L), and water quality.`;
             try {
                 const response = await askGroqAI(question);
                 addMessage(response, false);
+                
+                // Speak the response
+                speak(response);
+                
             } catch (error) {
-                addMessage(`Sorry, I encountered an error: ${error.message}`, false);
+                const errorMsg = `Sorry, I encountered an error: ${error.message}`;
+                addMessage(errorMsg, false);
+                speak(errorMsg);
                 console.error('AI Error:', error);
             } finally {
                 typingIndicator.classList.remove('active');
@@ -824,6 +1018,9 @@ dissolved oxygen (5+ mg/L), and water quality.`;
         // Initialize
         fetchData();
         setInterval(fetchData, 30000);
+        
+        // Initialize speaker button as active
+        document.getElementById('speakerToggle').classList.add('active');
     </script>
 </body>
 </html>
