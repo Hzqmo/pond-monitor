@@ -117,7 +117,7 @@
         }
 
         .ai-badge {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 50%, #fbbc04 75%, #ea4335 100%);
             color: white;
             padding: 6px 12px;
             border-radius: 12px;
@@ -169,7 +169,7 @@
         }
 
         .user-avatar { background: #667eea; }
-        .ai-avatar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .ai-avatar { background: linear-gradient(135deg, #4285f4 0%, #34a853 100%); }
 
         .message-content { flex: 1; min-width: 0; }
 
@@ -466,7 +466,7 @@
         <div class="ai-chat-container">
             <div class="ai-chat-header">
                 <h2>🤖 Voice AI Assistant</h2>
-                <div class="ai-badge">Groq + Voice</div>
+                <div class="ai-badge">Gemini + Voice</div>
             </div>
 
             <!-- Debug box: only shows when there's an API error -->
@@ -564,7 +564,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
         // ─── CONFIG ──────────────────────────────────────────────────────────
-        const WORKER_URL    = 'https://pondmonitor.haziqmohd65.workers.dev';
+        const WORKER_URL    = 'https://pond-monitor2.haziqmohd65.workers.dev'; // Your Cloudflare Worker URL
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
 
         const TEMP_MIN = 20, TEMP_MAX = 32;
@@ -739,7 +739,7 @@
             }
         }
 
-        // ─── GROQ AI VIA CLOUDFLARE WORKER ───────────────────────────────────
+        // ─── GEMINI AI VIA CLOUDFLARE WORKER ─────────────────────────────────
         function showDebug(msg) {
             const box  = document.getElementById('debugBox');
             const text = document.getElementById('debugText');
@@ -762,7 +762,7 @@
                 + `- TDS: ${tds} ppm${flag(tds, TDS_MIN, TDS_MAX)}`;
         }
 
-        async function askGroqAI(question) {
+        async function askGeminiAI(question) {
             const systemPrompt =
                 `Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia. ` +
                 `Berikan nasihat yang berguna dan ringkas. ` +
@@ -770,13 +770,15 @@
                 `Suhu ideal 28-30°C (maks 32°C), pH 6.5-8.5, oksigen >5 mg/L.`;
 
             const body = {
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    { role: 'user',   content: getSensorContext() + '\n\nSoalan: ' + question }
-                ],
-                max_tokens: 300,
-                temperature: 0.7
+                contents: [{
+                    parts: [{
+                        text: systemPrompt + '\n\n' + getSensorContext() + '\n\nSoalan: ' + question
+                    }]
+                }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 300,
+                }
             };
 
             let res;
@@ -810,12 +812,12 @@
                 throw new Error('Response bukan JSON yang sah.');
             }
 
-            if (!data.choices?.[0]?.message?.content) {
+            if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
                 showDebug(`Unexpected JSON shape:\n${JSON.stringify(data).slice(0, 300)}`);
                 throw new Error('Format respons tidak dijangka dari Worker.');
             }
 
-            return data.choices[0].message.content;
+            return data.candidates[0].content.parts[0].text;
         }
 
         // ─── CHAT UI ──────────────────────────────────────────────────────────
@@ -848,7 +850,7 @@
             sendBtn.textContent = 'Berfikir...';
 
             try {
-                const reply = await askGroqAI(q);
+                const reply = await askGeminiAI(q);
                 addMessage(reply, false);
                 speakTTS(reply);
             } catch (err) {
