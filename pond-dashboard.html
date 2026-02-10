@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Kolam - Dashboard Pemantauan Ikan</title>
+    <title>Pond Monitor Dashboard with Voice AI</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700&display=swap');
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
         :root{--bg:#0a1628;--surface:#0f2040;--surface2:#162a50;--border:rgba(100,160,255,0.12);--accent:#3d8bff;--accent2:#00e5c8;--text:#e8f0ff;--muted:#7899cc;--success:#00c9a7;--warning:#ffbe5c;--danger:#ff5f5f}
-        body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;padding:20px;color:var(--text);-webkit-font-smoothing:antialiased}
+        body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;padding:20px;color:var(--text);-webkit-font-smoothing:antialiased;padding-bottom:80px}
         body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 20% -10%,rgba(61,139,255,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 110%,rgba(0,229,200,0.08) 0%,transparent 60%);pointer-events:none;z-index:0}
         .container{max-width:620px;margin:0 auto;position:relative;z-index:1}
         .header{text-align:center;margin-bottom:32px;padding-top:10px}
@@ -225,7 +225,7 @@
         <div class="header">
             <div class="header-logo">
                 <div class="logo-icon">🐟</div>
-                <h1>Monitor Kolam</h1>
+                <h1>AI Pond Monitor</h1>
             </div>
             <div class="last-update">
                 <span class="status-dot" id="statusDot"></span>
@@ -818,6 +818,25 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
         },1500);
     }
     </script>
+    
+    <!-- Bottom Navigation -->
+    <div style="position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-around;z-index:1000;backdrop-filter:blur(10px)">
+        <a href="pond-monitor-improved.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px;background:rgba(61,139,255,.15)">
+            <div style="font-size:1.6em">📊</div>
+            <div>Dashboard</div>
+        </a>
+        <a href="fish-encyclopedia.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
+            <div style="font-size:1.6em">📚</div>
+            <div>Ensiklopedia</div>
+        </a>
+        <a href="#" onclick="alert('Coming soon!'); return false;" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
+            <div style="font-size:1.6em">🎓</div>
+            <div>Panduan</div>
+        </a>
+        <a href="#" onclick="alert('Coming soon!'); return false;" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
+            <div style="font-size:1.6em">⚙️</div>
+            <div>Tetapan</div>
+        </a>
+    </div>
 </body>
 </html>
-
