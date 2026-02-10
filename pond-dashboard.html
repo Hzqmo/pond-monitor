@@ -135,7 +135,7 @@
         .ai-chat-container {
             background: white;
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
@@ -143,15 +143,18 @@
         .ai-chat-header {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-bottom: 20px;
             padding-bottom: 15px;
             border-bottom: 2px solid #f0f0f0;
         }
 
         .ai-chat-header h2 {
-            font-size: 1.5em;
+            font-size: 1.3em;
             color: #333;
             flex: 1;
+            min-width: 200px;
         }
 
         .ai-badge {
@@ -159,8 +162,9 @@
             color: white;
             padding: 6px 12px;
             border-radius: 12px;
-            font-size: 0.8em;
+            font-size: 0.75em;
             font-weight: 600;
+            white-space: nowrap;
         }
 
         .chat-messages {
@@ -199,6 +203,7 @@
 
         .message-content {
             flex: 1;
+            min-width: 0;
         }
 
         .message-text {
@@ -207,6 +212,7 @@
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             line-height: 1.5;
+            word-wrap: break-word;
         }
 
         .user-message .message-text {
@@ -223,12 +229,14 @@
 
         .chat-input-container {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .chat-input {
             flex: 1;
+            min-width: 150px;
             padding: 12px 16px;
             border: 2px solid #e5e7eb;
             border-radius: 25px;
@@ -256,6 +264,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .voice-btn:hover {
@@ -285,13 +294,15 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 12px 20px;
             border-radius: 25px;
-            font-size: 1em;
+            font-size: 0.95em;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .send-btn:hover {
@@ -324,6 +335,7 @@
             font-size: 0.85em;
             cursor: pointer;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .quick-question-btn:hover {
@@ -437,21 +449,22 @@
 
         .voice-status {
             flex: 1;
-            font-size: 0.9em;
+            font-size: 0.85em;
             color: #666;
-            min-width: 200px;
+            min-width: 180px;
         }
 
         .voice-control-group {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .speaker-btn {
             background: #f3f4f6;
             border: 1px solid #e5e7eb;
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 16px;
             font-size: 0.85em;
             cursor: pointer;
@@ -459,6 +472,7 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
         }
 
         .speaker-btn:hover {
@@ -494,21 +508,92 @@
         }
 
         @media (max-width: 480px) {
-            .header h1 {
-                font-size: 2em;
+            body {
+                padding: 10px;
             }
+
+            .container {
+                padding: 0;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .sensor-card {
+                padding: 20px;
+            }
+
             .sensor-value {
                 font-size: 2.5em;
             }
+
+            .ai-chat-container {
+                padding: 15px;
+            }
+
+            .ai-chat-header h2 {
+                font-size: 1.2em;
+                min-width: 150px;
+            }
+
             .voice-controls {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 8px;
             }
+
             .voice-status {
                 min-width: auto;
+                text-align: center;
             }
+
             .voice-control-group {
-                justify-content: space-between;
+                justify-content: center;
+                width: 100%;
+            }
+
+            .language-select {
+                flex: 1;
+            }
+
+            .speaker-btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .chat-input-container {
+                gap: 6px;
+            }
+
+            .chat-input {
+                min-width: 100px;
+                font-size: 0.95em;
+                padding: 10px 14px;
+            }
+
+            .voice-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.3em;
+            }
+
+            .send-btn {
+                padding: 10px 16px;
+                font-size: 0.9em;
+            }
+
+            .quick-question-btn {
+                font-size: 0.8em;
+                padding: 6px 12px;
+            }
+
+            .chart-container {
+                padding: 15px;
+            }
+
+            .chart-title {
+                font-size: 1.1em;
             }
         }
     </style>
@@ -540,8 +625,8 @@
                 <div class="voice-control-group">
                     <select class="language-select" id="languageSelect" onchange="changeLanguage()">
                         <option value="en-US">🇬🇧 English</option>
-                        <option value="ms-MY" selected>🇲🇾 Bahasa Melayu</option>
-                        <option value="id-ID">🇮🇩 Bahasa Indonesia</option>
+                        <option value="ms-MY" selected>🇲🇾 Melayu</option>
+                        <option value="id-ID">🇮🇩 Indonesia</option>
                     </select>
                     <button class="speaker-btn active" id="speakerToggle" onclick="toggleSpeaker()">
                         <span id="speakerIcon">🔊</span>
@@ -583,7 +668,7 @@
                     type="text" 
                     class="chat-input" 
                     id="chatInput" 
-                    placeholder="Taip atau tekan mikrofon untuk bercakap..."
+                    placeholder="Taip atau tekan mikrofon..."
                     onkeypress="if(event.key==='Enter') sendMessage()"
                 >
                 <button class="send-btn" onclick="sendMessage()" id="sendBtn">Hantar</button>
@@ -646,6 +731,22 @@
         let voiceEnabled = true;
         let currentLanguage = 'ms-MY';
         let availableVoices = [];
+        let audioContext = null;
+
+        // Initialize Audio Context for mobile (must be triggered by user interaction)
+        function initAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    // Resume context on mobile
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                } catch (e) {
+                    console.warn('Audio context not available:', e);
+                }
+            }
+        }
 
         // Initialize speech recognition
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -718,25 +819,23 @@
                 recognition.lang = currentLanguage;
             }
             updateVoiceStatus('ready');
-            
-            // Update UI text based on language
             updateUILanguage();
         }
 
         function updateUILanguage() {
             const translations = {
                 'ms-MY': {
-                    placeholder: 'Taip atau tekan mikrofon untuk bercakap...',
+                    placeholder: 'Taip atau tekan mikrofon...',
                     sendBtn: 'Hantar',
                     initialMsg: 'Hai! Saya pembantu AI kolam anda. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?'
                 },
                 'en-US': {
-                    placeholder: 'Type or click microphone to speak...',
+                    placeholder: 'Type or click microphone...',
                     sendBtn: 'Send',
                     initialMsg: 'Hi! I\'m your AI pond assistant. I can help you understand your pond conditions, troubleshoot issues, and give advice about tilapia farming. What would you like to know?'
                 },
                 'id-ID': {
-                    placeholder: 'Ketik atau klik mikrofon untuk berbicara...',
+                    placeholder: 'Ketik atau klik mikrofon...',
                     sendBtn: 'Kirim',
                     initialMsg: 'Hai! Saya asisten AI kolam Anda. Saya dapat membantu Anda memahami kondisi kolam, mengatasi masalah, dan memberikan saran tentang budidaya tilapia. Apa yang ingin Anda ketahui?'
                 }
@@ -748,6 +847,9 @@
         }
 
         function toggleVoiceInput() {
+            // Initialize audio context on first interaction
+            initAudioContext();
+            
             if (!recognition) {
                 alert('Voice input is not supported in your browser. Please use Chrome, Edge, or Safari.');
                 return;
@@ -765,6 +867,9 @@
         }
 
         function toggleSpeaker() {
+            // Initialize audio context on first interaction
+            initAudioContext();
+            
             voiceEnabled = !voiceEnabled;
             const speakerIcon = document.getElementById('speakerIcon');
             const speakerText = document.getElementById('speakerText');
@@ -795,42 +900,61 @@
         function speak(text) {
             if (!voiceEnabled) return;
             
+            // Initialize audio context if not already done
+            initAudioContext();
+            
+            // Cancel any ongoing speech
             window.speechSynthesis.cancel();
             
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.95;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            
-            // Select appropriate voice based on language
-            const langVoiceMap = {
-                'ms-MY': ['ms-MY', 'ms_MY', 'Malay'],
-                'en-US': ['en-US', 'en_US', 'English'],
-                'id-ID': ['id-ID', 'id_ID', 'Indonesian']
-            };
-            
-            const preferredVoices = langVoiceMap[currentLanguage] || langVoiceMap['ms-MY'];
-            
-            let selectedVoice = availableVoices.find(voice => 
-                preferredVoices.some(pref => 
-                    voice.lang.includes(pref) || voice.name.includes(pref)
-                )
-            );
-            
-            // Fallback to any voice that matches the main language code
-            if (!selectedVoice) {
-                const mainLang = currentLanguage.split('-')[0];
-                selectedVoice = availableVoices.find(voice => voice.lang.startsWith(mainLang));
-            }
-            
-            if (selectedVoice) {
-                utterance.voice = selectedVoice;
-                utterance.lang = selectedVoice.lang;
-            } else {
-                utterance.lang = currentLanguage;
-            }
-            
-            window.speechSynthesis.speak(utterance);
+            // Small delay to ensure cancellation completes (helps on mobile)
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.95;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                // Select appropriate voice based on language
+                const langVoiceMap = {
+                    'ms-MY': ['ms-MY', 'ms_MY', 'Malay'],
+                    'en-US': ['en-US', 'en_US', 'English'],
+                    'id-ID': ['id-ID', 'id_ID', 'Indonesian']
+                };
+                
+                const preferredVoices = langVoiceMap[currentLanguage] || langVoiceMap['ms-MY'];
+                
+                let selectedVoice = availableVoices.find(voice => 
+                    preferredVoices.some(pref => 
+                        voice.lang.includes(pref) || voice.name.includes(pref)
+                    )
+                );
+                
+                // Fallback to any voice that matches the main language code
+                if (!selectedVoice) {
+                    const mainLang = currentLanguage.split('-')[0];
+                    selectedVoice = availableVoices.find(voice => voice.lang.startsWith(mainLang));
+                }
+                
+                if (selectedVoice) {
+                    utterance.voice = selectedVoice;
+                    utterance.lang = selectedVoice.lang;
+                } else {
+                    utterance.lang = currentLanguage;
+                }
+                
+                // Add error handler for mobile
+                utterance.onerror = function(event) {
+                    console.error('Speech synthesis error:', event);
+                };
+                
+                // Resume audio context if suspended (important for mobile)
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume().then(() => {
+                        window.speechSynthesis.speak(utterance);
+                    });
+                } else {
+                    window.speechSynthesis.speak(utterance);
+                }
+            }, 100);
         }
 
         // Load voices when available
@@ -1164,6 +1288,12 @@ oksigen terlarut (5+ mg/L), dan kualitas air.`
                 document.getElementById('errorMessage').style.display = 'block';
             }
         }
+
+        // Initialize audio on first user interaction
+        document.addEventListener('click', function initOnClick() {
+            initAudioContext();
+            document.removeEventListener('click', initOnClick);
+        }, { once: true });
 
         // Initialize
         fetchData();
