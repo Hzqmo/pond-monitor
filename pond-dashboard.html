@@ -432,12 +432,20 @@
             background: #f9fafb;
             border-radius: 12px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .voice-status {
             flex: 1;
             font-size: 0.9em;
             color: #666;
+            min-width: 200px;
+        }
+
+        .voice-control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         .speaker-btn {
@@ -465,12 +473,42 @@
             border-color: #4ade80;
         }
 
+        .language-select {
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            font-size: 0.85em;
+            background: white;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .language-select:hover {
+            border-color: #667eea;
+        }
+
+        .language-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
         @media (max-width: 480px) {
             .header h1 {
                 font-size: 2em;
             }
             .sensor-value {
                 font-size: 2.5em;
+            }
+            .voice-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .voice-status {
+                min-width: auto;
+            }
+            .voice-control-group {
+                justify-content: space-between;
             }
         }
     </style>
@@ -499,17 +537,24 @@
                 <div class="voice-status" id="voiceStatus">
                     🎤 Click microphone to speak
                 </div>
-                <button class="speaker-btn" id="speakerToggle" onclick="toggleSpeaker()">
-                    <span id="speakerIcon">🔊</span>
-                    <span id="speakerText">Voice ON</span>
-                </button>
+                <div class="voice-control-group">
+                    <select class="language-select" id="languageSelect" onchange="changeLanguage()">
+                        <option value="en-US">🇬🇧 English</option>
+                        <option value="ms-MY" selected>🇲🇾 Bahasa Melayu</option>
+                        <option value="id-ID">🇮🇩 Bahasa Indonesia</option>
+                    </select>
+                    <button class="speaker-btn active" id="speakerToggle" onclick="toggleSpeaker()">
+                        <span id="speakerIcon">🔊</span>
+                        <span id="speakerText">Voice ON</span>
+                    </button>
+                </div>
             </div>
 
             <div class="quick-questions">
-                <button class="quick-question-btn" onclick="askQuestion('How is my pond doing?')">How's my pond?</button>
-                <button class="quick-question-btn" onclick="askQuestion('Should I feed my fish now?')">Feed fish?</button>
-                <button class="quick-question-btn" onclick="askQuestion('What should I check today?')">What to check?</button>
-                <button class="quick-question-btn" onclick="askQuestion('Any problems I should worry about?')">Any issues?</button>
+                <button class="quick-question-btn" onclick="askQuestion('Bagaimana kolam saya?')">Bagaimana kolam?</button>
+                <button class="quick-question-btn" onclick="askQuestion('Patut saya beri makan ikan sekarang?')">Beri makan?</button>
+                <button class="quick-question-btn" onclick="askQuestion('Apa yang patut saya periksa?')">Apa periksa?</button>
+                <button class="quick-question-btn" onclick="askQuestion('Ada masalah?')">Ada masalah?</button>
             </div>
 
             <div class="chat-messages" id="chatMessages">
@@ -517,7 +562,7 @@
                     <div class="message-avatar ai-avatar">🤖</div>
                     <div class="message-content">
                         <div class="message-text">
-                            Hi! I'm your AI pond assistant with voice support. You can type or speak to me, and I'll respond with voice. What would you like to know?
+                            Hai! Saya pembantu AI kolam anda. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?
                         </div>
                     </div>
                 </div>
@@ -538,17 +583,17 @@
                     type="text" 
                     class="chat-input" 
                     id="chatInput" 
-                    placeholder="Type or click microphone to speak..."
+                    placeholder="Taip atau tekan mikrofon untuk bercakap..."
                     onkeypress="if(event.key==='Enter') sendMessage()"
                 >
-                <button class="send-btn" onclick="sendMessage()" id="sendBtn">Send</button>
+                <button class="send-btn" onclick="sendMessage()" id="sendBtn">Hantar</button>
             </div>
         </div>
 
         <!-- Sensor Cards -->
         <div class="sensor-card">
             <div class="sensor-icon">🌡️</div>
-            <div class="sensor-label">Temperature</div>
+            <div class="sensor-label">Suhu</div>
             <div class="sensor-value" id="tempValue">--</div>
             <div class="sensor-unit">°C</div>
             <div class="sensor-status status-normal" id="tempStatus">Normal</div>
@@ -556,7 +601,7 @@
 
         <div class="sensor-card">
             <div class="sensor-icon">💧</div>
-            <div class="sensor-label">pH Level</div>
+            <div class="sensor-label">Tahap pH</div>
             <div class="sensor-value" id="phValue">--</div>
             <div class="sensor-unit">pH</div>
             <div class="sensor-status status-normal" id="phStatus">Normal</div>
@@ -564,18 +609,18 @@
 
         <div class="sensor-card">
             <div class="sensor-icon">📊</div>
-            <div class="sensor-label">TDS (Total Dissolved Solids)</div>
+            <div class="sensor-label">TDS (Jumlah Pepejal Terlarut)</div>
             <div class="sensor-value" id="tdsValue">--</div>
             <div class="sensor-unit">ppm</div>
             <div class="sensor-status status-normal" id="tdsStatus">Normal</div>
         </div>
 
         <div class="chart-container">
-            <div class="chart-title">📈 Temperature History (24h)</div>
+            <div class="chart-title">📈 Sejarah Suhu (24j)</div>
             <canvas id="tempChart"></canvas>
         </div>
 
-        <button class="refresh-btn" onclick="fetchData()">🔄 Refresh Data</button>
+        <button class="refresh-btn" onclick="fetchData()">🔄 Muat Semula Data</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -599,6 +644,8 @@
         let recognition;
         let isListening = false;
         let voiceEnabled = true;
+        let currentLanguage = 'ms-MY';
+        let availableVoices = [];
 
         // Initialize speech recognition
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -606,37 +653,98 @@
             recognition = new SpeechRecognition();
             recognition.continuous = false;
             recognition.interimResults = false;
-            recognition.lang = 'en-US';
+            recognition.lang = currentLanguage;
 
             recognition.onstart = function() {
                 isListening = true;
                 document.getElementById('voiceBtn').classList.add('listening');
-                document.getElementById('voiceStatus').textContent = '🎤 Listening...';
+                updateVoiceStatus('listening');
             };
 
             recognition.onend = function() {
                 isListening = false;
                 document.getElementById('voiceBtn').classList.remove('listening');
-                document.getElementById('voiceStatus').textContent = '🎤 Click microphone to speak';
+                updateVoiceStatus('ready');
             };
 
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 document.getElementById('chatInput').value = transcript;
-                document.getElementById('voiceStatus').textContent = `🎤 You said: "${transcript}"`;
+                updateVoiceStatus('recognized', transcript);
                 sendMessage();
             };
 
             recognition.onerror = function(event) {
                 console.error('Speech recognition error:', event.error);
-                document.getElementById('voiceStatus').textContent = '🎤 Error: ' + event.error;
+                updateVoiceStatus('error', event.error);
                 isListening = false;
                 document.getElementById('voiceBtn').classList.remove('listening');
             };
         } else {
             console.warn('Speech recognition not supported');
-            document.getElementById('voiceStatus').textContent = '🎤 Voice input not supported in this browser';
             document.getElementById('voiceBtn').disabled = true;
+        }
+
+        function updateVoiceStatus(state, data = '') {
+            const statusEl = document.getElementById('voiceStatus');
+            const statusMessages = {
+                'ms-MY': {
+                    ready: '🎤 Tekan mikrofon untuk bercakap',
+                    listening: '🎤 Mendengar...',
+                    recognized: `🎤 Anda berkata: "${data}"`,
+                    error: '🎤 Ralat: ' + data
+                },
+                'en-US': {
+                    ready: '🎤 Click microphone to speak',
+                    listening: '🎤 Listening...',
+                    recognized: `🎤 You said: "${data}"`,
+                    error: '🎤 Error: ' + data
+                },
+                'id-ID': {
+                    ready: '🎤 Klik mikrofon untuk berbicara',
+                    listening: '🎤 Mendengarkan...',
+                    recognized: `🎤 Anda berkata: "${data}"`,
+                    error: '🎤 Kesalahan: ' + data
+                }
+            };
+            
+            const messages = statusMessages[currentLanguage] || statusMessages['ms-MY'];
+            statusEl.textContent = messages[state] || messages.ready;
+        }
+
+        function changeLanguage() {
+            currentLanguage = document.getElementById('languageSelect').value;
+            if (recognition) {
+                recognition.lang = currentLanguage;
+            }
+            updateVoiceStatus('ready');
+            
+            // Update UI text based on language
+            updateUILanguage();
+        }
+
+        function updateUILanguage() {
+            const translations = {
+                'ms-MY': {
+                    placeholder: 'Taip atau tekan mikrofon untuk bercakap...',
+                    sendBtn: 'Hantar',
+                    initialMsg: 'Hai! Saya pembantu AI kolam anda. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?'
+                },
+                'en-US': {
+                    placeholder: 'Type or click microphone to speak...',
+                    sendBtn: 'Send',
+                    initialMsg: 'Hi! I\'m your AI pond assistant. I can help you understand your pond conditions, troubleshoot issues, and give advice about tilapia farming. What would you like to know?'
+                },
+                'id-ID': {
+                    placeholder: 'Ketik atau klik mikrofon untuk berbicara...',
+                    sendBtn: 'Kirim',
+                    initialMsg: 'Hai! Saya asisten AI kolam Anda. Saya dapat membantu Anda memahami kondisi kolam, mengatasi masalah, dan memberikan saran tentang budidaya tilapia. Apa yang ingin Anda ketahui?'
+                }
+            };
+            
+            const lang = translations[currentLanguage];
+            document.getElementById('chatInput').placeholder = lang.placeholder;
+            document.getElementById('sendBtn').textContent = lang.sendBtn;
         }
 
         function toggleVoiceInput() {
@@ -662,41 +770,64 @@
             const speakerText = document.getElementById('speakerText');
             const speakerBtn = document.getElementById('speakerToggle');
             
+            const buttonText = {
+                'ms-MY': { on: 'Suara ON', off: 'Suara OFF' },
+                'en-US': { on: 'Voice ON', off: 'Voice OFF' },
+                'id-ID': { on: 'Suara ON', off: 'Suara OFF' }
+            };
+            
             if (voiceEnabled) {
                 speakerIcon.textContent = '🔊';
-                speakerText.textContent = 'Voice ON';
+                speakerText.textContent = buttonText[currentLanguage].on;
                 speakerBtn.classList.add('active');
             } else {
                 speakerIcon.textContent = '🔇';
-                speakerText.textContent = 'Voice OFF';
+                speakerText.textContent = buttonText[currentLanguage].off;
                 speakerBtn.classList.remove('active');
-                // Stop any ongoing speech
                 window.speechSynthesis.cancel();
             }
+        }
+
+        function loadVoices() {
+            availableVoices = window.speechSynthesis.getVoices();
         }
 
         function speak(text) {
             if (!voiceEnabled) return;
             
-            // Cancel any ongoing speech
             window.speechSynthesis.cancel();
             
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 1.0;
+            utterance.rate = 0.95;
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
             
-            // Try to use a female voice if available
-            const voices = window.speechSynthesis.getVoices();
-            const femaleVoice = voices.find(voice => 
-                voice.name.includes('Female') || 
-                voice.name.includes('Samantha') ||
-                voice.name.includes('Victoria') ||
-                voice.name.includes('Karen')
+            // Select appropriate voice based on language
+            const langVoiceMap = {
+                'ms-MY': ['ms-MY', 'ms_MY', 'Malay'],
+                'en-US': ['en-US', 'en_US', 'English'],
+                'id-ID': ['id-ID', 'id_ID', 'Indonesian']
+            };
+            
+            const preferredVoices = langVoiceMap[currentLanguage] || langVoiceMap['ms-MY'];
+            
+            let selectedVoice = availableVoices.find(voice => 
+                preferredVoices.some(pref => 
+                    voice.lang.includes(pref) || voice.name.includes(pref)
+                )
             );
             
-            if (femaleVoice) {
-                utterance.voice = femaleVoice;
+            // Fallback to any voice that matches the main language code
+            if (!selectedVoice) {
+                const mainLang = currentLanguage.split('-')[0];
+                selectedVoice = availableVoices.find(voice => voice.lang.startsWith(mainLang));
+            }
+            
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+                utterance.lang = selectedVoice.lang;
+            } else {
+                utterance.lang = currentLanguage;
             }
             
             window.speechSynthesis.speak(utterance);
@@ -704,9 +835,8 @@
 
         // Load voices when available
         if (window.speechSynthesis) {
-            window.speechSynthesis.onvoiceschanged = function() {
-                window.speechSynthesis.getVoices();
-            };
+            loadVoices();
+            window.speechSynthesis.onvoiceschanged = loadVoices;
         }
 
         function parseCSV(csv) {
@@ -731,10 +861,10 @@
             const statusEl = document.getElementById(elementId);
             if (value < min) {
                 statusEl.className = 'sensor-status status-warning';
-                statusEl.textContent = 'Low';
+                statusEl.textContent = 'Rendah';
             } else if (value > max) {
                 statusEl.className = 'sensor-status status-danger';
-                statusEl.textContent = 'High';
+                statusEl.textContent = 'Tinggi';
             } else {
                 statusEl.className = 'sensor-status status-normal';
                 statusEl.textContent = 'Normal';
@@ -749,10 +879,10 @@
             const diffHours = Math.floor(diffMs / 3600000);
             const diffDays = Math.floor(diffMs / 86400000);
             
-            if (diffMins < 1) return 'Just now';
-            if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
-            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-            if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            if (diffMins < 1) return 'Baru sahaja';
+            if (diffMins < 60) return `${diffMins} minit lalu`;
+            if (diffHours < 24) return `${diffHours} jam lalu`;
+            if (diffDays < 7) return `${diffDays} hari lalu`;
             return time.toLocaleDateString();
         }
         
@@ -776,7 +906,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Temperature (°C)',
+                        label: 'Suhu (°C)',
                         data: data,
                         borderColor: '#667eea',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)',
@@ -816,31 +946,31 @@
         }
 
         function getSensorContext() {
-            let context = "Current pond conditions:\n";
-            context += `- Temperature: ${currentSensorData.temp}°C`;
+            let context = "Keadaan kolam semasa:\n";
+            context += `- Suhu: ${currentSensorData.temp}°C`;
             
             if (currentSensorData.temp >= TEMP_MAX) {
-                context += ` (HIGH - above ${TEMP_MAX}°C)`;
+                context += ` (TINGGI - melebihi ${TEMP_MAX}°C)`;
             } else if (currentSensorData.temp < TEMP_MIN) {
-                context += ` (LOW - below ${TEMP_MIN}°C)`;
+                context += ` (RENDAH - bawah ${TEMP_MIN}°C)`;
             } else {
                 context += ` (Normal)`;
             }
             
             context += `\n- pH: ${currentSensorData.ph}`;
             if (currentSensorData.ph < PH_MIN) {
-                context += ` (LOW - below ${PH_MIN})`;
+                context += ` (RENDAH - bawah ${PH_MIN})`;
             } else if (currentSensorData.ph > PH_MAX) {
-                context += ` (HIGH - above ${PH_MAX})`;
+                context += ` (TINGGI - melebihi ${PH_MAX})`;
             } else {
-                context += ` (Normal range)`;
+                context += ` (Julat normal)`;
             }
             
             context += `\n- TDS: ${currentSensorData.tds} ppm`;
             if (currentSensorData.tds > TDS_MAX) {
-                context += ` (HIGH - above ${TDS_MAX} ppm)`;
+                context += ` (TINGGI - melebihi ${TDS_MAX} ppm)`;
             } else if (currentSensorData.tds < TDS_MIN) {
-                context += ` (LOW - below ${TDS_MIN} ppm)`;
+                context += ` (RENDAH - bawah ${TDS_MIN} ppm)`;
             } else {
                 context += ` (Normal)`;
             }
@@ -855,14 +985,29 @@
                 throw new Error('API key not configured in code');
             }
 
-            const systemPrompt = `You are an AI assistant for a tilapia pond monitoring system. 
+            const systemPrompts = {
+                'ms-MY': `Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia. 
+Berikan nasihat yang berguna dan ringkas tentang ternakan tilapia berdasarkan data sensor. 
+Beri respons yang pendek (2-3 ayat) dan praktikal dalam Bahasa Melayu. 
+Anda berpengetahuan tentang keadaan kolam tilapia yang optimum: 
+suhu (28-30°C ideal, maksimum 32°C), pH (6.5-8.5 ideal), 
+oksigen terlarut (5+ mg/L), dan kualiti air.`,
+                'en-US': `You are an AI assistant for a tilapia pond monitoring system. 
 Provide helpful, concise advice about tilapia farming based on the sensor data. 
-Keep responses brief (2-3 sentences) and practical. 
+Keep responses brief (2-3 sentences) and practical in English. 
 You are knowledgeable about optimal tilapia pond conditions: 
 temperature (28-30°C ideal, max 32°C), pH (6.5-8.5 ideal), 
-dissolved oxygen (5+ mg/L), and water quality.`;
+dissolved oxygen (5+ mg/L), and water quality.`,
+                'id-ID': `Anda adalah asisten AI untuk sistem pemantauan kolam tilapia. 
+Berikan saran yang berguna dan ringkas tentang budidaya tilapia berdasarkan data sensor. 
+Berikan tanggapan yang singkat (2-3 kalimat) dan praktis dalam Bahasa Indonesia. 
+Anda berpengetahuan tentang kondisi kolam tilapia yang optimal: 
+suhu (28-30°C ideal, maksimal 32°C), pH (6.5-8.5 ideal), 
+oksigen terlarut (5+ mg/L), dan kualitas air.`
+            };
 
-            const userMessage = getSensorContext() + "\n\nQuestion: " + question;
+            const systemPrompt = systemPrompts[currentLanguage] || systemPrompts['ms-MY'];
+            const userMessage = getSensorContext() + "\n\nSoalan: " + question;
 
             const response = await fetch(GROQ_API_URL, {
                 method: 'POST',
@@ -917,34 +1062,40 @@ dissolved oxygen (5+ mg/L), and water quality.`;
             
             if (!question) return;
 
-            // Add user message
             addMessage(question, true);
             input.value = '';
             
-            // Show typing indicator
             const typingIndicator = document.getElementById('typingIndicator');
             typingIndicator.classList.add('active');
             
             const sendBtn = document.getElementById('sendBtn');
             sendBtn.disabled = true;
-            sendBtn.textContent = 'Thinking...';
+            const thinkingText = {
+                'ms-MY': 'Berfikir...',
+                'en-US': 'Thinking...',
+                'id-ID': 'Berpikir...'
+            };
+            sendBtn.textContent = thinkingText[currentLanguage];
             
             try {
                 const response = await askGroqAI(question);
                 addMessage(response, false);
-                
-                // Speak the response
                 speak(response);
                 
             } catch (error) {
-                const errorMsg = `Sorry, I encountered an error: ${error.message}`;
+                const errorMsgs = {
+                    'ms-MY': `Maaf, saya mengalami ralat: ${error.message}`,
+                    'en-US': `Sorry, I encountered an error: ${error.message}`,
+                    'id-ID': `Maaf, saya mengalami kesalahan: ${error.message}`
+                };
+                const errorMsg = errorMsgs[currentLanguage];
                 addMessage(errorMsg, false);
                 speak(errorMsg);
                 console.error('AI Error:', error);
             } finally {
                 typingIndicator.classList.remove('active');
                 sendBtn.disabled = false;
-                sendBtn.textContent = 'Send';
+                updateUILanguage();
             }
         }
 
@@ -971,7 +1122,6 @@ dissolved oxygen (5+ mg/L), and water quality.`;
 
                 const latest = data[data.length - 1];
                 
-                // Store current sensor data for AI
                 currentSensorData = {
                     temp: latest.temp.toFixed(1),
                     ph: latest.ph.toFixed(2),
@@ -1010,7 +1160,7 @@ dissolved oxygen (5+ mg/L), and water quality.`;
             } catch (error) {
                 console.error('Error fetching data:', error);
                 document.getElementById('errorMessage').textContent = 
-                    '⚠️ Error: ' + error.message;
+                    '⚠️ Ralat: ' + error.message;
                 document.getElementById('errorMessage').style.display = 'block';
             }
         }
@@ -1018,9 +1168,7 @@ dissolved oxygen (5+ mg/L), and water quality.`;
         // Initialize
         fetchData();
         setInterval(fetchData, 30000);
-        
-        // Initialize speaker button as active
-        document.getElementById('speakerToggle').classList.add('active');
+        updateVoiceStatus('ready');
     </script>
 </body>
 </html>
