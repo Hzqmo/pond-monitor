@@ -683,9 +683,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
         // ⚙️ CONFIGURATION - UPDATE THIS WITH YOUR CLOUDFLARE WORKER URL
-        const WORKER_URL = 'https://your-worker-name.your-subdomain.workers.dev';
-        // Get this URL after deploying the Cloudflare Worker
-        // Example: https://pond-monitor-api.yourname.workers.dev
+        const WORKER_URL = 'https://pondmonitor.haziqmohd65.workers.dev';
+
         
         const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
 
@@ -711,7 +710,7 @@
         let audioUnlocked = false;
 
         // Check if worker URL is configured
-        if (WORKER_URL === 'https://pondmonitor.haziqmohd65.workers.dev') {
+        if (WORKER_URL === 'https://your-worker-name.your-subdomain.workers.dev') {
             console.warn('Cloudflare Worker URL not configured');
         } else {
             document.getElementById('setupNotice').style.display = 'none';
