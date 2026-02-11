@@ -269,16 +269,16 @@
         <!-- Stats -->
         <div class="feeder-stats">
             <div class="feeder-stat">
-                <div class="feeder-stat-label">Diberi Makan</div>
-                <div class="feeder-stat-val" id="feedCount">—</div>
+                <div class="feeder-stat-label">Kali Diberi</div>
+                <div class="feeder-stat-val" id="feedCount">0×</div>
             </div>
             <div class="feeder-stat">
-                <div class="feeder-stat-label">Terakhir</div>
-                <div class="feeder-stat-val" id="lastFeedTime" style="font-size:.82em">—</div>
+                <div class="feeder-stat-label">Masa Terakhir</div>
+                <div class="feeder-stat-val" id="lastFeedTime" style="font-size:.82em">Belum lagi</div>
             </div>
             <div class="feeder-stat">
-                <div class="feeder-stat-label">Servo</div>
-                <div class="feeder-stat-val" id="servoStatus">—</div>
+                <div class="feeder-stat-label">Status Servo</div>
+                <div class="feeder-stat-val" id="servoStatus">Tertutup 🔒</div>
             </div>
         </div>
 
@@ -321,8 +321,8 @@
             <h2>🤖 Pembantu Suara AI</h2>
             <div class="ai-badge">VERCEL</div>
         </div>
-        <div class="setup-notice" id="setupNotice">
-            ⚙️ <strong>CORS Fix:</strong> Tukar <code>VERCEL_URL</code> kepada URL <em>production</em> anda.
+        <div class="setup-notice" id="setupNotice" style="display:none">
+            ⚙️ <strong>Setup:</strong> Pastikan <code>VERCEL_URL</code> dalam kod ESP32 menggunakan URL production Vercel anda.
         </div>
         <div class="voice-controls">
             <div class="voice-status" id="voiceStatus">🎤 Tekan mikrofon untuk bercakap</div>
@@ -412,8 +412,9 @@ let mainChart, currentSensorData={}, recognition, isListening=false,
 
 let feedLog      = [];
 let scheduleList = JSON.parse(localStorage.getItem('feedSchedule') || '["07:00","12:00","18:00"]');
-let lastCmdId    = '';   // track last command we sent (for ACK polling)
+let lastCmdId    = '';
 let ackPollTimer = null;
+let esp32Online  = false;
 
 // ════════════════════════════════════════════════════════════
 // INIT
@@ -422,10 +423,7 @@ window.addEventListener('DOMContentLoaded', () => {
     renderSchedule();
     startScheduleWatcher();
     setupAudioUnlock();
-
-    if (!/(-[a-z0-9]{6,}-[^.]+)?\.vercel\.app/.test(
-        VERCEL_URL.replace(/https?:\/\//,'').split('/')[0]
-    )) document.getElementById('setupNotice').style.display='none';
+    checkCorsSetup();
 
     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         setTimeout(()=>{
@@ -433,6 +431,17 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
 });
+
+// Check if VERCEL_URL needs updating
+function checkCorsSetup() {
+    // Only show notice if URL looks like localhost or a non-production Vercel URL
+    const url = VERCEL_URL.replace(/https?:\/\//,'');
+    const isLocal = url.includes('localhost') || url.includes('127.0.0.1');
+    const isPreview = /vercel\.app/.test(url) && !/-[a-z0-9]{9}\.vercel\.app/.test(url);
+    
+    // Hide the notice by default - only show if there's actually a problem
+    document.getElementById('setupNotice').style.display = 'none';
+}
 
 // ════════════════════════════════════════════════════════════
 // TOAST
@@ -450,26 +459,32 @@ function showToast(msg, duration=3000) {
 async function fetchEspStatus() {
     try {
         const res  = await fetch(VERCEL_URL + '/api/status');
-        if (!res.ok) return;
+        if (!res.ok) {
+            updateEspStatusUI(false, null, 'HTTP error');
+            return;
+        }
         const data = await res.json();
 
-        const online = data.online;
-        const el     = document.getElementById('espStatus');
-        const dot    = document.getElementById('espDot');
-        const txt    = document.getElementById('espStatusText');
-
-        el.className = 'esp-status ' + (online ? 'online' : 'offline');
-        dot.className = 'esp-dot' + (online ? ' pulse' : '');
-        txt.textContent = online
-            ? 'ESP32 dalam talian ✓  (' + data.staleSec + 's lalu)'
-            : 'ESP32 luar talian — tiada data ' + (data.staleSec ? `(${data.staleSec}s)` : '');
+        const online = data.online === true;
+        esp32Online = online;
+        
+        updateEspStatusUI(online, data.staleSec || 0, null);
 
         // Update feeder stats from ESP32 push
         if (data.sensor) {
             const s = data.sensor;
-            document.getElementById('feedCount').textContent  = (s.feedCount ?? '—') + '×';
-            document.getElementById('lastFeedTime').textContent = s.lastFeed || '—';
-            document.getElementById('servoStatus').textContent  = s.servoOpen ? 'Terbuka 🔓' : 'Tertutup 🔒';
+            
+            // Update feed count
+            const count = s.feedCount ?? 0;
+            document.getElementById('feedCount').textContent = count + '×';
+            
+            // Update last feed time
+            const lastFeed = s.lastFeed || 'Belum lagi';
+            document.getElementById('lastFeedTime').textContent = lastFeed;
+            
+            // Update servo status
+            const servoOpen = s.servoOpen === true;
+            document.getElementById('servoStatus').textContent = servoOpen ? 'Terbuka 🔓' : 'Tertutup 🔒';
         }
 
         // Update feed history from Vercel
@@ -497,6 +512,32 @@ async function fetchEspStatus() {
 
     } catch(err) {
         console.warn('ESP status fetch failed:', err.message);
+        updateEspStatusUI(false, null, err.message);
+    }
+}
+
+function updateEspStatusUI(online, staleSec, error) {
+    const el  = document.getElementById('espStatus');
+    const dot = document.getElementById('espDot');
+    const txt = document.getElementById('espStatusText');
+
+    if (online) {
+        el.className = 'esp-status online';
+        dot.className = 'esp-dot pulse';
+        txt.textContent = staleSec !== null 
+            ? `ESP32 dalam talian ✓ (${staleSec}s lalu)`
+            : 'ESP32 dalam talian ✓';
+    } else {
+        el.className = 'esp-status offline';
+        dot.className = 'esp-dot';
+        
+        if (error) {
+            txt.textContent = 'ESP32 luar talian — ralat sambungan';
+        } else if (staleSec !== null && staleSec > 0) {
+            txt.textContent = `ESP32 luar talian (${staleSec}s sejak data terakhir)`;
+        } else {
+            txt.textContent = 'ESP32 luar talian — tiada data';
+        }
     }
 }
 
@@ -516,12 +557,17 @@ async function feedNow() {
             headers: {'Content-Type':'application/json'},
             body:    JSON.stringify({ action: 'feed' })
         });
+        
+        if (!res.ok) {
+            throw new Error('HTTP ' + res.status);
+        }
+        
         const data = await res.json();
 
         if (data.ok) {
             lastCmdId = data.queued.id;
             document.getElementById('feedBtnIcon').textContent = '📡';
-            document.getElementById('feedBtnText').textContent = 'Arahan dihantar — menunggu ESP32...';
+            document.getElementById('feedBtnText').textContent = 'Menunggu ESP32...';
             showToast('📡 Arahan dihantar ke ESP32...');
 
             // Poll for ACK every 2s for up to 15s
@@ -532,7 +578,6 @@ async function feedNow() {
                 if (!lastCmdId || attempts >= 8) {
                     clearInterval(ackPollTimer);
                     if (lastCmdId) {
-                        // No ACK received
                         lastCmdId = '';
                         resetFeedBtn('error');
                         showToast('⚠️ ESP32 tidak menjawab — semak peranti');
@@ -601,7 +646,10 @@ function addFeedLogLocal(time, source) {
 
 function renderFeedLog() {
     const el = document.getElementById('feedLog');
-    if (!feedLog.length) return;
+    if (!feedLog.length) {
+        el.innerHTML = '<div class="log-row"><span class="log-t">--:--</span><span class="log-s">—</span><span>Tiada log lagi</span></div>';
+        return;
+    }
     el.innerHTML = feedLog.map(e =>
         `<div class="log-row"><span class="log-t">${e.time}</span><span class="log-s">[${e.source}]</span><span>Diberi makan</span></div>`
     ).join('');
@@ -892,8 +940,8 @@ if(window.speechSynthesis){availableVoices=window.speechSynthesis.getVoices();wi
 // BOOT
 // ════════════════════════════════════════════════════════════
 fetchData();
-setInterval(fetchData,    30000);   // refresh sheets every 30s
-setInterval(fetchEspStatus, 5000);  // check ESP32 status every 5s
+setInterval(fetchData,    30000);
+setInterval(fetchEspStatus, 5000);
 </script>
 </body>
 </html>
