@@ -19,9 +19,8 @@
         .status-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:blink 2s infinite}
         .status-dot.offline{background:var(--danger);animation:none}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-        .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:18px;transition:border-color .3s,transform .3s;position:relative;overflow:hidden}
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:18px;position:relative;overflow:hidden;transition:border-color .3s}
         .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.02) 0%,transparent 60%);pointer-events:none}
-        .card:hover{border-color:rgba(61,139,255,.3);transform:translateY(-2px)}
         .sensors-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
         .sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px 16px;text-align:center;transition:border-color .3s,transform .3s;position:relative;overflow:hidden;cursor:pointer}
         .sensor-card:active{transform:scale(0.97)}
@@ -38,6 +37,85 @@
         .badge-normal{background:rgba(0,201,167,.15);color:var(--success)}
         .badge-warning{background:rgba(255,190,92,.15);color:var(--warning)}
         .badge-danger{background:rgba(255,95,95,.15);color:var(--danger)}
+        .stats-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
+        .stat-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
+        .stat-label{font-size:.7em;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+        .stat-value{font-family:'DM Mono',monospace;font-size:1.1em;font-weight:600;color:var(--accent2)}
+        .alert-banner{background:linear-gradient(135deg,rgba(255,95,95,0.15),rgba(255,190,92,0.15));border:1px solid rgba(255,95,95,0.3);border-radius:12px;padding:12px 16px;margin-bottom:18px;display:none;align-items:center;gap:10px}
+        .alert-banner.show{display:flex}
+        .alert-icon{font-size:1.5em}
+        .alert-text{flex:1;font-size:.85em;line-height:1.4}
+
+        /* ── FEEDER ─────────────────────────────── */
+        .feeder-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+        .feeder-header h2{font-size:1.15em;font-weight:600;flex:1}
+        .feeder-badge{background:linear-gradient(135deg,#ff9a3c,#ffbe5c);color:#1a0f00;padding:4px 12px;border-radius:10px;font-size:.72em;font-weight:700;letter-spacing:.5px}
+
+        /* ESP32 online pill */
+        .esp-status{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:.78em;font-weight:600;margin-bottom:16px;transition:all .3s}
+        .esp-status.online{background:rgba(0,201,167,.12);color:var(--success);border:1px solid rgba(0,201,167,.25)}
+        .esp-status.offline{background:rgba(255,95,95,.1);color:var(--danger);border:1px solid rgba(255,95,95,.2)}
+        .esp-status.pending{background:rgba(255,190,92,.1);color:var(--warning);border:1px solid rgba(255,190,92,.2)}
+        .esp-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+        .esp-dot.pulse{animation:blink 1.2s infinite}
+
+        /* Feeder stats row */
+        .feeder-stats{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+        .feeder-stat{flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:11px;text-align:center}
+        .feeder-stat-label{font-size:.66em;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+        .feeder-stat-val{font-family:'DM Mono',monospace;font-size:1.05em;font-weight:600;color:var(--accent2)}
+
+        /* Big feed button */
+        .feed-now-btn{
+            width:100%;padding:18px;border:none;border-radius:16px;
+            background:linear-gradient(135deg,#ff9a3c,#ffbe5c);
+            color:#1a0f00;font-size:1.1em;font-weight:700;cursor:pointer;
+            font-family:'Outfit',sans-serif;
+            box-shadow:0 6px 24px rgba(255,154,60,.3);
+            transition:all .3s;margin-bottom:12px;
+            display:flex;align-items:center;justify-content:center;gap:10px;
+            touch-action:manipulation;
+        }
+        .feed-now-btn:active{transform:scale(.97)}
+        .feed-now-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+        .feed-now-btn.feeding{background:linear-gradient(135deg,var(--success),var(--accent2));color:#001a16;animation:feedPulse .8s infinite alternate}
+        .feed-now-btn.success{background:linear-gradient(135deg,#00c9a7,#3d8bff);color:#fff}
+        .feed-now-btn.error{background:linear-gradient(135deg,var(--danger),#ff8c5c);color:#fff}
+        @keyframes feedPulse{from{box-shadow:0 6px 24px rgba(0,201,167,.3)}to{box-shadow:0 6px 40px rgba(0,201,167,.7)}}
+
+        /* Servo slider */
+        .servo-section{margin-bottom:16px}
+        .servo-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+        .servo-row label{font-size:.82em;color:var(--muted);flex-shrink:0}
+        .servo-val{font-family:'DM Mono',monospace;font-size:.9em;color:var(--accent2);min-width:36px;text-align:right}
+        .servo-slider{flex:1;height:6px;appearance:none;-webkit-appearance:none;background:var(--surface2);border-radius:3px;outline:none;cursor:pointer}
+        .servo-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:pointer;box-shadow:0 2px 8px rgba(61,139,255,.4)}
+        .servo-set-btn{background:rgba(61,139,255,.15);color:var(--accent);border:1px solid rgba(61,139,255,.3);padding:8px 18px;border-radius:10px;font-size:.82em;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;white-space:nowrap}
+        .servo-set-btn:hover{background:rgba(61,139,255,.25)}
+
+        /* Schedule */
+        .schedule-title{font-size:.78em;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+        .schedule-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+        .schedule-chip{background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:.8em;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px}
+        .chip-del{color:var(--danger);cursor:pointer;line-height:1;font-size:1.1em}
+        .schedule-add{display:flex;gap:8px}
+        .time-input{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:10px;font-family:'DM Mono',monospace;font-size:.88em;background:var(--surface2);color:var(--text);outline:none;transition:border-color .3s}
+        .time-input:focus{border-color:rgba(61,139,255,.4)}
+        .add-btn{background:rgba(0,229,200,.12);color:var(--accent2);border:1px solid rgba(0,229,200,.25);padding:8px 16px;border-radius:10px;font-size:.82em;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap}
+
+        /* Feed log */
+        .log-title{font-size:.75em;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin:14px 0 8px}
+        .feed-log{max-height:130px;overflow-y:auto;background:var(--surface2);border-radius:10px;border:1px solid var(--border);padding:8px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+        .log-row{font-size:.78em;font-family:'DM Mono',monospace;padding:4px 6px;border-bottom:1px solid rgba(100,160,255,.06);color:var(--muted);display:flex;gap:8px}
+        .log-row:last-child{border-bottom:none}
+        .log-t{color:var(--accent2);flex-shrink:0}
+        .log-s{color:var(--warning);flex-shrink:0}
+
+        /* Command feedback toast */
+        .cmd-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 20px;font-size:.85em;opacity:0;transition:all .3s;pointer-events:none;z-index:500;white-space:nowrap}
+        .cmd-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+        /* AI Chat */
         .ai-chat-header{display:flex;align-items:center;gap:10px;margin-bottom:18px}
         .ai-chat-header h2{font-size:1.15em;font-weight:600;flex:1}
         .ai-badge{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:4px 12px;border-radius:10px;font-size:.72em;font-weight:700;letter-spacing:.5px}
@@ -49,10 +127,8 @@
         .speaker-btn.active{background:rgba(0,201,167,.15);color:var(--success);border-color:rgba(0,201,167,.3)}
         .quick-questions{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
         .quick-question-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:20px;font-size:.78em;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif}
-        .quick-question-btn:hover,.quick-question-btn:active{background:rgba(61,139,255,.15);color:var(--accent);border-color:rgba(61,139,255,.3);transform:scale(0.98)}
-        .chat-messages{max-height:280px;overflow-y:auto;margin-bottom:14px;padding:10px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
-        .chat-messages::-webkit-scrollbar{width:4px}
-        .chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+        .quick-question-btn:hover{background:rgba(61,139,255,.15);color:var(--accent);border-color:rgba(61,139,255,.3)}
+        .chat-messages{max-height:260px;overflow-y:auto;margin-bottom:14px;padding:10px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
         .chat-message{margin-bottom:14px;display:flex;gap:9px}
         .message-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;background:var(--surface);border:1px solid var(--border)}
         .user-avatar{background:rgba(61,139,255,.2);border-color:rgba(61,139,255,.3)}
@@ -75,948 +151,749 @@
         .chat-input{flex:1;padding:11px 16px;border:1px solid var(--border);border-radius:23px;font-size:.9em;font-family:'Outfit',sans-serif;outline:none;background:var(--surface2);color:var(--text);transition:border-color .3s}
         .chat-input::placeholder{color:var(--muted)}
         .chat-input:focus{border-color:rgba(61,139,255,.4)}
-        .send-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:11px 22px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;transition:all .3s;box-shadow:0 4px 16px rgba(61,139,255,.25);font-family:'Outfit',sans-serif;touch-action:manipulation}
+        .send-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:11px 22px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;transition:all .3s;font-family:'Outfit',sans-serif;touch-action:manipulation}
         .send-btn:active{transform:scale(.97)}
-        .send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+        .send-btn:disabled{opacity:.4;cursor:not-allowed}
         .chart-title{font-size:.78em;font-weight:600;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+        .chart-toggle{display:flex;gap:8px;margin-bottom:12px}
+        .toggle-btn{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:8px 12px;border-radius:10px;font-size:.8em;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif}
+        .toggle-btn.active{background:rgba(61,139,255,.15);color:var(--accent);border-color:rgba(61,139,255,.3)}
         canvas{max-width:100%;height:auto !important}
-        .refresh-btn{background:var(--surface);color:var(--accent);border:1px solid rgba(61,139,255,.25);padding:12px 28px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;display:block;margin:8px auto 28px;transition:all .3s;font-family:'Outfit',sans-serif;touch-action:manipulation}
-        .refresh-btn:hover{background:rgba(61,139,255,.12);border-color:rgba(61,139,255,.4)}
-        .refresh-btn:active{transform:scale(0.97)}
+        .refresh-btn{background:var(--surface);color:var(--accent);border:1px solid rgba(61,139,255,.25);padding:12px 28px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;display:block;margin:8px auto 28px;transition:all .3s;font-family:'Outfit',sans-serif}
+        .refresh-btn:hover{background:rgba(61,139,255,.12)}
         .error{background:rgba(255,95,95,.1);color:var(--danger);border:1px solid rgba(255,95,95,.25);padding:14px 18px;border-radius:12px;margin-bottom:18px;font-size:.88em}
-        
-        /* FIXED: Audio unlock overlay with proper z-index and touch handling */
-        .audio-unlock-overlay{
-            display:none;
-            position:fixed;
-            inset:0;
-            background:rgba(10,22,40,0.95);
-            backdrop-filter:blur(8px);
-            z-index:99999;
-            align-items:center;
-            justify-content:center;
-            animation:fadeIn 0.3s ease;
-        }
+        .audio-unlock-overlay{display:none;position:fixed;inset:0;background:rgba(10,22,40,0.95);backdrop-filter:blur(8px);z-index:99999;align-items:center;justify-content:center}
         .audio-unlock-overlay.show{display:flex}
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        
-        .audio-unlock-dialog{
-            background:var(--surface);
-            border:2px solid var(--accent);
-            padding:32px 24px;
-            border-radius:24px;
-            text-align:center;
-            max-width:320px;
-            margin:20px;
-            box-shadow:0 20px 60px rgba(0,0,0,0.5);
-            animation:slideUp 0.3s ease;
-        }
-        @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-        
+        .audio-unlock-dialog{background:var(--surface);border:2px solid var(--accent);padding:32px 24px;border-radius:24px;text-align:center;max-width:320px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
         .audio-unlock-dialog h3{margin-bottom:12px;font-size:1.3em;color:var(--accent2)}
         .audio-unlock-dialog p{margin-bottom:24px;color:var(--muted);line-height:1.6;font-size:.95em}
-        
-        /* FIXED: Better button styling for mobile with larger touch target */
-        .unlock-btn{
-            background:linear-gradient(135deg,var(--accent),var(--accent2));
-            color:#fff;
-            border:none;
-            padding:16px 32px;
-            border-radius:28px;
-            font-size:1.05em;
-            font-weight:700;
-            cursor:pointer;
-            width:100%;
-            font-family:'Outfit',sans-serif;
-            box-shadow:0 8px 24px rgba(61,139,255,0.35);
-            transition:all 0.2s;
-            min-height:56px;
-            touch-action:manipulation;
-            -webkit-tap-highlight-color:transparent;
-            user-select:none;
-            -webkit-user-select:none;
-            -moz-user-select:none;
-            -ms-user-select:none;
-        }
-        .unlock-btn:active{
-            transform:scale(0.96);
-            box-shadow:0 4px 16px rgba(61,139,255,0.25);
-        }
-        .unlock-btn:hover{
-            box-shadow:0 12px 32px rgba(61,139,255,0.45);
-        }
-        
-        /* NEW: Stats summary card */
-        .stats-summary{
-            display:grid;
-            grid-template-columns:repeat(2,1fr);
-            gap:10px;
-            margin-bottom:18px;
-        }
-        .stat-item{
-            background:var(--surface2);
-            border:1px solid var(--border);
-            border-radius:12px;
-            padding:12px;
-            text-align:center;
-        }
-        .stat-label{font-size:.7em;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
-        .stat-value{font-family:'DM Mono',monospace;font-size:1.1em;font-weight:600;color:var(--accent2)}
-        
-        /* NEW: Alert banner */
-        .alert-banner{
-            background:linear-gradient(135deg,rgba(255,95,95,0.15),rgba(255,190,92,0.15));
-            border:1px solid rgba(255,95,95,0.3);
-            border-radius:12px;
-            padding:12px 16px;
-            margin-bottom:18px;
-            display:none;
-            align-items:center;
-            gap:10px;
-            animation:slideDown 0.3s ease;
-        }
-        .alert-banner.show{display:flex}
-        @keyframes slideDown{from{transform:translateY(-10px);opacity:0}to{transform:translateY(0);opacity:1}}
-        .alert-icon{font-size:1.5em}
-        .alert-text{flex:1;font-size:.85em;line-height:1.4}
-        
-        /* NEW: Chart view toggle */
-        .chart-toggle{
-            display:flex;
-            gap:8px;
-            margin-bottom:12px;
-        }
-        .toggle-btn{
-            flex:1;
-            background:var(--surface2);
-            border:1px solid var(--border);
-            color:var(--muted);
-            padding:8px 12px;
-            border-radius:10px;
-            font-size:.8em;
-            cursor:pointer;
-            transition:all .2s;
-            font-family:'Outfit',sans-serif;
-        }
-        .toggle-btn.active{
-            background:rgba(61,139,255,.15);
-            color:var(--accent);
-            border-color:rgba(61,139,255,.3);
-        }
-        .toggle-btn:active{transform:scale(0.98)}
-        
+        .unlock-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:16px 32px;border-radius:28px;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;font-family:'Outfit',sans-serif;min-height:56px;touch-action:manipulation}
+        .unlock-btn:active{transform:scale(.96)}
         @media(max-width:480px){
-            .sensors-grid{gap:10px}
-            .sensor-value{font-size:1.6em}
-            .sensor-label{font-size:.65em}
-            .header h1{font-size:1.5em}
-            .voice-controls{flex-direction:column;align-items:stretch}
-            .stats-summary{grid-template-columns:1fr}
+            .sensors-grid{gap:10px}.sensor-value{font-size:1.6em}
+            .header h1{font-size:1.5em}.stats-summary{grid-template-columns:1fr}
+            .feeder-stats{flex-wrap:wrap}
         }
-        @media(max-width:360px){
-            .sensors-grid{grid-template-columns:1fr 1fr}
-        }
+        @media(max-width:360px){.sensors-grid{grid-template-columns:1fr 1fr}}
     </style>
 </head>
 <body>
-    <!-- FIXED: Audio unlock with simpler, working approach -->
-    <div class="audio-unlock-overlay" id="audioUnlockOverlay">
-        <div class="audio-unlock-dialog" onclick="event.stopPropagation();">
-            <h3>🔊 Aktifkan Audio</h3>
-            <p>Tekan butang di bawah untuk membolehkan suara AI bercakap di telefon anda.</p>
-            <button class="unlock-btn" id="unlockAudioBtn" type="button">Aktifkan Suara</button>
-            <button class="unlock-btn" id="skipAudioBtn" type="button" style="background:#666;margin-top:10px;font-size:0.9em;padding:12px 24px;">Langkau (Tiada Suara)</button>
+
+<!-- Audio unlock -->
+<div class="audio-unlock-overlay" id="audioUnlockOverlay">
+    <div class="audio-unlock-dialog" onclick="event.stopPropagation()">
+        <h3>🔊 Aktifkan Audio</h3>
+        <p>Tekan butang di bawah untuk membolehkan suara AI bercakap di telefon anda.</p>
+        <button class="unlock-btn" id="unlockAudioBtn" type="button">Aktifkan Suara</button>
+        <button class="unlock-btn" id="skipAudioBtn" type="button" style="background:#555;margin-top:10px;font-size:.9em;padding:12px 24px;">Langkau</button>
+    </div>
+</div>
+
+<!-- Command feedback toast -->
+<div class="cmd-toast" id="cmdToast"></div>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-logo">
+            <div class="logo-icon">🐟</div>
+            <h1>Monitor Kolam</h1>
+        </div>
+        <div class="last-update">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="lastUpdate">Memuatkan...</span>
         </div>
     </div>
-    
-    <div class="container">
-        <div class="header">
-            <div class="header-logo">
-                <div class="logo-icon">🐟</div>
-                <h1>Monitor Kolam</h1>
+
+    <div id="errorMessage" style="display:none" class="error"></div>
+
+    <!-- ALERT -->
+    <div class="alert-banner" id="alertBanner">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-text" id="alertText"></div>
+    </div>
+
+    <!-- SENSORS -->
+    <div class="sensors-grid">
+        <div class="sensor-card normal" id="tempCard" onclick="explainSensor('suhu')">
+            <span class="sensor-icon">🌡️</span>
+            <div class="sensor-label">Suhu</div>
+            <div class="sensor-value" id="tempValue">--</div>
+            <div class="sensor-unit">°C</div>
+            <span class="sensor-badge badge-normal" id="tempStatus">Normal</span>
+        </div>
+        <div class="sensor-card normal" id="phCard" onclick="explainSensor('pH')">
+            <span class="sensor-icon">💧</span>
+            <div class="sensor-label">pH</div>
+            <div class="sensor-value" id="phValue">--</div>
+            <div class="sensor-unit">pH</div>
+            <span class="sensor-badge badge-normal" id="phStatus">Normal</span>
+        </div>
+        <div class="sensor-card normal" id="tdsCard" onclick="explainSensor('TDS')">
+            <span class="sensor-icon">📊</span>
+            <div class="sensor-label">TDS</div>
+            <div class="sensor-value" id="tdsValue">--</div>
+            <div class="sensor-unit">ppm</div>
+            <span class="sensor-badge badge-normal" id="tdsStatus">Normal</span>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-summary">
+        <div class="stat-item">
+            <div class="stat-label">Bacaan Hari Ini</div>
+            <div class="stat-value" id="todayReadings">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Status Keseluruhan</div>
+            <div class="stat-value" id="overallStatus">Normal</div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!--  FEEDER CONTROL                                          -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="card">
+        <div class="feeder-header">
+            <h2>🍽️ Kawalan Pemberi Makan</h2>
+            <div class="feeder-badge">VERCEL ↔ ESP32</div>
+        </div>
+
+        <!-- ESP32 online status -->
+        <div class="esp-status offline" id="espStatus">
+            <div class="esp-dot" id="espDot"></div>
+            <span id="espStatusText">Menyemak ESP32...</span>
+        </div>
+
+        <!-- Stats -->
+        <div class="feeder-stats">
+            <div class="feeder-stat">
+                <div class="feeder-stat-label">Diberi Makan</div>
+                <div class="feeder-stat-val" id="feedCount">—</div>
             </div>
-            <div class="last-update">
-                <span class="status-dot" id="statusDot"></span>
-                <span id="lastUpdate">Memuatkan...</span>
+            <div class="feeder-stat">
+                <div class="feeder-stat-label">Terakhir</div>
+                <div class="feeder-stat-val" id="lastFeedTime" style="font-size:.82em">—</div>
+            </div>
+            <div class="feeder-stat">
+                <div class="feeder-stat-label">Servo</div>
+                <div class="feeder-stat-val" id="servoStatus">—</div>
             </div>
         </div>
-        
-        <div id="errorMessage" style="display:none;" class="error"></div>
-        
-        <!-- NEW: Alert banner for critical issues -->
-        <div class="alert-banner" id="alertBanner">
-            <div class="alert-icon">⚠️</div>
-            <div class="alert-text" id="alertText"></div>
+
+        <!-- FEED BUTTON -->
+        <button class="feed-now-btn" id="feedNowBtn" onclick="feedNow()">
+            <span id="feedBtnIcon">🐟</span>
+            <span id="feedBtnText">Beri Makan Sekarang</span>
+        </button>
+
+        <!-- Servo manual -->
+        <div class="servo-section">
+            <div class="servo-row">
+                <label>Sudut Servo Manual</label>
+                <input type="range" class="servo-slider" id="servoSlider"
+                       min="0" max="180" value="90"
+                       oninput="document.getElementById('servoVal').textContent=this.value+'°'">
+                <span class="servo-val" id="servoVal">90°</span>
+            </div>
+            <button class="servo-set-btn" onclick="setServoAngle()">Tetapkan Sudut</button>
         </div>
-        
-        <div class="sensors-grid">
-            <div class="sensor-card normal" id="tempCard" onclick="explainSensor('suhu')">
-                <span class="sensor-icon">🌡️</span>
-                <div class="sensor-label">Suhu</div>
-                <div class="sensor-value" id="tempValue">--</div>
-                <div class="sensor-unit">°C</div>
-                <span class="sensor-badge badge-normal" id="tempStatus">Normal</span>
-            </div>
-            <div class="sensor-card normal" id="phCard" onclick="explainSensor('pH')">
-                <span class="sensor-icon">💧</span>
-                <div class="sensor-label">pH</div>
-                <div class="sensor-value" id="phValue">--</div>
-                <div class="sensor-unit">pH</div>
-                <span class="sensor-badge badge-normal" id="phStatus">Normal</span>
-            </div>
-            <div class="sensor-card normal" id="tdsCard" onclick="explainSensor('TDS')">
-                <span class="sensor-icon">📊</span>
-                <div class="sensor-label">TDS</div>
-                <div class="sensor-value" id="tdsValue">--</div>
-                <div class="sensor-unit">ppm</div>
-                <span class="sensor-badge badge-normal" id="tdsStatus">Normal</span>
-            </div>
+
+        <!-- Auto-feed schedule -->
+        <div class="schedule-title">⏰ Jadual Makan Automatik</div>
+        <div class="schedule-chips" id="scheduleChips"></div>
+        <div class="schedule-add">
+            <input type="time" class="time-input" id="newFeedTime" value="08:00">
+            <button class="add-btn" onclick="addScheduleSlot()">+ Tambah</button>
         </div>
-        
-        <!-- NEW: Stats summary -->
-        <div class="stats-summary">
-            <div class="stat-item">
-                <div class="stat-label">Bacaan Hari Ini</div>
-                <div class="stat-value" id="todayReadings">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Status Keseluruhan</div>
-                <div class="stat-value" id="overallStatus">Normal</div>
-            </div>
+
+        <!-- Feed log -->
+        <div class="log-title">📋 Log Pemberian Makan</div>
+        <div class="feed-log" id="feedLog">
+            <div class="log-row"><span class="log-t">--:--</span><span class="log-s">—</span><span>Tiada log lagi</span></div>
         </div>
-        
-        <div class="card">
-            <div class="ai-chat-header">
-                <h2>🤖 Pembantu Suara AI</h2>
-                <div class="ai-badge">VERCEL</div>
-            </div>
-            <div class="setup-notice" id="setupNotice">
-                ⚙️ <strong>CORS Fix:</strong> Tukar <code>VERCEL_URL</code> kepada URL <em>production</em> anda
-                (bukan URL preview <code>-abc123-xxx.vercel.app</code>).
-                Pastikan <code>vercel.json</code> ada dalam repo anda.
-            </div>
-            <div class="voice-controls">
-                <div class="voice-status" id="voiceStatus">🎤 Tekan mikrofon untuk bercakap</div>
-                <button class="speaker-btn active" id="speakerToggle" onclick="toggleSpeaker()">
-                    <span id="speakerIcon">🔊</span>
-                    <span id="speakerText">Suara ON</span>
-                </button>
-                <button class="speaker-btn" id="testSpeakBtn" onclick="testSpeak()" style="background:rgba(0,229,200,.15);color:var(--accent2);border-color:rgba(0,229,200,.3)">
-                    <span>🔊</span>
-                    <span>Test Suara</span>
-                </button>
-            </div>
-            <div class="quick-questions">
-                <button class="quick-question-btn" onclick="askQuestion('Bagaimana kolam saya?')">Bagaimana kolam?</button>
-                <button class="quick-question-btn" onclick="askQuestion('Patut saya beri makan ikan sekarang?')">Beri makan?</button>
-                <button class="quick-question-btn" onclick="askQuestion('Apa yang patut saya periksa?')">Apa periksa?</button>
-                <button class="quick-question-btn" onclick="askQuestion('Ada masalah?')">Ada masalah?</button>
-            </div>
-            <div class="chat-messages" id="chatMessages">
-                <div class="chat-message">
-                    <div class="message-avatar ai-avatar">🤖</div>
-                    <div class="message-content">
-                        <div class="message-text">Hai! Saya pembantu AI kolam anda. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?</div>
-                        <div class="message-time">Sekarang</div>
-                    </div>
+    </div>
+
+    <!-- AI CHAT -->
+    <div class="card">
+        <div class="ai-chat-header">
+            <h2>🤖 Pembantu Suara AI</h2>
+            <div class="ai-badge">VERCEL</div>
+        </div>
+        <div class="setup-notice" id="setupNotice">
+            ⚙️ <strong>CORS Fix:</strong> Tukar <code>VERCEL_URL</code> kepada URL <em>production</em> anda.
+        </div>
+        <div class="voice-controls">
+            <div class="voice-status" id="voiceStatus">🎤 Tekan mikrofon untuk bercakap</div>
+            <button class="speaker-btn active" id="speakerToggle" onclick="toggleSpeaker()">
+                <span id="speakerIcon">🔊</span>
+                <span id="speakerText">Suara ON</span>
+            </button>
+            <button class="speaker-btn" onclick="testSpeak()" style="background:rgba(0,229,200,.15);color:var(--accent2);border-color:rgba(0,229,200,.3)">
+                <span>🔊</span><span>Test</span>
+            </button>
+        </div>
+        <div class="quick-questions">
+            <button class="quick-question-btn" onclick="askQuestion('Bagaimana kolam saya?')">Bagaimana kolam?</button>
+            <button class="quick-question-btn" onclick="askQuestion('Patut saya beri makan ikan sekarang?')">Beri makan?</button>
+            <button class="quick-question-btn" onclick="askQuestion('Apa yang patut saya periksa?')">Apa periksa?</button>
+            <button class="quick-question-btn" onclick="askQuestion('Ada masalah?')">Ada masalah?</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-text">Hai! Saya pembantu AI kolam anda. Apa yang anda ingin tahu?</div>
+                    <div class="message-time">Sekarang</div>
                 </div>
             </div>
-            <div class="chat-message" style="margin-bottom:14px;">
-                <div class="message-avatar ai-avatar">🤖</div>
-                <div class="typing-indicator" id="typingIndicator"><span></span><span></span><span></span></div>
-            </div>
-            <div class="chat-input-container">
-                <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()" title="Tekan untuk bercakap">🎤</button>
-                <input type="text" class="chat-input" id="chatInput" placeholder="Taip atau tekan mikrofon..." onkeypress="if(event.key==='Enter') sendMessage()">
-                <button class="send-btn" onclick="sendMessage()" id="sendBtn">Hantar</button>
-            </div>
         </div>
-        
-        <div class="card">
-            <!-- NEW: Chart toggle -->
-            <div class="chart-toggle">
-                <button class="toggle-btn active" id="tempToggle" onclick="switchChart('temp')">🌡️ Suhu</button>
-                <button class="toggle-btn" id="phToggle" onclick="switchChart('ph')">💧 pH</button>
-                <button class="toggle-btn" id="tdsToggle" onclick="switchChart('tds')">📊 TDS</button>
-            </div>
-            <div class="chart-title" id="chartTitle">📈 Sejarah Suhu — 24 Jam Terkini</div>
-            <canvas id="mainChart"></canvas>
+        <div class="chat-message" style="margin-bottom:14px">
+            <div class="message-avatar">🤖</div>
+            <div class="typing-indicator" id="typingIndicator"><span></span><span></span><span></span></div>
         </div>
-        
-        <button class="refresh-btn" onclick="fetchData()">🔄 Muat Semula Data</button>
+        <div class="chat-input-container">
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()">🎤</button>
+            <input type="text" class="chat-input" id="chatInput"
+                   placeholder="Taip atau tekan mikrofon..."
+                   onkeypress="if(event.key==='Enter')sendMessage()">
+            <button class="send-btn" onclick="sendMessage()" id="sendBtn">Hantar</button>
+        </div>
     </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script>
-    // =================================================================
-    // ⚙️  STEP 1: Replace with your PRODUCTION Vercel URL
-    // =================================================================
-    const VERCEL_URL = 'https://pond-monitor-psi.vercel.app';
-    const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
 
-    const TEMP_MIN=20,TEMP_MAX=32,PH_MIN=6.5,PH_MAX=8.5,TDS_MIN=300,TDS_MAX=800;
+    <!-- CHART -->
+    <div class="card">
+        <div class="chart-toggle">
+            <button class="toggle-btn active" id="tempToggle" onclick="switchChart('temp')">🌡️ Suhu</button>
+            <button class="toggle-btn" id="phToggle"  onclick="switchChart('ph')">💧 pH</button>
+            <button class="toggle-btn" id="tdsToggle" onclick="switchChart('tds')">📊 TDS</button>
+        </div>
+        <div class="chart-title" id="chartTitle">📈 Sejarah Suhu — 24 Jam Terkini</div>
+        <canvas id="mainChart"></canvas>
+    </div>
 
-    let mainChart,currentSensorData={},recognition,isListening=false,voiceEnabled=true,
-        isSpeaking=false,availableVoices=[],audioContext=null,audioUnlocked=false,
-        currentChartType='temp',allData=[];
+    <button class="refresh-btn" onclick="fetchData()">🔄 Muat Semula Data</button>
+</div>
 
-    // Hide setup notice if URL is production
-    if(!/(-[a-z0-9]{8,}-[^.]+)?\.vercel\.app/.test(VERCEL_URL.replace(/https?:\/\//,'').split('.')[0]+'.test') || VERCEL_URL.split('.vercel.app')[0].split('-').length <= 2){
-        document.getElementById('setupNotice').style.display='none';
+<!-- Bottom Nav -->
+<div style="position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-around;z-index:1000;backdrop-filter:blur(10px)">
+    <a href="pond-dashboard.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px;background:rgba(61,139,255,.15)">
+        <div style="font-size:1.6em">📊</div><div>Dashboard</div>
+    </a>
+    <a href="fish-encyclopedia.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
+        <div style="font-size:1.6em">📚</div><div>Ensiklopedia</div>
+    </a>
+    <a href="#" onclick="alert('Coming soon!');return false" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
+        <div style="font-size:1.6em">🎓</div><div>Panduan</div>
+    </a>
+    <a href="#" onclick="alert('Coming soon!');return false" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
+        <div style="font-size:1.6em">⚙️</div><div>Tetapan</div>
+    </a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+// ════════════════════════════════════════════════════════════
+// CONFIG
+// ════════════════════════════════════════════════════════════
+const VERCEL_URL    = 'https://pond-monitor-psi.vercel.app';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
+
+const TEMP_MIN=20,TEMP_MAX=32,PH_MIN=6.5,PH_MAX=8.5,TDS_MIN=300,TDS_MAX=800;
+
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
+let mainChart, currentSensorData={}, recognition, isListening=false,
+    voiceEnabled=true, isSpeaking=false, availableVoices=[],
+    audioContext=null, audioUnlocked=false,
+    currentChartType='temp', allData=[];
+
+let feedLog      = [];
+let scheduleList = JSON.parse(localStorage.getItem('feedSchedule') || '["07:00","12:00","18:00"]');
+let lastCmdId    = '';   // track last command we sent (for ACK polling)
+let ackPollTimer = null;
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+    renderSchedule();
+    startScheduleWatcher();
+    setupAudioUnlock();
+
+    if (!/(-[a-z0-9]{6,}-[^.]+)?\.vercel\.app/.test(
+        VERCEL_URL.replace(/https?:\/\//,'').split('/')[0]
+    )) document.getElementById('setupNotice').style.display='none';
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        setTimeout(()=>{
+            if (!audioUnlocked) showAudioOverlay();
+        }, 2000);
     }
+});
 
-    // =================================================================
-    // AUDIO UNLOCK - SIMPLIFIED AND WORKING
-    // =================================================================
-    
-    // Wait for DOM to be ready
-    window.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM loaded, setting up audio unlock...');
-        
-        const unlockBtn = document.getElementById('unlockAudioBtn');
-        const skipBtn = document.getElementById('skipAudioBtn');
-        const overlay = document.getElementById('audioUnlockOverlay');
-        
-        if (!unlockBtn) {
-            console.error('Unlock button not found!');
-            return;
+// ════════════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════════════
+function showToast(msg, duration=3000) {
+    const t = document.getElementById('cmdToast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ════════════════════════════════════════════════════════════
+// ESP32 STATUS via Vercel
+// ════════════════════════════════════════════════════════════
+async function fetchEspStatus() {
+    try {
+        const res  = await fetch(VERCEL_URL + '/api/status');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const online = data.online;
+        const el     = document.getElementById('espStatus');
+        const dot    = document.getElementById('espDot');
+        const txt    = document.getElementById('espStatusText');
+
+        el.className = 'esp-status ' + (online ? 'online' : 'offline');
+        dot.className = 'esp-dot' + (online ? ' pulse' : '');
+        txt.textContent = online
+            ? 'ESP32 dalam talian ✓  (' + data.staleSec + 's lalu)'
+            : 'ESP32 luar talian — tiada data ' + (data.staleSec ? `(${data.staleSec}s)` : '');
+
+        // Update feeder stats from ESP32 push
+        if (data.sensor) {
+            const s = data.sensor;
+            document.getElementById('feedCount').textContent  = (s.feedCount ?? '—') + '×';
+            document.getElementById('lastFeedTime').textContent = s.lastFeed || '—';
+            document.getElementById('servoStatus').textContent  = s.servoOpen ? 'Terbuka 🔓' : 'Tertutup 🔒';
         }
-        
-        console.log('Unlock button found, attaching handlers...');
-        
-        // Unlock audio function
-        function doUnlock() {
-            console.log('=== UNLOCK FUNCTION CALLED ===');
-            
-            // Mark as unlocked FIRST to prevent popup from showing again
-            audioUnlocked = true;
-            
-            // Hide overlay immediately so user can see the page
-            overlay.classList.remove('show');
-            overlay.style.display = 'none'; // Extra safety
-            
-            // Try to play silent audio
-            const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
-            audio.volume = 1.0; // Full volume for unlock
-            
-            audio.play()
-                .then(() => {
-                    console.log('✅ Audio unlocked successfully!');
-                    addMessage('✅ Suara diaktifkan!', false);
-                })
-                .catch(err => {
-                    console.log('Audio play failed:', err.message);
-                    addMessage('ℹ️ Suara mungkin tidak berfungsi. Cuba tekan butang speaker.', false);
-                });
-            
-            // Initialize audio context
-            if (!audioContext) {
-                try {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    audioContext = new AudioContext();
-                    console.log('AudioContext created');
-                    if (audioContext.state === 'suspended') {
-                        audioContext.resume().then(() => {
-                            console.log('AudioContext resumed');
-                        });
+
+        // Update feed history from Vercel
+        if (data.feedHistory?.length) {
+            feedLog = data.feedHistory.map(e => ({
+                time:   new Date(e.time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}),
+                source: e.source
+            }));
+            renderFeedLog();
+        }
+
+        // Check if our last command was ACKed
+        if (lastCmdId && data.lastAck?.id === lastCmdId) {
+            const ok = data.lastAck.result === 'ok';
+            clearTimeout(ackPollTimer);
+            lastCmdId = '';
+            if (ok) {
+                resetFeedBtn('success');
+                showToast('✅ Ikan berjaya diberi makan!');
+            } else {
+                resetFeedBtn('error');
+                showToast('❌ Servo gagal — semak ESP32');
+            }
+        }
+
+    } catch(err) {
+        console.warn('ESP status fetch failed:', err.message);
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+// FEED NOW
+// ════════════════════════════════════════════════════════════
+async function feedNow() {
+    const btn = document.getElementById('feedNowBtn');
+    btn.disabled = true;
+    btn.classList.add('feeding');
+    document.getElementById('feedBtnIcon').textContent = '⏳';
+    document.getElementById('feedBtnText').textContent = 'Menghantar arahan...';
+
+    try {
+        const res  = await fetch(VERCEL_URL + '/api/command', {
+            method:  'POST',
+            headers: {'Content-Type':'application/json'},
+            body:    JSON.stringify({ action: 'feed' })
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+            lastCmdId = data.queued.id;
+            document.getElementById('feedBtnIcon').textContent = '📡';
+            document.getElementById('feedBtnText').textContent = 'Arahan dihantar — menunggu ESP32...';
+            showToast('📡 Arahan dihantar ke ESP32...');
+
+            // Poll for ACK every 2s for up to 15s
+            let attempts = 0;
+            ackPollTimer = setInterval(async () => {
+                attempts++;
+                await fetchEspStatus();
+                if (!lastCmdId || attempts >= 8) {
+                    clearInterval(ackPollTimer);
+                    if (lastCmdId) {
+                        // No ACK received
+                        lastCmdId = '';
+                        resetFeedBtn('error');
+                        showToast('⚠️ ESP32 tidak menjawab — semak peranti');
                     }
-                } catch(e) {
-                    console.error('AudioContext error:', e);
                 }
-            }
-            
-            // Initialize speech synthesis - IMPORTANT for mobile browsers
-            if (window.speechSynthesis) {
-                console.log('Initializing SpeechSynthesis...');
-                
-                // Load voices
-                const loadVoices = () => {
-                    availableVoices = window.speechSynthesis.getVoices();
-                    console.log('Available voices:', availableVoices.length);
-                };
-                
-                loadVoices();
-                window.speechSynthesis.onvoiceschanged = loadVoices;
-                
-                // Test utterance to unlock speech synthesis on iOS
-                const testUtterance = new SpeechSynthesisUtterance('Hi');
-                testUtterance.volume = 0.01;
-                testUtterance.rate = 10;
-                testUtterance.onstart = () => {
-                    console.log('✅ SpeechSynthesis unlocked');
-                    window.speechSynthesis.cancel(); // Cancel immediately
-                };
-                testUtterance.onerror = (e) => {
-                    console.log('SpeechSynthesis test error:', e.error);
-                };
-                
-                window.speechSynthesis.speak(testUtterance);
-            }
+            }, 2000);
+        } else {
+            throw new Error(data.error || 'Unknown error');
         }
-        
-        // Skip function
-        function doSkip() {
-            console.log('User skipped audio unlock');
-            audioUnlocked = true; // Mark as unlocked to prevent popup
-            overlay.classList.remove('show');
-            overlay.style.display = 'none';
-            voiceEnabled = false;
-            document.getElementById('speakerIcon').textContent = '🔇';
-            document.getElementById('speakerText').textContent = 'Suara OFF';
-            document.getElementById('speakerToggle').classList.remove('active');
-            addMessage('ℹ️ Suara dimatikan. Anda boleh hidupkan melalui butang speaker.', false);
-        }
-        
-        // Attach click handlers
-        unlockBtn.onclick = function(e) {
-            console.log('Unlock button clicked!');
-            e.preventDefault();
-            e.stopPropagation();
-            doUnlock();
-        };
-        
-        skipBtn.onclick = function(e) {
-            console.log('Skip button clicked!');
-            e.preventDefault();
-            e.stopPropagation();
-            doSkip();
-        };
-        
-        // Touch handlers for mobile
-        unlockBtn.addEventListener('touchend', function(e) {
-            console.log('Unlock button touched!');
-            e.preventDefault();
-            e.stopPropagation();
-            doUnlock();
-        }, { passive: false });
-        
-        skipBtn.addEventListener('touchend', function(e) {
-            console.log('Skip button touched!');
-            e.preventDefault();
-            e.stopPropagation();
-            doSkip();
-        }, { passive: false });
-        
-        console.log('Audio unlock handlers attached successfully');
-    });
+    } catch(err) {
+        resetFeedBtn('error');
+        showToast('❌ Gagal: ' + err.message);
+    }
+}
 
-    // =================================================================
-    // API CALL
-    // =================================================================
-    async function askAI(question) {
-        const systemPrompt=`Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia.
+function resetFeedBtn(state='normal') {
+    const btn = document.getElementById('feedNowBtn');
+    btn.disabled = false;
+    btn.classList.remove('feeding','success','error');
+
+    const icons = { normal:'🐟', success:'✅', error:'❌' };
+    const texts = {
+        normal:  'Beri Makan Sekarang',
+        success: 'Berjaya Diberi Makan!',
+        error:   'Gagal — Cuba Semula'
+    };
+    document.getElementById('feedBtnIcon').textContent = icons[state];
+    document.getElementById('feedBtnText').textContent = texts[state];
+
+    if (state !== 'normal') {
+        if (state === 'success') btn.classList.add('success');
+        else btn.classList.add('error');
+        setTimeout(() => resetFeedBtn('normal'), 3500);
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+// SERVO MANUAL
+// ════════════════════════════════════════════════════════════
+async function setServoAngle() {
+    const angle = parseInt(document.getElementById('servoSlider').value);
+    try {
+        const res  = await fetch(VERCEL_URL + '/api/command', {
+            method:  'POST',
+            headers: {'Content-Type':'application/json'},
+            body:    JSON.stringify({ action: 'servo', angle })
+        });
+        const data = await res.json();
+        if (data.ok) {
+            showToast('📡 Sudut ' + angle + '° dihantar ke ESP32');
+            lastCmdId = data.queued.id;
+        }
+    } catch(err) {
+        showToast('❌ Gagal hantar arahan servo');
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+// FEED LOG
+// ════════════════════════════════════════════════════════════
+function addFeedLogLocal(time, source) {
+    feedLog.unshift({ time, source });
+    if (feedLog.length > 20) feedLog.pop();
+    renderFeedLog();
+}
+
+function renderFeedLog() {
+    const el = document.getElementById('feedLog');
+    if (!feedLog.length) return;
+    el.innerHTML = feedLog.map(e =>
+        `<div class="log-row"><span class="log-t">${e.time}</span><span class="log-s">[${e.source}]</span><span>Diberi makan</span></div>`
+    ).join('');
+}
+
+// ════════════════════════════════════════════════════════════
+// SCHEDULE
+// ════════════════════════════════════════════════════════════
+function renderSchedule() {
+    document.getElementById('scheduleChips').innerHTML = scheduleList.map((t,i) =>
+        `<div class="schedule-chip">⏰ ${t}<span class="chip-del" onclick="removeSchedule(${i})">✕</span></div>`
+    ).join('');
+}
+
+function addScheduleSlot() {
+    const val = document.getElementById('newFeedTime').value;
+    if (!val || scheduleList.includes(val)) return;
+    scheduleList.push(val); scheduleList.sort();
+    localStorage.setItem('feedSchedule', JSON.stringify(scheduleList));
+    renderSchedule();
+}
+
+function removeSchedule(i) {
+    scheduleList.splice(i,1);
+    localStorage.setItem('feedSchedule', JSON.stringify(scheduleList));
+    renderSchedule();
+}
+
+function startScheduleWatcher() {
+    clearInterval(window._schedWatcher);
+    window._schedWatcher = setInterval(() => {
+        const now  = new Date();
+        const hhmm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+        if (scheduleList.includes(hhmm)) {
+            const key  = 'lastAutoFeed';
+            const last = localStorage.getItem(key);
+            if (last !== hhmm) {
+                localStorage.setItem(key, hhmm);
+                console.log('⏰ Auto feed at', hhmm);
+                feedNow();
+                addFeedLogLocal(hhmm, 'auto');
+            }
+        }
+    }, 30000);
+}
+
+// ════════════════════════════════════════════════════════════
+// GOOGLE SHEETS SENSOR DATA
+// ════════════════════════════════════════════════════════════
+async function fetchData() {
+    try {
+        document.getElementById('errorMessage').style.display='none';
+        const res  = await fetch(SHEET_CSV_URL);
+        if (!res.ok) throw new Error('Gagal ambil data dari Google Sheets');
+        const data = parseCSV(await res.text());
+        if (!data.length) throw new Error('Tiada data dalam spreadsheet');
+        allData = data;
+
+        const latest = data[data.length-1];
+        currentSensorData = {
+            temp: latest.temp.toFixed(1),
+            ph:   latest.ph.toFixed(2),
+            tds:  Math.round(latest.tds)
+        };
+        document.getElementById('tempValue').textContent = currentSensorData.temp;
+        document.getElementById('phValue').textContent   = currentSensorData.ph;
+        document.getElementById('tdsValue').textContent  = currentSensorData.tds;
+
+        updateSensorCard('tempCard','tempStatus', latest.temp, TEMP_MIN, TEMP_MAX);
+        updateSensorCard('phCard',  'phStatus',   latest.ph,   PH_MIN,   PH_MAX);
+        updateSensorCard('tdsCard', 'tdsStatus',  latest.tds,  TDS_MIN,  TDS_MAX);
+
+        document.getElementById('lastUpdate').textContent = formatTimeAgo(latest.timestamp);
+        document.getElementById('statusDot').classList.toggle('offline',
+            (new Date()-new Date(latest.timestamp)) >= 5*60000);
+
+        checkAlerts(latest.temp, latest.ph, latest.tds);
+        calculateStats(data);
+        updateChart();
+
+        // Also refresh ESP32 status
+        fetchEspStatus();
+
+    } catch(err) {
+        document.getElementById('errorMessage').textContent = '⚠️ ' + err.message;
+        document.getElementById('errorMessage').style.display = 'block';
+    }
+}
+
+function parseCSV(csv) {
+    return csv.trim().split('\n').slice(1).map(line => {
+        const v = line.split(',');
+        return v.length>=4 ? {timestamp:v[0],temp:parseFloat(v[1]),ph:parseFloat(v[2]),tds:parseFloat(v[3])} : null;
+    }).filter(Boolean);
+}
+function formatTimeAgo(ts) {
+    const d=Math.floor((new Date()-new Date(ts))/60000);
+    if(d<1)return'Baru sahaja';if(d<60)return d+' minit lalu';
+    const h=Math.floor(d/60);if(h<24)return h+' jam lalu';return Math.floor(h/24)+' hari lalu';
+}
+function updateSensorCard(cId,bId,v,mn,mx) {
+    const c=document.getElementById(cId),b=document.getElementById(bId);
+    c.classList.remove('normal','warning','danger');
+    b.classList.remove('badge-normal','badge-warning','badge-danger');
+    if(v<mn){c.classList.add('warning');b.classList.add('badge-warning');b.textContent='Rendah';}
+    else if(v>mx){c.classList.add('danger');b.classList.add('badge-danger');b.textContent='Tinggi';}
+    else{c.classList.add('normal');b.classList.add('badge-normal');b.textContent='Normal';}
+}
+function checkAlerts(t,p,d) {
+    const a=[];
+    if(t>=TEMP_MAX)a.push('Suhu terlalu tinggi!');else if(t<TEMP_MIN)a.push('Suhu terlalu rendah!');
+    if(p<PH_MIN)a.push('pH terlalu rendah!');else if(p>PH_MAX)a.push('pH terlalu tinggi!');
+    if(d>TDS_MAX)a.push('TDS terlalu tinggi!');else if(d<TDS_MIN)a.push('TDS terlalu rendah!');
+    document.getElementById('alertText').textContent=a.join(' ');
+    document.getElementById('alertBanner').classList.toggle('show',a.length>0);
+}
+function calculateStats(data) {
+    const today=new Date();today.setHours(0,0,0,0);
+    document.getElementById('todayReadings').textContent=data.filter(d=>new Date(d.timestamp)>=today).length;
+    const issues=[
+        currentSensorData.temp<TEMP_MIN||currentSensorData.temp>TEMP_MAX,
+        currentSensorData.ph<PH_MIN||currentSensorData.ph>PH_MAX,
+        currentSensorData.tds<TDS_MIN||currentSensorData.tds>TDS_MAX
+    ].filter(Boolean).length;
+    const el=document.getElementById('overallStatus');
+    el.textContent=issues===0?'Normal':issues===1?'Peringatan':'Kritikal';
+    el.style.color=issues===0?'var(--success)':issues===1?'var(--warning)':'var(--danger)';
+}
+
+// ════════════════════════════════════════════════════════════
+// CHART
+// ════════════════════════════════════════════════════════════
+function switchChart(type) {
+    currentChartType=type;
+    document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(type+'Toggle').classList.add('active');
+    const t={temp:'📈 Sejarah Suhu — 24 Jam Terkini',ph:'💧 Sejarah pH — 24 Jam Terkini',tds:'📊 Sejarah TDS — 24 Jam Terkini'};
+    document.getElementById('chartTitle').textContent=t[type];
+    updateChart();
+}
+function updateChart() {
+    const s=allData.slice(-50);
+    const labels=s.map(d=>new Date(d.timestamp).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
+    const m={
+        temp:{data:s.map(d=>d.temp),label:'Suhu (°C)',color:'#3d8bff',bg:'rgba(61,139,255,0.08)'},
+        ph:  {data:s.map(d=>d.ph),  label:'pH',        color:'#00e5c8',bg:'rgba(0,229,200,0.08)'},
+        tds: {data:s.map(d=>d.tds), label:'TDS (ppm)', color:'#ffbe5c',bg:'rgba(255,190,92,0.08)'},
+    };
+    const {data,label,color,bg}=m[currentChartType];
+    const ctx=document.getElementById('mainChart').getContext('2d');
+    if(mainChart)mainChart.destroy();
+    mainChart=new Chart(ctx,{
+        type:'line',
+        data:{labels,datasets:[{label,data,borderColor:color,backgroundColor:bg,borderWidth:2.5,tension:.4,fill:true,pointRadius:2,pointHoverRadius:5}]},
+        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},
+            scales:{
+                y:{beginAtZero:false,grid:{color:'rgba(100,160,255,0.06)'},ticks:{color:'#7899cc',font:{family:'DM Mono',size:11}}},
+                x:{grid:{display:false},ticks:{color:'#7899cc',maxTicksLimit:6,font:{family:'DM Mono',size:11}}}
+            }
+        }
+    });
+}
+
+// ════════════════════════════════════════════════════════════
+// AI CHAT
+// ════════════════════════════════════════════════════════════
+async function askAI(question) {
+    const sp=`Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia.
 Berikan nasihat yang berguna dan ringkas tentang ternakan tilapia berdasarkan data sensor.
 Beri respons yang pendek (2-3 ayat) dan praktikal dalam Bahasa Melayu.
 Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm.`;
+    const r=await fetch(`${VERCEL_URL}/api/chat`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sp},{role:'user',content:getSensorContext()+'\n\nSoalan: '+question}],max_tokens:300,temperature:.7})
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(d.error)throw new Error(d.error.message);
+    return d.choices[0].message.content;
+}
+function getSensorContext() {
+    const t=currentSensorData.temp??'?',p=currentSensorData.ph??'?',d=currentSensorData.tds??'?';
+    return `Keadaan kolam semasa:\n- Suhu: ${t}°C\n- pH: ${p}\n- TDS: ${d} ppm`;
+}
+function addMessage(text,isUser=false) {
+    const w=document.getElementById('chatMessages'),div=document.createElement('div');
+    div.className='chat-message'+(isUser?' user-message':'');
+    const time=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    div.innerHTML=`<div class="message-avatar ${isUser?'user-avatar':''}">${isUser?'👤':'🤖'}</div><div class="message-content"><div class="message-text">${text}</div><div class="message-time">${time}</div></div>`;
+    w.appendChild(div);w.scrollTop=w.scrollHeight;
+}
+async function sendMessage() {
+    const i=document.getElementById('chatInput'),q=i.value.trim();
+    if(!q)return;
+    addMessage(q,true);i.value='';
+    document.getElementById('typingIndicator').classList.add('active');
+    const b=document.getElementById('sendBtn');b.disabled=true;b.textContent='Berfikir...';
+    try{const r=await askAI(q);addMessage(r,false);speakWithBrowserTTS(r);}
+    catch(e){addMessage('⚠️ '+e.message,false);}
+    finally{document.getElementById('typingIndicator').classList.remove('active');b.disabled=false;b.textContent='Hantar';}
+}
+function askQuestion(q){document.getElementById('chatInput').value=q;sendMessage();}
+function explainSensor(s){
+    const q={suhu:'Terangkan kenapa suhu kolam penting untuk ikan tilapia',pH:'Terangkan kenapa pH air penting',TDS:'Apa itu TDS dan kenapa ia penting?'};
+    askQuestion(q[s]);
+}
 
-        let response;
-        try {
-            response = await fetch(`${VERCEL_URL}/api/chat`, {
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({
-                    model:'llama-3.3-70b-versatile',
-                    messages:[
-                        {role:'system',content:systemPrompt},
-                        {role:'user',content:getSensorContext()+'\n\nSoalan: '+question}
-                    ],
-                    max_tokens:300,
-                    temperature:0.7
-                })
-            });
-        } catch(networkErr) {
-            const looksLikePreview = (VERCEL_URL.match(/-[a-zA-Z0-9]{6,}-[^.]+\.vercel\.app/) !== null);
-            if(looksLikePreview){
-                throw new Error(
-                    'CORS error! Anda menggunakan URL PREVIEW Vercel.\n\n'+
-                    'URL preview (ada nombor rawak) tidak sokong CORS dengan betul.\n\n'+
-                    'Penyelesaian:\n'+
-                    '1. Buka Vercel Dashboard\n'+
-                    '2. Klik projek anda\n'+
-                    '3. Salin URL di bahagian atas (contoh: pond-monitor.vercel.app)\n'+
-                    '4. Ganti VERCEL_URL dalam kod HTML ini'
-                );
-            }
-            throw new Error('Gagal sambung ke pelayan. Semak: (1) VERCEL_URL betul, (2) vercel.json ada dalam repo, (3) GROQ_API_KEY diset dalam Vercel.');
+// ════════════════════════════════════════════════════════════
+// AUDIO / TTS
+// ════════════════════════════════════════════════════════════
+function showAudioOverlay(){
+    document.getElementById('audioUnlockOverlay').classList.add('show');
+    document.getElementById('audioUnlockOverlay').style.display='flex';
+}
+function setupAudioUnlock(){
+    const overlay=document.getElementById('audioUnlockOverlay');
+    const uBtn=document.getElementById('unlockAudioBtn');
+    const sBtn=document.getElementById('skipAudioBtn');
+    function doUnlock(){
+        audioUnlocked=true;overlay.classList.remove('show');overlay.style.display='none';
+        const a=new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+        a.volume=1;a.play().catch(()=>{});
+        if(!audioContext){try{const AC=window.AudioContext||window.webkitAudioContext;audioContext=new AC();audioContext.resume();}catch(e){}}
+        if(window.speechSynthesis){
+            const lv=()=>{availableVoices=window.speechSynthesis.getVoices();};
+            lv();window.speechSynthesis.onvoiceschanged=lv;
+            const u=new SpeechSynthesisUtterance('Hi');u.volume=.01;u.rate=10;
+            u.onstart=()=>window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
         }
+        addMessage('✅ Suara diaktifkan!',false);
+    }
+    function doSkip(){
+        audioUnlocked=true;voiceEnabled=false;
+        overlay.classList.remove('show');overlay.style.display='none';
+        document.getElementById('speakerIcon').textContent='🔇';
+        document.getElementById('speakerText').textContent='Suara OFF';
+        document.getElementById('speakerToggle').classList.remove('active');
+    }
+    uBtn.onclick=e=>{e.preventDefault();doUnlock();};
+    sBtn.onclick=e=>{e.preventDefault();doSkip();};
+    uBtn.addEventListener('touchend',e=>{e.preventDefault();doUnlock();},{passive:false});
+    sBtn.addEventListener('touchend',e=>{e.preventDefault();doSkip();},{passive:false});
+}
+function toggleSpeaker(){
+    voiceEnabled=!voiceEnabled;
+    document.getElementById('speakerIcon').textContent=voiceEnabled?'🔊':'🔇';
+    document.getElementById('speakerText').textContent=voiceEnabled?'Suara ON':'Suara OFF';
+    document.getElementById('speakerToggle').classList.toggle('active',voiceEnabled);
+    if(!voiceEnabled){window.speechSynthesis.cancel();isSpeaking=false;}
+}
+function testSpeak(){
+    if(!audioUnlocked){showAudioOverlay();return;}
+    voiceEnabled=true;
+    document.getElementById('speakerIcon').textContent='🔊';
+    document.getElementById('speakerText').textContent='Suara ON';
+    document.getElementById('speakerToggle').classList.add('active');
+    speakWithBrowserTTS('Hai, saya sedang menguji suara. Boleh dengar saya?');
+}
+async function speakWithBrowserTTS(text){
+    if(!voiceEnabled||!audioUnlocked)return;
+    window.speechSynthesis.cancel();
+    await new Promise(r=>setTimeout(r,200));
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=.9;u.pitch=1;u.volume=1;u.lang='ms-MY';
+    if(availableVoices.length){
+        const v=availableVoices.find(v=>v.lang.startsWith('ms')||v.lang.startsWith('id'));
+        if(v){u.voice=v;u.lang=v.lang;}
+    }
+    u.onstart=()=>{isSpeaking=true;document.getElementById('voiceBtn').classList.add('speaking');};
+    u.onend=()=>{isSpeaking=false;document.getElementById('voiceBtn').classList.remove('speaking');};
+    u.onerror=()=>{isSpeaking=false;document.getElementById('voiceBtn').classList.remove('speaking');};
+    if(audioContext?.state==='suspended')await audioContext.resume();
+    window.speechSynthesis.speak(u);
+}
+if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='ms-MY';
+    recognition.onstart=()=>{isListening=true;document.getElementById('voiceBtn').classList.add('listening');document.getElementById('voiceStatus').textContent='🎤 Mendengar...';};
+    recognition.onend=()=>{isListening=false;document.getElementById('voiceBtn').classList.remove('listening');document.getElementById('voiceStatus').textContent='🎤 Tekan mikrofon untuk bercakap';};
+    recognition.onresult=e=>{const t=e.results[0][0].transcript;document.getElementById('chatInput').value=t;sendMessage();};
+    recognition.onerror=e=>{document.getElementById('voiceStatus').textContent='🎤 Ralat: '+e.error;};
+}else{document.getElementById('voiceBtn').disabled=true;}
+function toggleVoiceInput(){if(!recognition){alert('Voice input tidak disokong.');return;}isListening?recognition.stop():recognition.start();}
+if(window.speechSynthesis){availableVoices=window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>{availableVoices=window.speechSynthesis.getVoices();};}
 
-        if(!response.ok){
-            let e={};try{e=await response.json();}catch{}
-            throw new Error(e?.error?.message||`HTTP ${response.status} dari Vercel`);
-        }
-
-        let data;
-        try{data=await response.json();}catch{
-            throw new Error('Respons bukan JSON — buka Vercel Dashboard → Functions tab untuk lihat log.');
-        }
-
-        if(data.error) throw new Error(data.error.message||'Ralat dari API');
-        if(!data.choices?.length) throw new Error('Format respons tidak sah.');
-        return data.choices[0].message.content;
-    }
-
-    function getSensorContext(){
-        const t=currentSensorData.temp??'?',p=currentSensorData.ph??'?',d=currentSensorData.tds??'?';
-        const ts=+t>=TEMP_MAX?'(TINGGI)':+t<TEMP_MIN?'(RENDAH)':'(Normal)';
-        const ps=+p<PH_MIN?'(RENDAH)':+p>PH_MAX?'(TINGGI)':'(Normal)';
-        const ds=+d>TDS_MAX?'(TINGGI)':+d<TDS_MIN?'(RENDAH)':'(Normal)';
-        return `Keadaan kolam semasa:\n- Suhu: ${t}°C ${ts}\n- pH: ${p} ${ps}\n- TDS: ${d} ppm ${ds}`;
-    }
-
-    function updateSensorCard(cardId,badgeId,value,min,max){
-        const card=document.getElementById(cardId),badge=document.getElementById(badgeId);
-        card.classList.remove('normal','warning','danger');
-        badge.classList.remove('badge-normal','badge-warning','badge-danger');
-        if(value<min){
-            card.classList.add('warning');badge.classList.add('badge-warning');badge.textContent='Rendah';
-        }else if(value>max){
-            card.classList.add('danger');badge.classList.add('badge-danger');badge.textContent='Tinggi';
-        }else{
-            card.classList.add('normal');badge.classList.add('badge-normal');badge.textContent='Normal';
-        }
-    }
-
-    function parseCSV(csv){
-        return csv.trim().split('\n').slice(1).map(line=>{
-            const v=line.split(',');
-            return v.length>=4?{timestamp:v[0],temp:parseFloat(v[1]),ph:parseFloat(v[2]),tds:parseFloat(v[3])}:null;
-        }).filter(Boolean);
-    }
-
-    function formatTimeAgo(ts){
-        const diff=Math.floor((new Date()-new Date(ts))/60000);
-        if(diff<1)return'Baru sahaja';if(diff<60)return`${diff} minit lalu`;
-        const h=Math.floor(diff/60);if(h<24)return`${h} jam lalu`;return`${Math.floor(h/24)} hari lalu`;
-    }
-
-    // NEW: Check for alerts
-    function checkAlerts(temp, ph, tds) {
-        const alerts = [];
-        if(temp >= TEMP_MAX) alerts.push('Suhu terlalu tinggi! Risiko stress pada ikan.');
-        else if(temp < TEMP_MIN) alerts.push('Suhu terlalu rendah! Metabolisme ikan perlahan.');
-        if(ph < PH_MIN) alerts.push('pH terlalu rendah (asid)! Boleh memudaratkan ikan.');
-        else if(ph > PH_MAX) alerts.push('pH terlalu tinggi (alkali)! Bahaya kepada ikan.');
-        if(tds > TDS_MAX) alerts.push('TDS terlalu tinggi! Air terlalu tercemar.');
-        else if(tds < TDS_MIN) alerts.push('TDS terlalu rendah! Air kekurangan mineral.');
-        
-        const alertBanner = document.getElementById('alertBanner');
-        const alertText = document.getElementById('alertText');
-        if(alerts.length > 0) {
-            alertText.textContent = alerts.join(' ');
-            alertBanner.classList.add('show');
-        } else {
-            alertBanner.classList.remove('show');
-        }
-    }
-
-    // NEW: Calculate stats
-    function calculateStats(data) {
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        const todayData = data.filter(d => new Date(d.timestamp) >= today);
-        document.getElementById('todayReadings').textContent = todayData.length;
-        
-        const issues = [
-            currentSensorData.temp < TEMP_MIN || currentSensorData.temp > TEMP_MAX,
-            currentSensorData.ph < PH_MIN || currentSensorData.ph > PH_MAX,
-            currentSensorData.tds < TDS_MIN || currentSensorData.tds > TDS_MAX
-        ].filter(Boolean).length;
-        
-        document.getElementById('overallStatus').textContent = 
-            issues === 0 ? 'Normal' : issues === 1 ? 'Peringatan' : 'Kritikal';
-        document.getElementById('overallStatus').style.color = 
-            issues === 0 ? 'var(--success)' : issues === 1 ? 'var(--warning)' : 'var(--danger)';
-    }
-
-    async function fetchData(){
-        try{
-            document.getElementById('errorMessage').style.display='none';
-            const res=await fetch(SHEET_CSV_URL);
-            if(!res.ok)throw new Error('Gagal ambil data dari Google Sheets');
-            const data=parseCSV(await res.text());
-            if(!data.length)throw new Error('Tiada data dalam spreadsheet');
-            allData = data;
-            
-            const latest=data[data.length-1];
-            currentSensorData={
-                temp:latest.temp.toFixed(1),
-                ph:latest.ph.toFixed(2),
-                tds:Math.round(latest.tds)
-            };
-            
-            document.getElementById('tempValue').textContent=currentSensorData.temp;
-            document.getElementById('phValue').textContent=currentSensorData.ph;
-            document.getElementById('tdsValue').textContent=currentSensorData.tds;
-            
-            updateSensorCard('tempCard','tempStatus',latest.temp,TEMP_MIN,TEMP_MAX);
-            updateSensorCard('phCard','phStatus',latest.ph,PH_MIN,PH_MAX);
-            updateSensorCard('tdsCard','tdsStatus',latest.tds,TDS_MIN,TDS_MAX);
-            
-            document.getElementById('lastUpdate').textContent=formatTimeAgo(latest.timestamp);
-            document.getElementById('statusDot').classList.toggle('offline',
-                (new Date()-new Date(latest.timestamp))>=5*60000);
-            
-            // NEW: Check alerts and calculate stats
-            checkAlerts(latest.temp, latest.ph, latest.tds);
-            calculateStats(data);
-            
-            // Update chart
-            updateChart();
-        }catch(err){
-            console.error('fetchData error:',err);
-            document.getElementById('errorMessage').textContent='⚠️ '+err.message;
-            document.getElementById('errorMessage').style.display='block';
-        }
-    }
-
-    // NEW: Switch between different charts
-    function switchChart(type) {
-        currentChartType = type;
-        document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(type + 'Toggle').classList.add('active');
-        
-        const titles = {
-            temp: '📈 Sejarah Suhu — 24 Jam Terkini',
-            ph: '💧 Sejarah pH — 24 Jam Terkini',
-            tds: '📊 Sejarah TDS — 24 Jam Terkini'
-        };
-        document.getElementById('chartTitle').textContent = titles[type];
-        updateChart();
-    }
-
-    function updateChart() {
-        const slice = allData.slice(-50);
-        const labels = slice.map(d => new Date(d.timestamp).toLocaleTimeString('en-US',
-            {hour:'2-digit',minute:'2-digit'}));
-        
-        let data, label, color, bgColor;
-        if(currentChartType === 'temp') {
-            data = slice.map(d => d.temp);
-            label = 'Suhu (°C)';
-            color = '#3d8bff';
-            bgColor = 'rgba(61,139,255,0.08)';
-        } else if(currentChartType === 'ph') {
-            data = slice.map(d => d.ph);
-            label = 'pH';
-            color = '#00e5c8';
-            bgColor = 'rgba(0,229,200,0.08)';
-        } else {
-            data = slice.map(d => d.tds);
-            label = 'TDS (ppm)';
-            color = '#ffbe5c';
-            bgColor = 'rgba(255,190,92,0.08)';
-        }
-        
-        createChart(labels, data, label, color, bgColor);
-    }
-
-    function createChart(labels, data, label, color, bgColor){
-        const ctx=document.getElementById('mainChart').getContext('2d');
-        if(mainChart)mainChart.destroy();
-        mainChart=new Chart(ctx,{
-            type:'line',
-            data:{
-                labels,
-                datasets:[{
-                    label,
-                    data,
-                    borderColor:color,
-                    backgroundColor:bgColor,
-                    borderWidth:2.5,
-                    tension:0.4,
-                    fill:true,
-                    pointRadius:2,
-                    pointHoverRadius:5
-                }]
-            },
-            options:{
-                responsive:true,
-                maintainAspectRatio:true,
-                plugins:{legend:{display:false}},
-                scales:{
-                    y:{
-                        beginAtZero:false,
-                        grid:{color:'rgba(100,160,255,0.06)'},
-                        ticks:{color:'#7899cc',font:{family:'DM Mono',size:11}}
-                    },
-                    x:{
-                        grid:{display:false},
-                        ticks:{color:'#7899cc',maxTicksLimit:6,font:{family:'DM Mono',size:11}}
-                    }
-                }
-            }
-        });
-    }
-
-    function addMessage(text,isUser=false){
-        const wrap=document.getElementById('chatMessages'),div=document.createElement('div');
-        div.className='chat-message'+(isUser?' user-message':'');
-        const time=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-        div.innerHTML=`<div class="message-avatar ${isUser?'user-avatar':'ai-avatar'}">${isUser?'👤':'🤖'}</div><div class="message-content"><div class="message-text">${text}</div><div class="message-time">${time}</div></div>`;
-        wrap.appendChild(div);wrap.scrollTop=wrap.scrollHeight;
-    }
-
-    async function sendMessage(){
-        const input=document.getElementById('chatInput'),q=input.value.trim();
-        if(!q)return;
-        addMessage(q,true);input.value='';
-        document.getElementById('typingIndicator').classList.add('active');
-        const btn=document.getElementById('sendBtn');btn.disabled=true;btn.textContent='Berfikir...';
-        try{
-            const reply=await askAI(q);
-            addMessage(reply,false);
-            await speakWithBrowserTTS(reply);
-        }catch(err){
-            addMessage('⚠️ '+err.message.replace(/\n/g,'<br>'),false);
-            console.error('AI Error:',err);
-        }finally{
-            document.getElementById('typingIndicator').classList.remove('active');
-            btn.disabled=false;btn.textContent='Hantar';
-        }
-    }
-
-    function askQuestion(q){document.getElementById('chatInput').value=q;sendMessage();}
-
-    // NEW: Explain sensor when clicked
-    function explainSensor(sensor) {
-        const questions = {
-            'suhu': 'Terangkan kenapa suhu kolam penting untuk ikan tilapia',
-            'pH': 'Terangkan kenapa pH air penting untuk kesihatan ikan',
-            'TDS': 'Apa itu TDS dan kenapa ia penting untuk kolam ikan?'
-        };
-        askQuestion(questions[sensor]);
-    }
-
-    function initAudioContext(){
-        if(!audioContext) {
-            try{
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioContext = new AudioContext();
-                console.log('AudioContext created:', audioContext.state);
-            }catch(e){
-                console.error('AudioContext creation failed:', e);
-            }
-        }
-    }
-    
-    function toggleSpeaker(){
-        voiceEnabled=!voiceEnabled;
-        document.getElementById('speakerIcon').textContent=voiceEnabled?'🔊':'🔇';
-        document.getElementById('speakerText').textContent=voiceEnabled?'Suara ON':'Suara OFF';
-        document.getElementById('speakerToggle').classList.toggle('active',voiceEnabled);
-        if(!voiceEnabled){
-            window.speechSynthesis.cancel();
-            isSpeaking=false;
-        }
-    }
-    
-    // Test speak function for debugging
-    function testSpeak() {
-        console.log('=== TEST SPEAK FUNCTION ===');
-        console.log('audioUnlocked:', audioUnlocked);
-        console.log('voiceEnabled:', voiceEnabled);
-        console.log('Available voices:', availableVoices.length);
-        
-        if (!audioUnlocked) {
-            console.log('Need to unlock audio first');
-            document.getElementById('audioUnlockOverlay').classList.add('show');
-            document.getElementById('audioUnlockOverlay').style.display = 'flex';
-            return;
-        }
-        
-        voiceEnabled = true; // Force enable
-        document.getElementById('speakerIcon').textContent = '🔊';
-        document.getElementById('speakerText').textContent = 'Suara ON';
-        document.getElementById('speakerToggle').classList.add('active');
-        
-        const testText = 'Hai, saya sedang menguji suara. Boleh dengar saya?';
-        console.log('Speaking test text...');
-        
-        speakWithBrowserTTS(testText);
-    }
-    
-    async function speakWithBrowserTTS(text){
-        console.log('=== Speak function called ===');
-        console.log('voiceEnabled:', voiceEnabled);
-        console.log('audioUnlocked:', audioUnlocked);
-        
-        if(!voiceEnabled) {
-            console.log('Voice disabled by user');
-            return;
-        }
-        
-        // DON'T show popup if already unlocked
-        if(!audioUnlocked) {
-            console.log('Audio not unlocked, showing popup...');
-            document.getElementById('audioUnlockOverlay').classList.add('show');
-            document.getElementById('audioUnlockOverlay').style.display = 'flex';
-            return;
-        }
-        
-        console.log('Attempting to speak:', text.substring(0, 50) + '...');
-        
-        // Cancel any ongoing speech
-        window.speechSynthesis.cancel();
-        
-        // Wait a bit before speaking (important for mobile)
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        const utterance = new SpeechSynthesisUtterance(text);
-        
-        // Settings for better speech
-        utterance.rate = 0.9;
-        utterance.pitch = 1.0;
-        utterance.volume = 1.0;
-        utterance.lang = 'ms-MY';
-        
-        // Try to find Malay voice
-        if (availableVoices.length > 0) {
-            const malayVoice = availableVoices.find(v => 
-                v.lang.startsWith('ms') || 
-                v.lang.startsWith('id') || // Indonesian as fallback
-                v.name.toLowerCase().includes('malay')
-            );
-            
-            if (malayVoice) {
-                console.log('Using voice:', malayVoice.name);
-                utterance.voice = malayVoice;
-                utterance.lang = malayVoice.lang;
-            } else {
-                console.log('No Malay voice found, using default');
-            }
-        }
-        
-        // Event handlers
-        utterance.onstart = () => {
-            console.log('✅ Speech started');
-            isSpeaking = true;
-            document.getElementById('voiceBtn').classList.add('speaking');
-        };
-        
-        utterance.onend = () => {
-            console.log('Speech ended');
-            isSpeaking = false;
-            document.getElementById('voiceBtn').classList.remove('speaking');
-        };
-        
-        utterance.onerror = (e) => {
-            console.error('❌ Speech error:', e.error, e.message);
-            isSpeaking = false;
-            document.getElementById('voiceBtn').classList.remove('speaking');
-            
-            if (e.error === 'not-allowed' || e.error === 'not-supported') {
-                // Try to unlock again
-                console.log('Speech not allowed, need to unlock again');
-                audioUnlocked = false;
-                document.getElementById('audioUnlockOverlay').classList.add('show');
-                document.getElementById('audioUnlockOverlay').style.display = 'flex';
-            }
-        };
-        
-        // Resume audio context if suspended
-        if (audioContext && audioContext.state === 'suspended') {
-            console.log('Resuming audio context...');
-            await audioContext.resume();
-        }
-        
-        // Speak!
-        try {
-            window.speechSynthesis.speak(utterance);
-            console.log('Speech queued');
-        } catch (err) {
-            console.error('Failed to speak:', err);
-        }
-    }
-
-    // Speech recognition setup
-    if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
-        const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-        recognition=new SR();
-        recognition.continuous=false;
-        recognition.interimResults=false;
-        recognition.lang='ms-MY';
-        
-        recognition.onstart=()=>{
-            isListening=true;
-            document.getElementById('voiceBtn').classList.add('listening');
-            document.getElementById('voiceStatus').textContent='🎤 Mendengar...';
-        };
-        recognition.onend=()=>{
-            isListening=false;
-            document.getElementById('voiceBtn').classList.remove('listening');
-            document.getElementById('voiceStatus').textContent='🎤 Tekan mikrofon untuk bercakap';
-        };
-        recognition.onresult=(e)=>{
-            const t=e.results[0][0].transcript;
-            document.getElementById('chatInput').value=t;
-            document.getElementById('voiceStatus').textContent=`🎤 Anda berkata: "${t}"`;
-            sendMessage();
-        };
-        recognition.onerror=(e)=>{
-            console.error('Speech error:',e.error);
-            document.getElementById('voiceStatus').textContent='🎤 Ralat: '+e.error;
-            isListening=false;
-            document.getElementById('voiceBtn').classList.remove('listening');
-        };
-    }else{
-        document.getElementById('voiceBtn').disabled=true;
-    }
-
-    function toggleVoiceInput(){
-        if(!recognition){
-            alert('Voice input tidak disokong. Guna Chrome, Edge, atau Safari.');
-            return;
-        }
-        if(isListening){
-            recognition.stop();
-        }else{
-            try{recognition.start();}catch(e){console.error('Recognition start error:',e);}
-        }
-    }
-
-    // Initialize voices
-    if(window.speechSynthesis){
-        availableVoices=window.speechSynthesis.getVoices();
-        window.speechSynthesis.onvoiceschanged=()=>{
-            availableVoices=window.speechSynthesis.getVoices();
-        };
-    }
-    
-    // Initialize
-    initAudioContext();
-    fetchData();
-    setInterval(fetchData,30000);
-    
-    // Show audio unlock prompt on mobile ONLY ONCE when page loads
-    if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)){
-        setTimeout(()=>{
-            if(!audioUnlocked){
-                console.log('Mobile detected, showing audio unlock overlay');
-                document.getElementById('audioUnlockOverlay').classList.add('show');
-                document.getElementById('audioUnlockOverlay').style.display = 'flex';
-            }
-        },2000); // Show after 2 seconds
-    }
-    </script>
-    
-    <!-- Bottom Navigation -->
-    <div style="position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-around;z-index:1000;backdrop-filter:blur(10px)">
-        <a href="pond-dashboard.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px;background:rgba(61,139,255,.15)">
-            <div style="font-size:1.6em">📊</div>
-            <div>Dashboard</div>
-        </a>
-        <a href="fish-encyclopedia.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
-            <div style="font-size:1.6em">📚</div>
-            <div>Ensiklopedia</div>
-        </a>
-        <a href="#" onclick="alert('Coming soon!'); return false;" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
-            <div style="font-size:1.6em">🎓</div>
-            <div>Panduan</div>
-        </a>
-        <a href="#" onclick="alert('Coming soon!'); return false;" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
-            <div style="font-size:1.6em">⚙️</div>
-            <div>Tetapan</div>
-        </a>
-    </div>
+// ════════════════════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════════════════════
+fetchData();
+setInterval(fetchData,    30000);   // refresh sheets every 30s
+setInterval(fetchEspStatus, 5000);  // check ESP32 status every 5s
+</script>
 </body>
 </html>
