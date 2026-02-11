@@ -301,6 +301,10 @@
                     <span id="speakerIcon">🔊</span>
                     <span id="speakerText">Suara ON</span>
                 </button>
+                <button class="speaker-btn" id="testSpeakBtn" onclick="testSpeak()" style="background:rgba(0,229,200,.15);color:var(--accent2);border-color:rgba(0,229,200,.3)">
+                    <span>🔊</span>
+                    <span>Test Suara</span>
+                </button>
             </div>
             <div class="quick-questions">
                 <button class="quick-question-btn" onclick="askQuestion('Bagaimana kolam saya?')">Bagaimana kolam?</button>
@@ -384,20 +388,25 @@
         function doUnlock() {
             console.log('=== UNLOCK FUNCTION CALLED ===');
             
+            // Mark as unlocked FIRST to prevent popup from showing again
+            audioUnlocked = true;
+            
             // Hide overlay immediately so user can see the page
             overlay.classList.remove('show');
+            overlay.style.display = 'none'; // Extra safety
             
             // Try to play silent audio
             const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+            audio.volume = 1.0; // Full volume for unlock
+            
             audio.play()
                 .then(() => {
-                    console.log('✅ Audio unlocked!');
-                    audioUnlocked = true;
+                    console.log('✅ Audio unlocked successfully!');
                     addMessage('✅ Suara diaktifkan!', false);
                 })
                 .catch(err => {
-                    console.log('Audio play failed, but continuing:', err);
-                    audioUnlocked = true;
+                    console.log('Audio play failed:', err.message);
+                    addMessage('ℹ️ Suara mungkin tidak berfungsi. Cuba tekan butang speaker.', false);
                 });
             
             // Initialize audio context
@@ -405,44 +414,71 @@
                 try {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     audioContext = new AudioContext();
+                    console.log('AudioContext created');
                     if (audioContext.state === 'suspended') {
-                        audioContext.resume();
+                        audioContext.resume().then(() => {
+                            console.log('AudioContext resumed');
+                        });
                     }
                 } catch(e) {
                     console.error('AudioContext error:', e);
                 }
             }
             
-            // Initialize speech synthesis
+            // Initialize speech synthesis - IMPORTANT for mobile browsers
             if (window.speechSynthesis) {
-                const utterance = new SpeechSynthesisUtterance(' ');
-                utterance.volume = 0.01;
-                window.speechSynthesis.speak(utterance);
-                setTimeout(() => window.speechSynthesis.cancel(), 100);
+                console.log('Initializing SpeechSynthesis...');
+                
+                // Load voices
+                const loadVoices = () => {
+                    availableVoices = window.speechSynthesis.getVoices();
+                    console.log('Available voices:', availableVoices.length);
+                };
+                
+                loadVoices();
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+                
+                // Test utterance to unlock speech synthesis on iOS
+                const testUtterance = new SpeechSynthesisUtterance('Hi');
+                testUtterance.volume = 0.01;
+                testUtterance.rate = 10;
+                testUtterance.onstart = () => {
+                    console.log('✅ SpeechSynthesis unlocked');
+                    window.speechSynthesis.cancel(); // Cancel immediately
+                };
+                testUtterance.onerror = (e) => {
+                    console.log('SpeechSynthesis test error:', e.error);
+                };
+                
+                window.speechSynthesis.speak(testUtterance);
             }
         }
         
         // Skip function
         function doSkip() {
             console.log('User skipped audio unlock');
+            audioUnlocked = true; // Mark as unlocked to prevent popup
             overlay.classList.remove('show');
+            overlay.style.display = 'none';
             voiceEnabled = false;
             document.getElementById('speakerIcon').textContent = '🔇';
             document.getElementById('speakerText').textContent = 'Suara OFF';
             document.getElementById('speakerToggle').classList.remove('active');
-            addMessage('ℹ️ Anda boleh aktifkan suara kemudian melalui butang speaker.', false);
+            addMessage('ℹ️ Suara dimatikan. Anda boleh hidupkan melalui butang speaker.', false);
         }
         
         // Attach click handlers
         unlockBtn.onclick = function(e) {
             console.log('Unlock button clicked!');
             e.preventDefault();
+            e.stopPropagation();
             doUnlock();
         };
         
         skipBtn.onclick = function(e) {
             console.log('Skip button clicked!');
             e.preventDefault();
+            e.stopPropagation();
             doSkip();
         };
         
@@ -450,12 +486,14 @@
         unlockBtn.addEventListener('touchend', function(e) {
             console.log('Unlock button touched!');
             e.preventDefault();
+            e.stopPropagation();
             doUnlock();
         }, { passive: false });
         
         skipBtn.addEventListener('touchend', function(e) {
             console.log('Skip button touched!');
             e.preventDefault();
+            e.stopPropagation();
             doSkip();
         }, { passive: false });
         
@@ -772,46 +810,122 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
         }
     }
     
-    async function speakWithBrowserTTS(text){
-        if(!voiceEnabled)return;
+    // Test speak function for debugging
+    function testSpeak() {
+        console.log('=== TEST SPEAK FUNCTION ===');
+        console.log('audioUnlocked:', audioUnlocked);
+        console.log('voiceEnabled:', voiceEnabled);
+        console.log('Available voices:', availableVoices.length);
         
-        // Check if audio needs unlocking on mobile
-        if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)&&!audioUnlocked){
+        if (!audioUnlocked) {
+            console.log('Need to unlock audio first');
             document.getElementById('audioUnlockOverlay').classList.add('show');
+            document.getElementById('audioUnlockOverlay').style.display = 'flex';
             return;
         }
         
+        voiceEnabled = true; // Force enable
+        document.getElementById('speakerIcon').textContent = '🔊';
+        document.getElementById('speakerText').textContent = 'Suara ON';
+        document.getElementById('speakerToggle').classList.add('active');
+        
+        const testText = 'Hai, saya sedang menguji suara. Boleh dengar saya?';
+        console.log('Speaking test text...');
+        
+        speakWithBrowserTTS(testText);
+    }
+    
+    async function speakWithBrowserTTS(text){
+        console.log('=== Speak function called ===');
+        console.log('voiceEnabled:', voiceEnabled);
+        console.log('audioUnlocked:', audioUnlocked);
+        
+        if(!voiceEnabled) {
+            console.log('Voice disabled by user');
+            return;
+        }
+        
+        // DON'T show popup if already unlocked
+        if(!audioUnlocked) {
+            console.log('Audio not unlocked, showing popup...');
+            document.getElementById('audioUnlockOverlay').classList.add('show');
+            document.getElementById('audioUnlockOverlay').style.display = 'flex';
+            return;
+        }
+        
+        console.log('Attempting to speak:', text.substring(0, 50) + '...');
+        
+        // Cancel any ongoing speech
         window.speechSynthesis.cancel();
         
-        setTimeout(()=>{
-            const u=new SpeechSynthesisUtterance(text);
-            u.rate=0.9;u.pitch=1.0;u.volume=1.0;
+        // Wait a bit before speaking (important for mobile)
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Settings for better speech
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        utterance.lang = 'ms-MY';
+        
+        // Try to find Malay voice
+        if (availableVoices.length > 0) {
+            const malayVoice = availableVoices.find(v => 
+                v.lang.startsWith('ms') || 
+                v.lang.startsWith('id') || // Indonesian as fallback
+                v.name.toLowerCase().includes('malay')
+            );
             
-            const v=availableVoices.find(v=>v.lang.startsWith('ms')||v.name.toLowerCase().includes('malay'));
-            if(v){u.voice=v;u.lang=v.lang;}else u.lang='ms-MY';
-            
-            u.onstart=()=>{
-                isSpeaking=true;
-                document.getElementById('voiceBtn').classList.add('speaking');
-            };
-            u.onend=()=>{
-                isSpeaking=false;
-                document.getElementById('voiceBtn').classList.remove('speaking');
-            };
-            u.onerror=(e)=>{
-                isSpeaking=false;
-                document.getElementById('voiceBtn').classList.remove('speaking');
-                if(e.error==='not-allowed'){
-                    document.getElementById('audioUnlockOverlay').classList.add('show');
-                }
-            };
-            
-            if(audioContext?.state==='suspended'){
-                audioContext.resume().then(()=>window.speechSynthesis.speak(u));
-            }else{
-                window.speechSynthesis.speak(u);
+            if (malayVoice) {
+                console.log('Using voice:', malayVoice.name);
+                utterance.voice = malayVoice;
+                utterance.lang = malayVoice.lang;
+            } else {
+                console.log('No Malay voice found, using default');
             }
-        },100);
+        }
+        
+        // Event handlers
+        utterance.onstart = () => {
+            console.log('✅ Speech started');
+            isSpeaking = true;
+            document.getElementById('voiceBtn').classList.add('speaking');
+        };
+        
+        utterance.onend = () => {
+            console.log('Speech ended');
+            isSpeaking = false;
+            document.getElementById('voiceBtn').classList.remove('speaking');
+        };
+        
+        utterance.onerror = (e) => {
+            console.error('❌ Speech error:', e.error, e.message);
+            isSpeaking = false;
+            document.getElementById('voiceBtn').classList.remove('speaking');
+            
+            if (e.error === 'not-allowed' || e.error === 'not-supported') {
+                // Try to unlock again
+                console.log('Speech not allowed, need to unlock again');
+                audioUnlocked = false;
+                document.getElementById('audioUnlockOverlay').classList.add('show');
+                document.getElementById('audioUnlockOverlay').style.display = 'flex';
+            }
+        };
+        
+        // Resume audio context if suspended
+        if (audioContext && audioContext.state === 'suspended') {
+            console.log('Resuming audio context...');
+            await audioContext.resume();
+        }
+        
+        // Speak!
+        try {
+            window.speechSynthesis.speak(utterance);
+            console.log('Speech queued');
+        } catch (err) {
+            console.error('Failed to speak:', err);
+        }
     }
 
     // Speech recognition setup
@@ -873,13 +987,15 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
     fetchData();
     setInterval(fetchData,30000);
     
-    // Show audio unlock prompt on mobile after delay
+    // Show audio unlock prompt on mobile ONLY ONCE when page loads
     if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)){
         setTimeout(()=>{
             if(!audioUnlocked){
+                console.log('Mobile detected, showing audio unlock overlay');
                 document.getElementById('audioUnlockOverlay').classList.add('show');
+                document.getElementById('audioUnlockOverlay').style.display = 'flex';
             }
-        },1500);
+        },2000); // Show after 2 seconds
     }
     </script>
     
