@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     const secret = process.env.ESP32_SECRET;
     const provided = req.headers['x-esp32-secret'] || req.query.secret;
-
+    
     if (secret && provided !== secret) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     }
 
     const cmd = JSON.parse(cmdRaw.result);
-
+    
     // mark as delivered (not executed)
     cmd.state = "delivered";
     cmd.deliveredAt = Date.now();
@@ -95,13 +95,12 @@ export default async function handler(req, res) {
         servoOpen: body.servoOpen,
         updatedAt: Date.now()
       }));
-
       return res.status(200).json({ ok: true });
     }
 
     /* ================= WEBSITE QUEUE ================= */
     const { action, angle } = body;
-
+    
     if (!["feed", "servo", "close"].includes(action)) {
       return res.status(400).json({ error: "Invalid action" });
     }
@@ -115,7 +114,7 @@ export default async function handler(req, res) {
     };
 
     await redis("set", "pendingCommand", JSON.stringify(newCmd));
-
+    
     return res.status(200).json({ ok: true, queued: newCmd });
   }
 
