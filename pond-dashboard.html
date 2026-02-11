@@ -85,6 +85,7 @@
         .refresh-btn:active{transform:scale(0.97)}
         .error{background:rgba(255,95,95,.1);color:var(--danger);border:1px solid rgba(255,95,95,.25);padding:14px 18px;border-radius:12px;margin-bottom:18px;font-size:.88em}
         
+        /* FIXED: Audio unlock overlay with proper z-index and touch handling */
         .audio-unlock-overlay{
             display:none;
             position:fixed;
@@ -115,6 +116,7 @@
         .audio-unlock-dialog h3{margin-bottom:12px;font-size:1.3em;color:var(--accent2)}
         .audio-unlock-dialog p{margin-bottom:24px;color:var(--muted);line-height:1.6;font-size:.95em}
         
+        /* FIXED: Better button styling for mobile with larger touch target */
         .unlock-btn{
             background:linear-gradient(135deg,var(--accent),var(--accent2));
             color:#fff;
@@ -132,6 +134,9 @@
             touch-action:manipulation;
             -webkit-tap-highlight-color:transparent;
             user-select:none;
+            -webkit-user-select:none;
+            -moz-user-select:none;
+            -ms-user-select:none;
         }
         .unlock-btn:active{
             transform:scale(0.96);
@@ -141,6 +146,7 @@
             box-shadow:0 12px 32px rgba(61,139,255,0.45);
         }
         
+        /* NEW: Stats summary card */
         .stats-summary{
             display:grid;
             grid-template-columns:repeat(2,1fr);
@@ -157,6 +163,7 @@
         .stat-label{font-size:.7em;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
         .stat-value{font-family:'DM Mono',monospace;font-size:1.1em;font-weight:600;color:var(--accent2)}
         
+        /* NEW: Alert banner */
         .alert-banner{
             background:linear-gradient(135deg,rgba(255,95,95,0.15),rgba(255,190,92,0.15));
             border:1px solid rgba(255,95,95,0.3);
@@ -173,6 +180,7 @@
         .alert-icon{font-size:1.5em}
         .alert-text{flex:1;font-size:.85em;line-height:1.4}
         
+        /* NEW: Chart view toggle */
         .chart-toggle{
             display:flex;
             gap:8px;
@@ -197,17 +205,6 @@
         }
         .toggle-btn:active{transform:scale(0.98)}
         
-        /* Character counter */
-        .char-counter{
-            font-size:.7em;
-            color:var(--muted);
-            text-align:right;
-            margin-top:8px;
-            font-family:'DM Mono',monospace;
-        }
-        .char-counter.warning{color:var(--warning)}
-        .char-counter.danger{color:var(--danger)}
-        
         @media(max-width:480px){
             .sensors-grid{gap:10px}
             .sensor-value{font-size:1.6em}
@@ -222,10 +219,11 @@
     </style>
 </head>
 <body>
+    <!-- FIXED: Audio unlock with simpler, working approach -->
     <div class="audio-unlock-overlay" id="audioUnlockOverlay">
         <div class="audio-unlock-dialog" onclick="event.stopPropagation();">
             <h3>🔊 Aktifkan Audio</h3>
-            <p>Tekan butang di bawah untuk membolehkan suara AI bercakap di telefon anda menggunakan ElevenLabs.</p>
+            <p>Tekan butang di bawah untuk membolehkan suara AI bercakap di telefon anda.</p>
             <button class="unlock-btn" id="unlockAudioBtn" type="button">Aktifkan Suara</button>
             <button class="unlock-btn" id="skipAudioBtn" type="button" style="background:#666;margin-top:10px;font-size:0.9em;padding:12px 24px;">Langkau (Tiada Suara)</button>
         </div>
@@ -245,6 +243,7 @@
         
         <div id="errorMessage" style="display:none;" class="error"></div>
         
+        <!-- NEW: Alert banner for critical issues -->
         <div class="alert-banner" id="alertBanner">
             <div class="alert-icon">⚠️</div>
             <div class="alert-text" id="alertText"></div>
@@ -274,6 +273,7 @@
             </div>
         </div>
         
+        <!-- NEW: Stats summary -->
         <div class="stats-summary">
             <div class="stat-item">
                 <div class="stat-label">Bacaan Hari Ini</div>
@@ -288,11 +288,12 @@
         <div class="card">
             <div class="ai-chat-header">
                 <h2>🤖 Pembantu Suara AI</h2>
-                <div class="ai-badge">ELEVENLABS</div>
+                <div class="ai-badge">VERCEL</div>
             </div>
             <div class="setup-notice" id="setupNotice">
-                ⚙️ <strong>Setup:</strong> Tambah <code>ELEVENLABS_API_KEY</code> di Vercel Environment Variables.
-                Dapatkan API key percuma di <a href="https://elevenlabs.io" target="_blank" style="color:var(--accent2)">elevenlabs.io</a> (10,000 characters/bulan)
+                ⚙️ <strong>CORS Fix:</strong> Tukar <code>VERCEL_URL</code> kepada URL <em>production</em> anda
+                (bukan URL preview <code>-abc123-xxx.vercel.app</code>).
+                Pastikan <code>vercel.json</code> ada dalam repo anda.
             </div>
             <div class="voice-controls">
                 <div class="voice-status" id="voiceStatus">🎤 Tekan mikrofon untuk bercakap</div>
@@ -315,7 +316,7 @@
                 <div class="chat-message">
                     <div class="message-avatar ai-avatar">🤖</div>
                     <div class="message-content">
-                        <div class="message-text">Hai! Saya pembantu AI kolam anda dengan suara natural Melayu dari ElevenLabs. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?</div>
+                        <div class="message-text">Hai! Saya pembantu AI kolam anda. Saya boleh bantu anda memahami keadaan kolam, selesaikan masalah, dan beri nasihat tentang ternakan tilapia. Apa yang anda ingin tahu?</div>
                         <div class="message-time">Sekarang</div>
                     </div>
                 </div>
@@ -329,10 +330,10 @@
                 <input type="text" class="chat-input" id="chatInput" placeholder="Taip atau tekan mikrofon..." onkeypress="if(event.key==='Enter') sendMessage()">
                 <button class="send-btn" onclick="sendMessage()" id="sendBtn">Hantar</button>
             </div>
-            <div class="char-counter" id="charCounter">Penggunaan bulan ini: <span id="charUsed">0</span> / 10,000 aksara</div>
         </div>
         
         <div class="card">
+            <!-- NEW: Chart toggle -->
             <div class="chart-toggle">
                 <button class="toggle-btn active" id="tempToggle" onclick="switchChart('temp')">🌡️ Suhu</button>
                 <button class="toggle-btn" id="phToggle" onclick="switchChart('ph')">💧 pH</button>
@@ -348,7 +349,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script>
     // =================================================================
-    // ⚙️  CONFIG - Replace with your URLs
+    // ⚙️  STEP 1: Replace with your PRODUCTION Vercel URL
     // =================================================================
     const VERCEL_URL = 'https://pond-monitor-psi.vercel.app';
     const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
@@ -356,92 +357,107 @@
     const TEMP_MIN=20,TEMP_MAX=32,PH_MIN=6.5,PH_MAX=8.5,TDS_MIN=300,TDS_MAX=800;
 
     let mainChart,currentSensorData={},recognition,isListening=false,voiceEnabled=true,
-        isSpeaking=false,audioContext=null,audioUnlocked=false,currentChartType='temp',
-        allData=[],monthlyCharCount=0;
+        isSpeaking=false,availableVoices=[],audioContext=null,audioUnlocked=false,
+        currentChartType='temp',allData=[];
 
-    // Load character count from localStorage
-    try {
-        const saved = localStorage.getItem('elevenlabs_char_count');
-        const savedMonth = localStorage.getItem('elevenlabs_month');
-        const currentMonth = new Date().getMonth();
-        
-        if (savedMonth && parseInt(savedMonth) === currentMonth && saved) {
-            monthlyCharCount = parseInt(saved);
-        } else {
-            // Reset for new month
-            monthlyCharCount = 0;
-            localStorage.setItem('elevenlabs_month', currentMonth.toString());
-        }
-        updateCharCounter();
-    } catch(e) {
-        console.log('localStorage not available:', e);
+    // Hide setup notice if URL is production
+    if(!/(-[a-z0-9]{8,}-[^.]+)?\.vercel\.app/.test(VERCEL_URL.replace(/https?:\/\//,'').split('.')[0]+'.test') || VERCEL_URL.split('.vercel.app')[0].split('-').length <= 2){
+        document.getElementById('setupNotice').style.display='none';
     }
-
-    function updateCharCounter() {
-        const counter = document.getElementById('charCounter');
-        const used = document.getElementById('charUsed');
-        used.textContent = monthlyCharCount.toLocaleString();
-        
-        counter.classList.remove('warning', 'danger');
-        if (monthlyCharCount > 9000) {
-            counter.classList.add('danger');
-        } else if (monthlyCharCount > 7000) {
-            counter.classList.add('warning');
-        }
-        
-        try {
-            localStorage.setItem('elevenlabs_char_count', monthlyCharCount.toString());
-        } catch(e) {}
-    }
-
-    // Hide setup notice if API key is configured (check via a test call)
-    async function checkElevenLabsConfig() {
-        try {
-            const response = await fetch(`${VERCEL_URL}/api/tts`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({text: 'test'})
-            });
-            if (response.ok) {
-                document.getElementById('setupNotice').style.display = 'none';
-            }
-        } catch(e) {
-            // Keep notice visible if check fails
-        }
-    }
-    checkElevenLabsConfig();
 
     // =================================================================
-    // AUDIO UNLOCK
+    // AUDIO UNLOCK - SIMPLIFIED AND WORKING
     // =================================================================
+    
+    // Wait for DOM to be ready
     window.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, setting up audio unlock...');
+        
         const unlockBtn = document.getElementById('unlockAudioBtn');
         const skipBtn = document.getElementById('skipAudioBtn');
         const overlay = document.getElementById('audioUnlockOverlay');
         
+        if (!unlockBtn) {
+            console.error('Unlock button not found!');
+            return;
+        }
+        
+        console.log('Unlock button found, attaching handlers...');
+        
+        // Unlock audio function
         function doUnlock() {
+            console.log('=== UNLOCK FUNCTION CALLED ===');
+            
+            // Mark as unlocked FIRST to prevent popup from showing again
             audioUnlocked = true;
+            
+            // Hide overlay immediately so user can see the page
             overlay.classList.remove('show');
-            overlay.style.display = 'none';
+            overlay.style.display = 'none'; // Extra safety
+            
+            // Try to play silent audio
+            const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+            audio.volume = 1.0; // Full volume for unlock
+            
+            audio.play()
+                .then(() => {
+                    console.log('✅ Audio unlocked successfully!');
+                    addMessage('✅ Suara diaktifkan!', false);
+                })
+                .catch(err => {
+                    console.log('Audio play failed:', err.message);
+                    addMessage('ℹ️ Suara mungkin tidak berfungsi. Cuba tekan butang speaker.', false);
+                });
             
             // Initialize audio context
             if (!audioContext) {
                 try {
                     const AudioContext = window.AudioContext || window.webkitAudioContext;
                     audioContext = new AudioContext();
+                    console.log('AudioContext created');
                     if (audioContext.state === 'suspended') {
-                        audioContext.resume();
+                        audioContext.resume().then(() => {
+                            console.log('AudioContext resumed');
+                        });
                     }
                 } catch(e) {
                     console.error('AudioContext error:', e);
                 }
             }
             
-            addMessage('✅ Suara ElevenLabs diaktifkan!', false);
+            // Initialize speech synthesis - IMPORTANT for mobile browsers
+            if (window.speechSynthesis) {
+                console.log('Initializing SpeechSynthesis...');
+                
+                // Load voices
+                const loadVoices = () => {
+                    availableVoices = window.speechSynthesis.getVoices();
+                    console.log('Available voices:', availableVoices.length);
+                };
+                
+                loadVoices();
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+                
+                // Test utterance to unlock speech synthesis on iOS
+                const testUtterance = new SpeechSynthesisUtterance('Hi');
+                testUtterance.volume = 0.01;
+                testUtterance.rate = 10;
+                testUtterance.onstart = () => {
+                    console.log('✅ SpeechSynthesis unlocked');
+                    window.speechSynthesis.cancel(); // Cancel immediately
+                };
+                testUtterance.onerror = (e) => {
+                    console.log('SpeechSynthesis test error:', e.error);
+                };
+                
+                window.speechSynthesis.speak(testUtterance);
+            }
         }
         
+        // Skip function
         function doSkip() {
-            audioUnlocked = true;
+            console.log('User skipped audio unlock');
+            audioUnlocked = true; // Mark as unlocked to prevent popup
             overlay.classList.remove('show');
             overlay.style.display = 'none';
             voiceEnabled = false;
@@ -451,97 +467,38 @@
             addMessage('ℹ️ Suara dimatikan. Anda boleh hidupkan melalui butang speaker.', false);
         }
         
-        unlockBtn.onclick = doUnlock;
-        skipBtn.onclick = doSkip;
-        unlockBtn.addEventListener('touchend', function(e) {
+        // Attach click handlers
+        unlockBtn.onclick = function(e) {
+            console.log('Unlock button clicked!');
             e.preventDefault();
+            e.stopPropagation();
+            doUnlock();
+        };
+        
+        skipBtn.onclick = function(e) {
+            console.log('Skip button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            doSkip();
+        };
+        
+        // Touch handlers for mobile
+        unlockBtn.addEventListener('touchend', function(e) {
+            console.log('Unlock button touched!');
+            e.preventDefault();
+            e.stopPropagation();
             doUnlock();
         }, { passive: false });
+        
         skipBtn.addEventListener('touchend', function(e) {
+            console.log('Skip button touched!');
             e.preventDefault();
+            e.stopPropagation();
             doSkip();
         }, { passive: false });
+        
+        console.log('Audio unlock handlers attached successfully');
     });
-
-    // =================================================================
-    // ELEVENLABS TTS INTEGRATION
-    // =================================================================
-    async function speakWithElevenLabs(text) {
-        if (!voiceEnabled) {
-            console.log('Voice disabled by user');
-            return;
-        }
-        
-        if (!audioUnlocked) {
-            console.log('Audio not unlocked, showing popup...');
-            document.getElementById('audioUnlockOverlay').classList.add('show');
-            document.getElementById('audioUnlockOverlay').style.display = 'flex';
-            return;
-        }
-        
-        // Check character limit
-        const charCount = text.length;
-        if (monthlyCharCount + charCount > 10000) {
-            addMessage('⚠️ Had bulanan ElevenLabs tercapai (10,000 aksara). Suara dimatikan.', false);
-            voiceEnabled = false;
-            document.getElementById('speakerIcon').textContent = '🔇';
-            document.getElementById('speakerText').textContent = 'Suara OFF';
-            document.getElementById('speakerToggle').classList.remove('active');
-            return;
-        }
-        
-        try {
-            isSpeaking = true;
-            document.getElementById('voiceBtn').classList.add('speaking');
-            
-            console.log('Calling ElevenLabs TTS API...');
-            const response = await fetch(`${VERCEL_URL}/api/tts`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    text: text
-                })
-            });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'TTS API error');
-            }
-            
-            // Get audio blob
-            const audioBlob = await response.blob();
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const audio = new Audio(audioUrl);
-            
-            // Update character count
-            monthlyCharCount += charCount;
-            updateCharCounter();
-            
-            audio.onended = () => {
-                isSpeaking = false;
-                document.getElementById('voiceBtn').classList.remove('speaking');
-                URL.revokeObjectURL(audioUrl);
-            };
-            
-            audio.onerror = (e) => {
-                console.error('Audio playback error:', e);
-                isSpeaking = false;
-                document.getElementById('voiceBtn').classList.remove('speaking');
-                URL.revokeObjectURL(audioUrl);
-            };
-            
-            await audio.play();
-            console.log('✅ ElevenLabs audio playing');
-            
-        } catch(err) {
-            console.error('ElevenLabs TTS error:', err);
-            isSpeaking = false;
-            document.getElementById('voiceBtn').classList.remove('speaking');
-            addMessage('⚠️ Ralat suara: ' + err.message, false);
-        }
-    }
 
     // =================================================================
     // API CALL
@@ -568,7 +525,19 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
                 })
             });
         } catch(networkErr) {
-            throw new Error('Gagal sambung ke pelayan. Semak VERCEL_URL dan GROQ_API_KEY.');
+            const looksLikePreview = (VERCEL_URL.match(/-[a-zA-Z0-9]{6,}-[^.]+\.vercel\.app/) !== null);
+            if(looksLikePreview){
+                throw new Error(
+                    'CORS error! Anda menggunakan URL PREVIEW Vercel.\n\n'+
+                    'URL preview (ada nombor rawak) tidak sokong CORS dengan betul.\n\n'+
+                    'Penyelesaian:\n'+
+                    '1. Buka Vercel Dashboard\n'+
+                    '2. Klik projek anda\n'+
+                    '3. Salin URL di bahagian atas (contoh: pond-monitor.vercel.app)\n'+
+                    '4. Ganti VERCEL_URL dalam kod HTML ini'
+                );
+            }
+            throw new Error('Gagal sambung ke pelayan. Semak: (1) VERCEL_URL betul, (2) vercel.json ada dalam repo, (3) GROQ_API_KEY diset dalam Vercel.');
         }
 
         if(!response.ok){
@@ -578,7 +547,7 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
 
         let data;
         try{data=await response.json();}catch{
-            throw new Error('Respons bukan JSON.');
+            throw new Error('Respons bukan JSON — buka Vercel Dashboard → Functions tab untuk lihat log.');
         }
 
         if(data.error) throw new Error(data.error.message||'Ralat dari API');
@@ -620,6 +589,7 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
         const h=Math.floor(diff/60);if(h<24)return`${h} jam lalu`;return`${Math.floor(h/24)} hari lalu`;
     }
 
+    // NEW: Check for alerts
     function checkAlerts(temp, ph, tds) {
         const alerts = [];
         if(temp >= TEMP_MAX) alerts.push('Suhu terlalu tinggi! Risiko stress pada ikan.');
@@ -639,6 +609,7 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
         }
     }
 
+    // NEW: Calculate stats
     function calculateStats(data) {
         const today = new Date();
         today.setHours(0,0,0,0);
@@ -685,8 +656,11 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
             document.getElementById('statusDot').classList.toggle('offline',
                 (new Date()-new Date(latest.timestamp))>=5*60000);
             
+            // NEW: Check alerts and calculate stats
             checkAlerts(latest.temp, latest.ph, latest.tds);
             calculateStats(data);
+            
+            // Update chart
             updateChart();
         }catch(err){
             console.error('fetchData error:',err);
@@ -695,6 +669,7 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
         }
     }
 
+    // NEW: Switch between different charts
     function switchChart(type) {
         currentChartType = type;
         document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
@@ -790,7 +765,7 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
         try{
             const reply=await askAI(q);
             addMessage(reply,false);
-            await speakWithElevenLabs(reply);
+            await speakWithBrowserTTS(reply);
         }catch(err){
             addMessage('⚠️ '+err.message.replace(/\n/g,'<br>'),false);
             console.error('AI Error:',err);
@@ -802,6 +777,7 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
 
     function askQuestion(q){document.getElementById('chatInput').value=q;sendMessage();}
 
+    // NEW: Explain sensor when clicked
     function explainSensor(sensor) {
         const questions = {
             'suhu': 'Terangkan kenapa suhu kolam penting untuk ikan tilapia',
@@ -810,32 +786,146 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
         };
         askQuestion(questions[sensor]);
     }
+
+    function initAudioContext(){
+        if(!audioContext) {
+            try{
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext();
+                console.log('AudioContext created:', audioContext.state);
+            }catch(e){
+                console.error('AudioContext creation failed:', e);
+            }
+        }
+    }
     
     function toggleSpeaker(){
         voiceEnabled=!voiceEnabled;
         document.getElementById('speakerIcon').textContent=voiceEnabled?'🔊':'🔇';
         document.getElementById('speakerText').textContent=voiceEnabled?'Suara ON':'Suara OFF';
         document.getElementById('speakerToggle').classList.toggle('active',voiceEnabled);
-        if(!voiceEnabled && isSpeaking){
+        if(!voiceEnabled){
+            window.speechSynthesis.cancel();
             isSpeaking=false;
-            document.getElementById('voiceBtn').classList.remove('speaking');
         }
     }
     
+    // Test speak function for debugging
     function testSpeak() {
+        console.log('=== TEST SPEAK FUNCTION ===');
+        console.log('audioUnlocked:', audioUnlocked);
+        console.log('voiceEnabled:', voiceEnabled);
+        console.log('Available voices:', availableVoices.length);
+        
         if (!audioUnlocked) {
+            console.log('Need to unlock audio first');
             document.getElementById('audioUnlockOverlay').classList.add('show');
             document.getElementById('audioUnlockOverlay').style.display = 'flex';
             return;
         }
         
-        voiceEnabled = true;
+        voiceEnabled = true; // Force enable
         document.getElementById('speakerIcon').textContent = '🔊';
         document.getElementById('speakerText').textContent = 'Suara ON';
         document.getElementById('speakerToggle').classList.add('active');
         
-        const testText = 'Assalamualaikum. Saya pembantu AI kolam anda. Selamat datang!';
-        speakWithElevenLabs(testText);
+        const testText = 'Hai, saya sedang menguji suara. Boleh dengar saya?';
+        console.log('Speaking test text...');
+        
+        speakWithBrowserTTS(testText);
+    }
+    
+    async function speakWithBrowserTTS(text){
+        console.log('=== Speak function called ===');
+        console.log('voiceEnabled:', voiceEnabled);
+        console.log('audioUnlocked:', audioUnlocked);
+        
+        if(!voiceEnabled) {
+            console.log('Voice disabled by user');
+            return;
+        }
+        
+        // DON'T show popup if already unlocked
+        if(!audioUnlocked) {
+            console.log('Audio not unlocked, showing popup...');
+            document.getElementById('audioUnlockOverlay').classList.add('show');
+            document.getElementById('audioUnlockOverlay').style.display = 'flex';
+            return;
+        }
+        
+        console.log('Attempting to speak:', text.substring(0, 50) + '...');
+        
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+        
+        // Wait a bit before speaking (important for mobile)
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Settings for better speech
+        utterance.rate = 0.9;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+        utterance.lang = 'ms-MY';
+        
+        // Try to find Malay voice
+        if (availableVoices.length > 0) {
+            const malayVoice = availableVoices.find(v => 
+                v.lang.startsWith('ms') || 
+                v.lang.startsWith('id') || // Indonesian as fallback
+                v.name.toLowerCase().includes('malay')
+            );
+            
+            if (malayVoice) {
+                console.log('Using voice:', malayVoice.name);
+                utterance.voice = malayVoice;
+                utterance.lang = malayVoice.lang;
+            } else {
+                console.log('No Malay voice found, using default');
+            }
+        }
+        
+        // Event handlers
+        utterance.onstart = () => {
+            console.log('✅ Speech started');
+            isSpeaking = true;
+            document.getElementById('voiceBtn').classList.add('speaking');
+        };
+        
+        utterance.onend = () => {
+            console.log('Speech ended');
+            isSpeaking = false;
+            document.getElementById('voiceBtn').classList.remove('speaking');
+        };
+        
+        utterance.onerror = (e) => {
+            console.error('❌ Speech error:', e.error, e.message);
+            isSpeaking = false;
+            document.getElementById('voiceBtn').classList.remove('speaking');
+            
+            if (e.error === 'not-allowed' || e.error === 'not-supported') {
+                // Try to unlock again
+                console.log('Speech not allowed, need to unlock again');
+                audioUnlocked = false;
+                document.getElementById('audioUnlockOverlay').classList.add('show');
+                document.getElementById('audioUnlockOverlay').style.display = 'flex';
+            }
+        };
+        
+        // Resume audio context if suspended
+        if (audioContext && audioContext.state === 'suspended') {
+            console.log('Resuming audio context...');
+            await audioContext.resume();
+        }
+        
+        // Speak!
+        try {
+            window.speechSynthesis.speak(utterance);
+            console.log('Speech queued');
+        } catch (err) {
+            console.error('Failed to speak:', err);
+        }
     }
 
     // Speech recognition setup
@@ -884,27 +974,28 @@ Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm
         }
     }
 
-    // Initialize
-    if (!audioContext) {
-        try {
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioContext = new AudioContext();
-        } catch(e) {
-            console.error('AudioContext error:', e);
-        }
+    // Initialize voices
+    if(window.speechSynthesis){
+        availableVoices=window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged=()=>{
+            availableVoices=window.speechSynthesis.getVoices();
+        };
     }
     
+    // Initialize
+    initAudioContext();
     fetchData();
     setInterval(fetchData,30000);
     
-    // Show audio unlock prompt on mobile
+    // Show audio unlock prompt on mobile ONLY ONCE when page loads
     if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)){
         setTimeout(()=>{
             if(!audioUnlocked){
+                console.log('Mobile detected, showing audio unlock overlay');
                 document.getElementById('audioUnlockOverlay').classList.add('show');
                 document.getElementById('audioUnlockOverlay').style.display = 'flex';
             }
-        },2000);
+        },2000); // Show after 2 seconds
     }
     </script>
     
