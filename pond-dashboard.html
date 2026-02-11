@@ -447,7 +447,7 @@ function showToast(msg, duration=3000) {
 async function fetchEspStatus() {
     try {
         const res = await fetch(VERCEL_URL + '/api/status', {
-            method: 'GET',
+            method: 'GET'
         });
         
         if (!res.ok) {
@@ -948,4 +948,5 @@ setInterval(fetchEspStatus, 3000);  // Check ESP32 every 3s
 </script>
 </body>
 </html>
+
 
