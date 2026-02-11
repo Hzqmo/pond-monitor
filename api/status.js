@@ -7,7 +7,6 @@ async function redis(command, ...args) {
       Authorization: `Bearer ${UPSTASH_TOKEN}`,
     },
   });
-
   return res.json();
 }
 
@@ -19,7 +18,7 @@ function cors(res) {
 
 export default async function handler(req, res) {
   cors(res);
-
+  
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -36,7 +35,6 @@ export default async function handler(req, res) {
   const sensorData = sensor.result ? JSON.parse(sensor.result) : null;
   const lastAckData = lastAck.result ? JSON.parse(lastAck.result) : null;
   const pendingData = pending.result ? JSON.parse(pending.result) : null;
-
   const feedHistory = history.result
     ? history.result.map(item => JSON.parse(item))
     : [];
