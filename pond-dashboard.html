@@ -442,7 +442,7 @@ function showToast(msg, duration=3000) {
 }
 
 // ════════════════════════════════════════════════════════════
-// ESP32 STATUS via Vercel
+// ESP32 STATUS via Vercel (FIXED)
 // ════════════════════════════════════════════════════════════
 async function fetchEspStatus() {
     try {
@@ -459,8 +459,14 @@ async function fetchEspStatus() {
         const data = await res.json();
         console.log('ESP32 status:', data);
 
-        // Check if we have recent sensor data
-        const hasData = data.sensor && Object.keys(data.sensor).length > 0;
+        // ✅ FIX: Handle both nested (data.sensor) and flat structures
+        const sensorData = data.sensor || data;
+        const hasData = sensorData && (
+            sensorData.temp !== undefined || 
+            sensorData.ph !== undefined || 
+            sensorData.tds !== undefined
+        );
+        
         const staleSec = data.staleSec || 0;
         
         // Consider online if data is less than 20 seconds old
@@ -472,12 +478,11 @@ async function fetchEspStatus() {
         
         updateEspStatusUI(isOnline, staleSec);
 
-        // Update feeder stats
+        // ✅ FIX: Update feeder stats from sensor data
         if (hasData) {
-            const s = data.sensor;
-            document.getElementById('feedCount').textContent = (s.feedCount ?? 0) + '×';
-            document.getElementById('lastFeedTime').textContent = s.lastFeed || 'Belum lagi';
-            document.getElementById('servoStatus').textContent = (s.servoOpen ? 'Terbuka 🔓' : 'Tertutup 🔒');
+            document.getElementById('feedCount').textContent = (sensorData.feedCount ?? 0) + '×';
+            document.getElementById('lastFeedTime').textContent = sensorData.lastFeed || 'Belum lagi';
+            document.getElementById('servoStatus').textContent = (sensorData.servoOpen ? 'Terbuka 🔓' : 'Tertutup 🔒');
         }
 
         // Update feed history
@@ -491,13 +496,15 @@ async function fetchEspStatus() {
 
         // Check ACK
         if (lastCmdId && data.lastAck?.id === lastCmdId) {
-            clearTimeout(ackPollTimer);
+            clearInterval(ackPollTimer);
             const ok = data.lastAck.result === 'ok';
             lastCmdId = '';
             
             if (ok) {
                 resetFeedBtn('success');
                 showToast('✅ Ikan berjaya diberi makan!');
+                // ✅ FIX: Force refresh stats immediately after success
+                setTimeout(fetchEspStatus, 500);
             } else {
                 resetFeedBtn('error');
                 showToast('❌ Arahan gagal — cuba lagi');
@@ -533,7 +540,7 @@ function updateEspStatusUI(online, staleSec) {
 }
 
 // ════════════════════════════════════════════════════════════
-// FEED NOW
+// FEED NOW (ENHANCED)
 // ════════════════════════════════════════════════════════════
 async function feedNow() {
     const btn = document.getElementById('feedNowBtn');
@@ -560,24 +567,27 @@ async function feedNow() {
             document.getElementById('feedBtnText').textContent = 'Menunggu ESP32...';
             showToast('📡 Arahan dihantar — menunggu balasan...');
 
-            // Poll for ACK every 2s for up to 30s (15 attempts)
+            // ✅ ENHANCED: Poll for ACK every 1.5s for up to 20s
             let attempts = 0;
             ackPollTimer = setInterval(async () => {
                 attempts++;
                 await fetchEspStatus();
                 
-                // Stop if we got ACK or timed out
-                if (!lastCmdId || attempts >= 15) {
+                // Stop if we got ACK or timed out (13 attempts ≈ 20s)
+                if (!lastCmdId || attempts >= 13) {
                     clearInterval(ackPollTimer);
                     if (lastCmdId) {
-                        // Timeout - assume success anyway since servo moved
-                        console.log('ACK timeout but assuming success');
+                        // Timeout - force one final check
+                        console.log('ACK timeout, final check...');
+                        await fetchEspStatus();
                         lastCmdId = '';
-                        resetFeedBtn('success');
-                        showToast('✅ Arahan dihantar (servo mungkin sudah bergerak)');
+                        if (document.getElementById('feedBtnText').textContent.includes('Menunggu')) {
+                            resetFeedBtn('success');
+                            showToast('✅ Arahan dihantar (servo mungkin sudah bergerak)');
+                        }
                     }
                 }
-            }, 2000);
+            }, 1500);
         } else {
             throw new Error(data.error || 'No command ID');
         }
