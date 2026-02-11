@@ -448,7 +448,6 @@ async function fetchEspStatus() {
     try {
         const res = await fetch(VERCEL_URL + '/api/status', {
             method: 'GET',
-            headers: {'Cache-Control': 'no-cache'}
         });
         
         if (!res.ok) {
@@ -949,3 +948,4 @@ setInterval(fetchEspStatus, 3000);  // Check ESP32 every 3s
 </script>
 </body>
 </html>
+
