@@ -1,48 +1,51 @@
-/**
- * /api/status
- *
- * GET  → returns latest sensor data pushed by ESP32 + pending command info
- *
- * The ESP32 pushes its sensor readings to /api/command every 30 s.
- * This endpoint lets the website read that cached data without
- * needing to talk to the ESP32 directly.
- */
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-if (!global._pondStore) {
-  global._pondStore = {
-    pendingCommand: null,
-    lastAck:        null,
-    sensorData:     null,
-    feedHistory:    [],
-  };
+async function redis(command, ...args) {
+  const res = await fetch(`${UPSTASH_URL}/${command}/${args.join("/")}`, {
+    headers: {
+      Authorization: `Bearer ${UPSTASH_TOKEN}`,
+    },
+  });
+
+  return res.json();
 }
-const store = global._pondStore;
 
 function cors(res) {
-  res.setHeader('Access-Control-Allow-Origin',  '*');
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
 export default async function handler(req, res) {
   cors(res);
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'GET') return res.status(405).json({ error: "Method not allowed" });
 
-  const sensor    = store.sensorData;
-  const lastAck   = store.lastAck;
-  const pending   = store.pendingCommand;
+  const sensor = await redis("get", "sensorData");
+  const lastAck = await redis("get", "lastAck");
+  const pending = await redis("get", "pendingCommand");
+  const history = await redis("lrange", "feedHistory", 0, 19);
 
-  // How stale is the sensor data?
-  const staleSec  = sensor ? Math.floor((Date.now() - sensor.updatedAt) / 1000) : null;
-  const isOnline  = staleSec !== null && staleSec < 90;   // offline if no push for 90 s
+  const sensorData = sensor.result ? JSON.parse(sensor.result) : null;
+  const lastAckData = lastAck.result ? JSON.parse(lastAck.result) : null;
+  const pendingData = pending.result ? JSON.parse(pending.result) : null;
+
+  const feedHistory = history.result
+    ? history.result.map(item => JSON.parse(item))
+    : [];
+
+  const staleSec = sensorData
+    ? Math.floor((Date.now() - sensorData.updatedAt) / 1000)
+    : null;
+
+  const isOnline = staleSec !== null && staleSec < 90;
 
   return res.status(200).json({
-    online:       isOnline,
+    online: isOnline,
     staleSec,
-    sensor:       sensor ?? null,
-    feedHistory:  store.feedHistory,
-    pendingCmd:   pending ? { action: pending.action, id: pending.id, queuedAt: pending.queuedAt } : null,
-    lastAck:      lastAck ?? null,
+    sensor: sensorData,
+    feedHistory,
+    pendingCmd: pendingData,
+    lastAck: lastAckData
   });
 }
