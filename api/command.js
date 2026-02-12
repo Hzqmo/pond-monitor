@@ -20,27 +20,31 @@ function makeId() {
 
 export default async function handler(req, res) {
   cors(res);
-  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
   /* ======================================================
      ESP32 POLL (GET)
      ====================================================== */
   if (req.method === 'GET') {
+
     const secret = process.env.ESP32_SECRET;
     const provided = req.headers['x-esp32-secret'] || req.query.secret;
-    
+
     if (secret && provided !== secret) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const cmdRaw = await redis("get", "pendingCommand");
+
     if (!cmdRaw.result) {
       return res.status(200).json({ command: "none" });
     }
 
     const cmd = JSON.parse(cmdRaw.result);
-    
-    // mark as delivered (not executed)
+
     cmd.state = "delivered";
     cmd.deliveredAt = Date.now();
     await redis("set", "pendingCommand", JSON.stringify(cmd));
@@ -52,10 +56,12 @@ export default async function handler(req, res) {
      POST
      ====================================================== */
   if (req.method === 'POST') {
+
     const body = req.body || {};
 
     /* ================= ACK ================= */
     if (body.type === "ack") {
+
       const raw = await redis("get", "pendingCommand");
       const pending = raw.result ? JSON.parse(raw.result) : null;
 
@@ -63,15 +69,15 @@ export default async function handler(req, res) {
         return res.status(409).json({ error: "Command mismatch" });
       }
 
-      // only accept ack AFTER execution
       await redis("set", "lastAck", JSON.stringify({
         id: body.id,
         command: pending.command,
-        result: body.result,           // ok | fail
+        result: body.result,
         executedAt: body.executedAt,
         ackedAt: Date.now()
       }));
 
+      // Feed history update
       if (body.result === "ok" && pending.command === "feed") {
         await redis("lpush", "feedHistory", JSON.stringify({
           time: new Date().toISOString(),
@@ -80,48 +86,62 @@ export default async function handler(req, res) {
         await redis("ltrim", "feedHistory", 0, 19);
       }
 
+      // Reset handling
+      if (body.result === "ok" && pending.command === "reset") {
+        console.log('🔄 ESP32 confirmed reset, clearing Redis...');
+
+        await redis("del", "feedHistory");
+
+        await redis("set", "sensorData", JSON.stringify({
+          temp: 0,
+          ph: 0,
+          tds: 0,
+          feedCount: 0,
+          lastFeed: "Belum lagi",
+          servoOpen: false,
+          updatedAt: Date.now()
+        }));
+      }
+
       await redis("del", "pendingCommand");
+
       return res.status(200).json({ ok: true });
     }
 
     /* ================= STATUS PUSH ================= */
     if (body.type === "status") {
-      // Handle both nested (body.sensor) and flat structures
+
       const sensorData = body.sensor || body;
-      
-      // Get existing data to preserve feed count if ESP32 rebooted
+
       const existingRaw = await redis("get", "sensorData");
       const existing = existingRaw.result ? JSON.parse(existingRaw.result) : null;
-      
-      // Use incoming feedCount if higher (ESP32 has persistence)
-      // Otherwise keep existing count (in case ESP32 rebooted)
+
       const feedCount = Math.max(
         sensorData.feedCount ?? 0,
         existing?.feedCount ?? 0
       );
-      
-      // Use incoming lastFeed if it's not default, otherwise keep existing
+
       const lastFeed = (sensorData.lastFeed && sensorData.lastFeed !== "Belum lagi")
         ? sensorData.lastFeed
         : (existing?.lastFeed || "Belum lagi");
-      
+
       await redis("set", "sensorData", JSON.stringify({
         temp: sensorData.temp ?? 0,
         ph: sensorData.ph ?? 0,
         tds: sensorData.tds ?? 0,
-        feedCount: feedCount,
-        lastFeed: lastFeed,
+        feedCount,
+        lastFeed,
         servoOpen: sensorData.servoOpen ?? false,
         updatedAt: Date.now()
       }));
-      
+
       return res.status(200).json({ ok: true });
     }
 
     /* ================= WEBSITE QUEUE ================= */
     const { action, angle } = body;
-    
-    if (!["feed", "servo", "close"].includes(action)) {
+
+    if (!["feed", "servo", "close", "reset"].includes(action)) {
       return res.status(400).json({ error: "Invalid action" });
     }
 
@@ -134,7 +154,7 @@ export default async function handler(req, res) {
     };
 
     await redis("set", "pendingCommand", JSON.stringify(newCmd));
-    
+
     return res.status(200).json({ ok: true, queued: newCmd });
   }
 
