@@ -364,10 +364,17 @@ let lastCmdId    = '';
 let ackPollTimer = null;
 let esp32LastSeen = 0;
 
-// Adaptive polling variables (DECLARE ONCE)
-let normalInterval = 30000;   // 30s normally
-let fastInterval = 3000;      // 3s when waiting for command
-let currentPollTimer = null;
+// ════════════════════════════════════════════════════════════
+// ⚡ SEPARATE POLLING FOR SENSORS VS COMMANDS
+// ════════════════════════════════════════════════════════════
+// SENSOR POLLING (temp/pH/TDS) - NOT Redis, can poll frequently!
+let sensorPollInterval = 5000;    // 5s for real-time sensor updates
+let sensorPollTimer = null;
+
+// COMMAND POLLING (feed commands) - Uses Redis, adaptive polling
+let normalInterval = 30000;       // 30s normally to save Redis
+let fastInterval = 3000;          // 3s when waiting for command ACK
+let commandPollTimer = null;
 let fastPollActive = false;
 let fastPollTimeout = null;
 
@@ -384,27 +391,127 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ════════════════════════════════════════════════════════════
-// ADAPTIVE POLLING FUNCTIONS
+// ⚡ ADAPTIVE COMMAND POLLING (for feed ACKs only)
 // ════════════════════════════════════════════════════════════
-function startFastPoll() {
+function startFastCommandPoll() {
     if (fastPollActive) return;
     fastPollActive = true;
-    console.log('⚡ Fast polling active (3s)');
-    if (currentPollTimer) clearInterval(currentPollTimer);
-    currentPollTimer = setInterval(fetchEspStatus, fastInterval);
+    console.log('⚡ Fast command polling (3s) - waiting for ACK');
+    if (commandPollTimer) clearInterval(commandPollTimer);
+    commandPollTimer = setInterval(checkCommandStatus, fastInterval);
     if (fastPollTimeout) clearTimeout(fastPollTimeout);
     fastPollTimeout = setTimeout(() => {
-        if (fastPollActive) stopFastPoll();
-    }, 60000);
+        if (fastPollActive) stopFastCommandPoll();
+    }, 60000); // Stop after 1 minute
 }
 
-function stopFastPoll() {
+function stopFastCommandPoll() {
     if (!fastPollActive) return;
     fastPollActive = false;
-    console.log('🐌 Normal polling resumed (30s)');
-    if (currentPollTimer) clearInterval(currentPollTimer);
+    console.log('🐌 Normal command polling resumed (30s)');
+    if (commandPollTimer) clearInterval(commandPollTimer);
     if (fastPollTimeout) clearTimeout(fastPollTimeout);
-    currentPollTimer = setInterval(fetchEspStatus, normalInterval);
+    commandPollTimer = setInterval(checkCommandStatus, normalInterval);
+}
+
+// ════════════════════════════════════════════════════════════
+// 🌡️ SENSOR STATUS POLLING (real-time, NOT Redis!)
+// ════════════════════════════════════════════════════════════
+async function fetchSensorStatus() {
+    try {
+        const res = await fetch(VERCEL_URL + '/api/status', { method: 'GET' });
+        if (!res.ok) { 
+            updateEspStatusUI(false, 0); 
+            return; 
+        }
+
+        const data = await res.json();
+        const sensorData = data.sensor || data;
+        const hasData = sensorData && (sensorData.temp !== undefined || sensorData.ph !== undefined || sensorData.tds !== undefined);
+        const staleSec = data.staleSec || 0;
+        const isOnline = hasData && staleSec < 20;
+
+        if (isOnline) esp32LastSeen = Date.now();
+        updateEspStatusUI(isOnline, staleSec);
+        
+        // Update sensor displays in real-time
+        if (hasData) {
+            updateSensorDisplays(sensorData);
+            updateFeedStatsDisplay(sensorData);
+        }
+
+        if (data.feedHistory?.length) {
+            feedLog = data.feedHistory.map(e => ({ time: e.time, source: e.source }));
+            renderFeedLog();
+        }
+    } catch(err) {
+        console.error('Sensor poll error:', err);
+        updateEspStatusUI(false, 0);
+    }
+}
+
+function updateSensorDisplays(data) {
+    if (data.temp !== undefined) {
+        const temp = parseFloat(data.temp);
+        document.getElementById('tempValue').textContent = temp.toFixed(1);
+        updateSensorCard('tempCard', 'tempStatus', temp, TEMP_MIN, TEMP_MAX);
+        currentSensorData.temp = temp.toFixed(1);
+    }
+    
+    if (data.ph !== undefined) {
+        const ph = parseFloat(data.ph);
+        document.getElementById('phValue').textContent = ph.toFixed(2);
+        updateSensorCard('phCard', 'phStatus', ph, PH_MIN, PH_MAX);
+        currentSensorData.ph = ph.toFixed(2);
+    }
+    
+    if (data.tds !== undefined) {
+        const tds = parseFloat(data.tds);
+        document.getElementById('tdsValue').textContent = Math.round(tds);
+        updateSensorCard('tdsCard', 'tdsStatus', tds, TDS_MIN, TDS_MAX);
+        currentSensorData.tds = Math.round(tds);
+    }
+    
+    // Update last update time
+    document.getElementById('lastUpdate').textContent = 'Baru sahaja';
+    document.getElementById('statusDot').classList.remove('offline');
+    
+    // Check for alerts
+    checkAlerts(
+        currentSensorData.temp || 0,
+        currentSensorData.ph || 0,
+        currentSensorData.tds || 0
+    );
+}
+
+// ════════════════════════════════════════════════════════════
+// 🔔 COMMAND STATUS CHECK (for feed ACKs, uses Redis)
+// ════════════════════════════════════════════════════════════
+async function checkCommandStatus() {
+    try {
+        const res = await fetch(VERCEL_URL + '/api/status', { method: 'GET' });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        
+        // Check for command ACK
+        if (lastCmdId && data.lastAck?.id === lastCmdId) {
+            clearInterval(ackPollTimer);
+            stopFastCommandPoll();  // ⚡ Stop fast polling
+            const ok = data.lastAck.result === 'ok';
+            lastCmdId = '';
+            if (ok) {
+                resetFeedBtn('success');
+                showToast('✅ Ikan berjaya diberi makan!');
+                setTimeout(fetchSensorStatus, 500);
+            } else {
+                resetFeedBtn('error');
+                showToast('❌ Arahan gagal — cuba lagi');
+            }
+        }
+    } catch(err) {
+        console.error('Command check error:', err);
+    }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -450,51 +557,8 @@ function formatFeedTime(timestamp) {
 }
 
 // ════════════════════════════════════════════════════════════
-// ESP32 STATUS
+// ESP32 STATUS UI
 // ════════════════════════════════════════════════════════════
-async function fetchEspStatus() {
-    try {
-        const res = await fetch(VERCEL_URL + '/api/status', { method: 'GET' });
-        if (!res.ok) { updateEspStatusUI(false, 0); return; }
-
-        const data = await res.json();
-        console.log('ESP32 status:', data);
-
-        const sensorData = data.sensor || data;
-        const hasData = sensorData && (sensorData.temp !== undefined || sensorData.ph !== undefined || sensorData.tds !== undefined);
-        const staleSec = data.staleSec || 0;
-        const isOnline = hasData && staleSec < 20;
-
-        if (isOnline) esp32LastSeen = Date.now();
-        updateEspStatusUI(isOnline, staleSec);
-        if (hasData) updateFeedStatsDisplay(sensorData);
-
-        if (data.feedHistory?.length) {
-            feedLog = data.feedHistory.map(e => ({ time: e.time, source: e.source }));
-            renderFeedLog();
-        }
-
-        // Check ACK and stop fast polling if received
-        if (lastCmdId && data.lastAck?.id === lastCmdId) {
-            clearInterval(ackPollTimer);
-            stopFastPoll();  // ⚡ Stop fast polling
-            const ok = data.lastAck.result === 'ok';
-            lastCmdId = '';
-            if (ok) {
-                resetFeedBtn('success');
-                showToast('✅ Ikan berjaya diberi makan!');
-                setTimeout(fetchEspStatus, 500);
-            } else {
-                resetFeedBtn('error');
-                showToast('❌ Arahan gagal — cuba lagi');
-            }
-        }
-    } catch(err) {
-        console.error('ESP status error:', err);
-        updateEspStatusUI(false, 0);
-    }
-}
-
 function updateEspStatusUI(online, staleSec) {
     const el  = document.getElementById('espStatus');
     const dot = document.getElementById('espDot');
@@ -559,7 +623,7 @@ async function resetFeedStats() {
     } else {
         showToast('⚠️ ESP32 offline - Please restart it manually.', 5000);
     }
-    setTimeout(() => fetchEspStatus(), 1000);
+    setTimeout(() => fetchSensorStatus(), 1000);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -589,18 +653,18 @@ async function feedNow() {
             document.getElementById('feedBtnText').textContent = 'Menunggu ESP32...';
             showToast('📡 Arahan dihantar — menunggu balasan...');
 
-            startFastPoll();  // ⚡ Activate fast polling
+            startFastCommandPoll();  // ⚡ Activate fast polling for ACK
 
             let attempts = 0;
             ackPollTimer = setInterval(async () => {
                 attempts++;
-                await fetchEspStatus();
+                await checkCommandStatus();
                 if (!lastCmdId || attempts >= 13) {
                     clearInterval(ackPollTimer);
-                    stopFastPoll();  // ⚡ Stop fast polling on timeout
+                    stopFastCommandPoll();  // ⚡ Stop fast polling on timeout
                     if (lastCmdId) {
                         console.log('ACK timeout, final check...');
-                        await fetchEspStatus();
+                        await checkCommandStatus();
                         lastCmdId = '';
                         if (document.getElementById('feedBtnText').textContent.includes('Menunggu')) {
                             resetFeedBtn('success');
@@ -616,7 +680,7 @@ async function feedNow() {
         console.error('Feed error:', err);
         resetFeedBtn('error');
         showToast('❌ Gagal: ' + err.message);
-        stopFastPoll();  // ⚡ Stop fast polling on error
+        stopFastCommandPoll();  // ⚡ Stop fast polling on error
     }
 }
 
@@ -649,7 +713,7 @@ async function setServoAngle() {
         const data = await res.json();
         if (data.ok) {
             showToast('📡 Sudut ' + angle + '° dihantar');
-            setTimeout(fetchEspStatus, 1000);
+            setTimeout(fetchSensorStatus, 1000);
         }
     } catch(err) { showToast('❌ Gagal hantar arahan'); }
 }
@@ -726,22 +790,13 @@ async function fetchData() {
         allData = data;
 
         const latest = data[data.length-1];
-        currentSensorData = { temp: latest.temp.toFixed(1), ph: latest.ph.toFixed(2), tds: Math.round(latest.tds) };
-        document.getElementById('tempValue').textContent = currentSensorData.temp;
-        document.getElementById('phValue').textContent   = currentSensorData.ph;
-        document.getElementById('tdsValue').textContent  = currentSensorData.tds;
-
-        updateSensorCard('tempCard','tempStatus', latest.temp, TEMP_MIN, TEMP_MAX);
-        updateSensorCard('phCard',  'phStatus',   latest.ph,   PH_MIN,   PH_MAX);
-        updateSensorCard('tdsCard', 'tdsStatus',  latest.tds,  TDS_MIN,  TDS_MAX);
-
-        document.getElementById('lastUpdate').textContent = formatTimeAgo(latest.timestamp);
-        document.getElementById('statusDot').classList.toggle('offline', (new Date()-new Date(latest.timestamp)) >= 5*60000);
-
-        checkAlerts(latest.temp, latest.ph, latest.tds);
+        
+        // Update stats and chart
         calculateStats(data);
         updateChart();
-        fetchEspStatus();
+        
+        // Don't update sensor values here - they come from real-time polling
+        
     } catch(err) {
         document.getElementById('errorMessage').textContent = '⚠️ ' + err.message;
         document.getElementById('errorMessage').style.display = 'block';
@@ -754,11 +809,13 @@ function parseCSV(csv) {
         return v.length>=4 ? {timestamp:v[0],temp:parseFloat(v[1]),ph:parseFloat(v[2]),tds:parseFloat(v[3])} : null;
     }).filter(Boolean);
 }
+
 function formatTimeAgo(ts) {
     const d=Math.floor((new Date()-new Date(ts))/60000);
     if(d<1)return'Baru sahaja';if(d<60)return d+' minit lalu';
     const h=Math.floor(d/60);if(h<24)return h+' jam lalu';return Math.floor(h/24)+' hari lalu';
 }
+
 function updateSensorCard(cId,bId,v,mn,mx) {
     const c=document.getElementById(cId),b=document.getElementById(bId);
     c.classList.remove('normal','warning','danger');
@@ -767,6 +824,7 @@ function updateSensorCard(cId,bId,v,mn,mx) {
     else if(v>mx){c.classList.add('danger');b.classList.add('badge-danger');b.textContent='Tinggi';}
     else{c.classList.add('normal');b.classList.add('badge-normal');b.textContent='Normal';}
 }
+
 function checkAlerts(t,p,d) {
     const a=[];
     if(t>=TEMP_MAX)a.push('Suhu terlalu tinggi!');else if(t<TEMP_MIN)a.push('Suhu terlalu rendah!');
@@ -775,6 +833,7 @@ function checkAlerts(t,p,d) {
     document.getElementById('alertText').textContent=a.join(' ');
     document.getElementById('alertBanner').classList.toggle('show',a.length>0);
 }
+
 function calculateStats(data) {
     const today=new Date();today.setHours(0,0,0,0);
     document.getElementById('todayReadings').textContent=data.filter(d=>new Date(d.timestamp)>=today).length;
@@ -796,6 +855,7 @@ function switchChart(type) {
     document.getElementById('chartTitle').textContent=t[type];
     updateChart();
 }
+
 function updateChart() {
     const s=allData.slice(-50);
     const labels=s.map(d=>new Date(d.timestamp).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
@@ -833,10 +893,12 @@ async function askAI(question) {
     if(d.error)throw new Error(d.error.message);
     return d.choices[0].message.content;
 }
+
 function getSensorContext() {
     const t=currentSensorData.temp??'?',p=currentSensorData.ph??'?',d=currentSensorData.tds??'?';
     return `Keadaan kolam semasa:\n- Suhu: ${t}°C\n- pH: ${p}\n- TDS: ${d} ppm`;
 }
+
 function addMessage(text,isUser=false) {
     const w=document.getElementById('chatMessages'),div=document.createElement('div');
     div.className='chat-message'+(isUser?' user-message':'');
@@ -844,6 +906,7 @@ function addMessage(text,isUser=false) {
     div.innerHTML=`<div class="message-avatar ${isUser?'user-avatar':''}">${isUser?'👤':'🤖'}</div><div class="message-content"><div class="message-text">${text}</div><div class="message-time">${time}</div></div>`;
     w.appendChild(div);w.scrollTop=w.scrollHeight;
 }
+
 async function sendMessage() {
     const i=document.getElementById('chatInput'),q=i.value.trim();
     if(!q)return;
@@ -854,6 +917,7 @@ async function sendMessage() {
     catch(e){addMessage('⚠️ '+e.message,false);}
     finally{document.getElementById('typingIndicator').classList.remove('active');b.disabled=false;b.textContent='Hantar';}
 }
+
 function askQuestion(q){document.getElementById('chatInput').value=q;sendMessage();}
 function explainSensor(s){
     const q={suhu:'Terangkan kenapa suhu kolam penting untuk ikan tilapia',pH:'Terangkan kenapa pH air penting',TDS:'Apa itu TDS dan kenapa ia penting?'};
@@ -864,6 +928,7 @@ function explainSensor(s){
 // AUDIO / TTS
 // ════════════════════════════════════════════════════════════
 function showAudioOverlay(){document.getElementById('audioUnlockOverlay').classList.add('show');document.getElementById('audioUnlockOverlay').style.display='flex';}
+
 function setupAudioUnlock(){
     const overlay=document.getElementById('audioUnlockOverlay');
     const uBtn=document.getElementById('unlockAudioBtn');
@@ -894,6 +959,7 @@ function setupAudioUnlock(){
     uBtn.addEventListener('touchend',e=>{e.preventDefault();doUnlock();},{passive:false});
     sBtn.addEventListener('touchend',e=>{e.preventDefault();doSkip();},{passive:false});
 }
+
 function toggleSpeaker(){
     voiceEnabled=!voiceEnabled;
     document.getElementById('speakerIcon').textContent=voiceEnabled?'🔊':'🔇';
@@ -901,6 +967,7 @@ function toggleSpeaker(){
     document.getElementById('speakerToggle').classList.toggle('active',voiceEnabled);
     if(!voiceEnabled){window.speechSynthesis.cancel();isSpeaking=false;}
 }
+
 function testSpeak(){
     if(!audioUnlocked){showAudioOverlay();return;}
     voiceEnabled=true;
@@ -909,6 +976,7 @@ function testSpeak(){
     document.getElementById('speakerToggle').classList.add('active');
     speakWithBrowserTTS('Hai, saya sedang menguji suara. Boleh dengar saya?');
 }
+
 async function speakWithBrowserTTS(text){
     if(!voiceEnabled||!audioUnlocked)return;
     window.speechSynthesis.cancel();
@@ -925,6 +993,7 @@ async function speakWithBrowserTTS(text){
     if(audioContext?.state==='suspended')await audioContext.resume();
     window.speechSynthesis.speak(u);
 }
+
 if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
     const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
     recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='ms-MY';
@@ -933,20 +1002,27 @@ if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
     recognition.onresult=e=>{const t=e.results[0][0].transcript;document.getElementById('chatInput').value=t;sendMessage();};
     recognition.onerror=e=>{document.getElementById('voiceStatus').textContent='🎤 Ralat: '+e.error;};
 }else{document.getElementById('voiceBtn').disabled=true;}
+
 function toggleVoiceInput(){if(!recognition){alert('Voice input tidak disokong.');return;}isListening?recognition.stop():recognition.start();}
+
 if(window.speechSynthesis){availableVoices=window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>{availableVoices=window.speechSynthesis.getVoices();};}
 
 // ════════════════════════════════════════════════════════════
-// BOOT - OPTIMIZED POLLING
+// 🚀 BOOT - OPTIMIZED DUAL POLLING SYSTEM
 // ════════════════════════════════════════════════════════════
-fetchData();
-setInterval(fetchData, 30000);  // Google Sheets every 30s
-currentPollTimer = setInterval(fetchEspStatus, normalInterval);  // Adaptive polling starts at 30s
+fetchData();                    // Initial Google Sheets load
+fetchSensorStatus();            // Initial sensor status
 
-console.log('📊 Optimized polling initialized:');
-console.log('  • Normal mode: 30s (saves Redis)');
-console.log('  • Fast mode: 3s (when feeding)');
-console.log('  • Expected usage: ~285K Redis ops/month ✅');
+// Separate timers for different purposes
+setInterval(fetchData, 60000);              // Google Sheets every 60s (historical data)
+sensorPollTimer = setInterval(fetchSensorStatus, sensorPollInterval);  // Sensors every 5s (real-time)
+commandPollTimer = setInterval(checkCommandStatus, normalInterval);     // Commands every 30s (Redis)
+
+console.log('📊 Dual polling system initialized:');
+console.log('  • SENSORS (temp/pH/TDS): 5s (NOT Redis) ← REAL-TIME! ✅');
+console.log('  • COMMANDS (feed ACK): 30s normal, 3s when active (Redis) ✅');
+console.log('  • GOOGLE SHEETS (chart): 60s (historical data) ✅');
+console.log('  • Expected Redis usage: ~86K ops/month (well under limit!) ✅');
 </script>
 </body>
 </html>
