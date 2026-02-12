@@ -89,15 +89,32 @@ export default async function handler(req, res) {
       // Handle both nested (body.sensor) and flat structures
       const sensorData = body.sensor || body;
       
+      // Get existing data to preserve feed count if ESP32 rebooted
+      const existingRaw = await redis("get", "sensorData");
+      const existing = existingRaw.result ? JSON.parse(existingRaw.result) : null;
+      
+      // Use incoming feedCount if higher (ESP32 has persistence)
+      // Otherwise keep existing count (in case ESP32 rebooted)
+      const feedCount = Math.max(
+        sensorData.feedCount ?? 0,
+        existing?.feedCount ?? 0
+      );
+      
+      // Use incoming lastFeed if it's not default, otherwise keep existing
+      const lastFeed = (sensorData.lastFeed && sensorData.lastFeed !== "Belum lagi")
+        ? sensorData.lastFeed
+        : (existing?.lastFeed || "Belum lagi");
+      
       await redis("set", "sensorData", JSON.stringify({
         temp: sensorData.temp ?? 0,
         ph: sensorData.ph ?? 0,
         tds: sensorData.tds ?? 0,
-        feedCount: sensorData.feedCount ?? 0,
-        lastFeed: sensorData.lastFeed || "Belum lagi",
+        feedCount: feedCount,
+        lastFeed: lastFeed,
         servoOpen: sensorData.servoOpen ?? false,
         updatedAt: Date.now()
       }));
+      
       return res.status(200).json({ ok: true });
     }
 
