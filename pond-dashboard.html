@@ -164,7 +164,6 @@
 <div class="cmd-toast" id="cmdToast"></div>
 
 <div class="container">
-
     <div class="header">
         <div class="header-logo">
             <div class="logo-icon">🐟</div>
@@ -177,7 +176,6 @@
     </div>
 
     <div id="errorMessage" style="display:none" class="error"></div>
-
     <div class="alert-banner" id="alertBanner">
         <div class="alert-icon">⚠️</div>
         <div class="alert-text" id="alertText"></div>
@@ -223,12 +221,10 @@
             <h2>🍽️ Kawalan Pemberi Makan</h2>
             <div class="feeder-badge">VERCEL ↔ ESP32</div>
         </div>
-
         <div class="esp-status offline" id="espStatus">
             <div class="esp-dot" id="espDot"></div>
             <span id="espStatusText">Menyemak ESP32...</span>
         </div>
-
         <div class="feeder-stats">
             <div class="feeder-stat">
                 <div class="feeder-stat-label">Total Feeds</div>
@@ -246,34 +242,26 @@
                 <div class="feeder-stat-sublabel">Auto-close 2s</div>
             </div>
         </div>
-
-        <button class="reset-btn" onclick="resetFeedStats()">
-            🔄 Reset Stats (Dev Mode)
-        </button>
-
+        <button class="reset-btn" onclick="resetFeedStats()">🔄 Reset Stats (Dev Mode)</button>
         <button class="feed-now-btn" id="feedNowBtn" onclick="feedNow()">
             <span id="feedBtnIcon">🐟</span>
             <span id="feedBtnText">Beri Makan Sekarang</span>
         </button>
-
         <div class="servo-section">
             <div class="servo-row">
                 <label>Sudut Servo Manual</label>
-                <input type="range" class="servo-slider" id="servoSlider"
-                       min="0" max="180" value="90"
+                <input type="range" class="servo-slider" id="servoSlider" min="0" max="180" value="90"
                        oninput="document.getElementById('servoVal').textContent=this.value+'°'">
                 <span class="servo-val" id="servoVal">90°</span>
             </div>
             <button class="servo-set-btn" onclick="setServoAngle()">Tetapkan Sudut</button>
         </div>
-
         <div class="schedule-title">⏰ Jadual Makan Automatik</div>
         <div class="schedule-chips" id="scheduleChips"></div>
         <div class="schedule-add">
             <input type="time" class="time-input" id="newFeedTime" value="08:00">
             <button class="add-btn" onclick="addScheduleSlot()">+ Tambah</button>
         </div>
-
         <div class="log-title">📋 Log Pemberian Makan</div>
         <div class="feed-log" id="feedLog">
             <div class="log-row"><span class="log-t">--:--</span><span class="log-s">—</span><span>Tiada log lagi</span></div>
@@ -319,8 +307,7 @@
         </div>
         <div class="chat-input-container">
             <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()">🎤</button>
-            <input type="text" class="chat-input" id="chatInput"
-                   placeholder="Taip atau tekan mikrofon..."
+            <input type="text" class="chat-input" id="chatInput" placeholder="Taip atau tekan mikrofon..."
                    onkeypress="if(event.key==='Enter')sendMessage()">
             <button class="send-btn" onclick="sendMessage()" id="sendBtn">Hantar</button>
         </div>
@@ -361,11 +348,10 @@
 // ════════════════════════════════════════════════════════════
 const VERCEL_URL    = 'https://pond-monitor-psi.vercel.app';
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
-
 const TEMP_MIN=20,TEMP_MAX=32,PH_MIN=6.5,PH_MAX=8.5,TDS_MIN=300,TDS_MAX=800;
 
 // ════════════════════════════════════════════════════════════
-// STATE
+// STATE - ALL VARIABLES DECLARED ONCE HERE
 // ════════════════════════════════════════════════════════════
 let mainChart, currentSensorData={}, recognition, isListening=false,
     voiceEnabled=true, isSpeaking=false, availableVoices=[],
@@ -378,6 +364,13 @@ let lastCmdId    = '';
 let ackPollTimer = null;
 let esp32LastSeen = 0;
 
+// Adaptive polling variables (DECLARE ONCE)
+let normalInterval = 30000;   // 30s normally
+let fastInterval = 3000;      // 3s when waiting for command
+let currentPollTimer = null;
+let fastPollActive = false;
+let fastPollTimeout = null;
+
 // ════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════
@@ -385,13 +378,34 @@ window.addEventListener('DOMContentLoaded', () => {
     renderSchedule();
     startScheduleWatcher();
     setupAudioUnlock();
-
     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        setTimeout(()=>{
-            if (!audioUnlocked) showAudioOverlay();
-        }, 2000);
+        setTimeout(()=>{ if (!audioUnlocked) showAudioOverlay(); }, 2000);
     }
 });
+
+// ════════════════════════════════════════════════════════════
+// ADAPTIVE POLLING FUNCTIONS
+// ════════════════════════════════════════════════════════════
+function startFastPoll() {
+    if (fastPollActive) return;
+    fastPollActive = true;
+    console.log('⚡ Fast polling active (3s)');
+    if (currentPollTimer) clearInterval(currentPollTimer);
+    currentPollTimer = setInterval(fetchEspStatus, fastInterval);
+    if (fastPollTimeout) clearTimeout(fastPollTimeout);
+    fastPollTimeout = setTimeout(() => {
+        if (fastPollActive) stopFastPoll();
+    }, 60000);
+}
+
+function stopFastPoll() {
+    if (!fastPollActive) return;
+    fastPollActive = false;
+    console.log('🐌 Normal polling resumed (30s)');
+    if (currentPollTimer) clearInterval(currentPollTimer);
+    if (fastPollTimeout) clearTimeout(fastPollTimeout);
+    currentPollTimer = setInterval(fetchEspStatus, normalInterval);
+}
 
 // ════════════════════════════════════════════════════════════
 // TOAST
@@ -408,39 +422,29 @@ function showToast(msg, duration=3000) {
 // ════════════════════════════════════════════════════════════
 function formatRelativeDate(timestamp) {
     if (!timestamp || timestamp === "Belum lagi" || timestamp === "Never") return "Never";
-
     const now = new Date();
     const feedTime = new Date(timestamp);
-
     if (timestamp.match(/^\d{2}:\d{2}:\d{2}$/)) return "Today";
-
     const diffMs = now - feedTime;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-
     if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
-
     return feedTime.toLocaleDateString('en-MY', { month: 'short', day: 'numeric' });
 }
 
 function formatFeedTime(timestamp) {
     if (!timestamp || timestamp === "Belum lagi" || timestamp === "Never") return "Never";
-
     if (timestamp.match(/^\d{2}:\d{2}:\d{2}$/)) return `Today ${timestamp}`;
-
     const feedTime = new Date(timestamp);
     const now = new Date();
     const isToday = feedTime.toDateString() === now.toDateString();
-
     const time = feedTime.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit' });
-
     if (isToday) return `Today ${time}`;
-
     const date = feedTime.toLocaleDateString('en-MY', { day: 'numeric', month: 'short' });
     return `${date} ${time}`;
 }
@@ -451,26 +455,18 @@ function formatFeedTime(timestamp) {
 async function fetchEspStatus() {
     try {
         const res = await fetch(VERCEL_URL + '/api/status', { method: 'GET' });
-
         if (!res.ok) { updateEspStatusUI(false, 0); return; }
 
         const data = await res.json();
         console.log('ESP32 status:', data);
 
         const sensorData = data.sensor || data;
-        const hasData = sensorData && (
-            sensorData.temp !== undefined ||
-            sensorData.ph   !== undefined ||
-            sensorData.tds  !== undefined
-        );
-
+        const hasData = sensorData && (sensorData.temp !== undefined || sensorData.ph !== undefined || sensorData.tds !== undefined);
         const staleSec = data.staleSec || 0;
         const isOnline = hasData && staleSec < 20;
 
         if (isOnline) esp32LastSeen = Date.now();
-
         updateEspStatusUI(isOnline, staleSec);
-
         if (hasData) updateFeedStatsDisplay(sensorData);
 
         if (data.feedHistory?.length) {
@@ -478,11 +474,12 @@ async function fetchEspStatus() {
             renderFeedLog();
         }
 
+        // Check ACK and stop fast polling if received
         if (lastCmdId && data.lastAck?.id === lastCmdId) {
             clearInterval(ackPollTimer);
+            stopFastPoll();  // ⚡ Stop fast polling
             const ok = data.lastAck.result === 'ok';
             lastCmdId = '';
-
             if (ok) {
                 resetFeedBtn('success');
                 showToast('✅ Ikan berjaya diberi makan!');
@@ -492,7 +489,6 @@ async function fetchEspStatus() {
                 showToast('❌ Arahan gagal — cuba lagi');
             }
         }
-
     } catch(err) {
         console.error('ESP status error:', err);
         updateEspStatusUI(false, 0);
@@ -503,7 +499,6 @@ function updateEspStatusUI(online, staleSec) {
     const el  = document.getElementById('espStatus');
     const dot = document.getElementById('espDot');
     const txt = document.getElementById('espStatusText');
-
     if (online) {
         el.className = 'esp-status online';
         dot.className = 'esp-dot pulse';
@@ -512,81 +507,58 @@ function updateEspStatusUI(online, staleSec) {
         el.className = 'esp-status offline';
         dot.className = 'esp-dot';
         const timeSince = esp32LastSeen ? Math.floor((Date.now() - esp32LastSeen) / 1000) : 0;
-        txt.textContent = timeSince > 0
-            ? `ESP32 luar talian (${timeSince}s sejak terakhir)`
-            : 'ESP32 luar talian — menunggu data';
+        txt.textContent = timeSince > 0 ? `ESP32 luar talian (${timeSince}s sejak terakhir)` : 'ESP32 luar talian — menunggu data';
     }
 }
 
-// ════════════════════════════════════════════════════════════
-// UPDATE FEED STATS DISPLAY
-// ════════════════════════════════════════════════════════════
 function updateFeedStatsDisplay(data) {
     const feedCount = data.feedCount || 0;
     const lastFeed  = data.lastFeed  || "Belum lagi";
-
     document.getElementById('feedCount').textContent     = feedCount + '×';
     document.getElementById('lastFeedTime').textContent  = formatFeedTime(lastFeed);
     document.getElementById('lastFeedDate').textContent  = formatRelativeDate(lastFeed);
     document.getElementById('servoStatus').textContent   = (data.servoOpen ? '🔓 Open' : '🔒 Closed');
-
     const todayFeeds = feedLog.filter(f => {
         const feedDate = new Date(f.time);
         return feedDate.toDateString() === new Date().toDateString();
     }).length;
-
-    document.getElementById('feedCountSub').textContent =
-        todayFeeds > 0 ? `${todayFeeds} today` : 'All time';
+    document.getElementById('feedCountSub').textContent = todayFeeds > 0 ? `${todayFeeds} today` : 'All time';
 }
 
 // ════════════════════════════════════════════════════════════
-// RESET FEED STATS  ← REPLACED FUNCTION
+// RESET FEED STATS
 // ════════════════════════════════════════════════════════════
 async function resetFeedStats() {
     if (!confirm('⚠️ Reset ALL feeding stats?')) return;
-
     showToast('🔄 Resetting...');
-
-    // Check if ESP32 is online
     const espOnline = document.getElementById('espStatus').classList.contains('online');
-
-    // If online, send reset command to ESP32
     if (espOnline) {
         const res = await fetch(VERCEL_URL + '/api/command', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({ action: 'reset' })
         });
-
         if (res.ok) {
             showToast('📡 Reset sent to ESP32, waiting...', 3000);
-            // Wait for ESP32 to process and ACK
             await new Promise(r => setTimeout(r, 3000));
         }
     }
-
-    // Clear Redis
     await fetch(VERCEL_URL + '/api/reset-stats', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ confirm: true })
     });
-
-    // Clear local UI
     feedLog = [];
     renderFeedLog();
     document.getElementById('feedCount').textContent    = '0×';
     document.getElementById('lastFeedTime').textContent = 'Never';
     document.getElementById('lastFeedDate').textContent = '—';
     document.getElementById('feedCountSub').textContent = 'All time';
-
-    // Show result
     if (espOnline) {
         showToast('✅ Complete! ESP32 memory cleared.', 4000);
     } else {
         showToast('⚠️ ESP32 offline - Please restart it manually.', 5000);
     }
-
     setTimeout(() => fetchEspStatus(), 1000);
 }
 
@@ -606,7 +578,6 @@ async function feedNow() {
             headers: {'Content-Type':'application/json'},
             body:    JSON.stringify({ action: 'feed' })
         });
-
         if (!res.ok) throw new Error('HTTP ' + res.status);
 
         const data = await res.json();
@@ -618,13 +589,15 @@ async function feedNow() {
             document.getElementById('feedBtnText').textContent = 'Menunggu ESP32...';
             showToast('📡 Arahan dihantar — menunggu balasan...');
 
+            startFastPoll();  // ⚡ Activate fast polling
+
             let attempts = 0;
             ackPollTimer = setInterval(async () => {
                 attempts++;
                 await fetchEspStatus();
-
                 if (!lastCmdId || attempts >= 13) {
                     clearInterval(ackPollTimer);
+                    stopFastPoll();  // ⚡ Stop fast polling on timeout
                     if (lastCmdId) {
                         console.log('ACK timeout, final check...');
                         await fetchEspStatus();
@@ -643,6 +616,7 @@ async function feedNow() {
         console.error('Feed error:', err);
         resetFeedBtn('error');
         showToast('❌ Gagal: ' + err.message);
+        stopFastPoll();  // ⚡ Stop fast polling on error
     }
 }
 
@@ -650,16 +624,10 @@ function resetFeedBtn(state='normal') {
     const btn = document.getElementById('feedNowBtn');
     btn.disabled = false;
     btn.classList.remove('feeding','success','error');
-
     const icons = { normal:'🐟', success:'✅', error:'❌' };
-    const texts = {
-        normal:  'Beri Makan Sekarang',
-        success: 'Berjaya Diberi Makan!',
-        error:   'Gagal — Cuba Semula'
-    };
+    const texts = { normal:'Beri Makan Sekarang', success:'Berjaya Diberi Makan!', error:'Gagal — Cuba Semula' };
     document.getElementById('feedBtnIcon').textContent = icons[state];
     document.getElementById('feedBtnText').textContent = texts[state];
-
     if (state !== 'normal') {
         if (state === 'success') btn.classList.add('success');
         else btn.classList.add('error');
@@ -668,7 +636,7 @@ function resetFeedBtn(state='normal') {
 }
 
 // ════════════════════════════════════════════════════════════
-// SERVO MANUAL
+// SERVO & SCHEDULE & LOG
 // ════════════════════════════════════════════════════════════
 async function setServoAngle() {
     const angle = parseInt(document.getElementById('servoSlider').value);
@@ -683,14 +651,9 @@ async function setServoAngle() {
             showToast('📡 Sudut ' + angle + '° dihantar');
             setTimeout(fetchEspStatus, 1000);
         }
-    } catch(err) {
-        showToast('❌ Gagal hantar arahan');
-    }
+    } catch(err) { showToast('❌ Gagal hantar arahan'); }
 }
 
-// ════════════════════════════════════════════════════════════
-// FEED LOG
-// ════════════════════════════════════════════════════════════
 function addFeedLogLocal(time, source) {
     feedLog.unshift({ time, source });
     if (feedLog.length > 20) feedLog.pop();
@@ -703,25 +666,15 @@ function renderFeedLog() {
         el.innerHTML = '<div class="log-row"><span class="log-t">--:--</span><span class="log-s">—</span><span>Tiada log lagi</span></div>';
         return;
     }
-
     el.innerHTML = feedLog.map(e => {
         const feedDate = new Date(e.time);
         const time = feedDate.toLocaleTimeString('en-MY', {hour:'2-digit', minute:'2-digit'});
         const date = feedDate.toLocaleDateString('en-MY', {month:'short', day:'numeric'});
         const isToday = feedDate.toDateString() === new Date().toDateString();
-
-        return `<div class="log-row">
-            <span class="log-t">${time}</span>
-            <span class="log-date">${isToday ? 'Today' : date}</span>
-            <span class="log-s">[${e.source}]</span>
-            <span>Fed</span>
-        </div>`;
+        return `<div class="log-row"><span class="log-t">${time}</span><span class="log-date">${isToday ? 'Today' : date}</span><span class="log-s">[${e.source}]</span><span>Fed</span></div>`;
     }).join('');
 }
 
-// ════════════════════════════════════════════════════════════
-// SCHEDULE
-// ════════════════════════════════════════════════════════════
 function renderSchedule() {
     document.getElementById('scheduleChips').innerHTML = scheduleList.map((t,i) =>
         `<div class="schedule-chip">⏰ ${t}<span class="chip-del" onclick="removeSchedule(${i})">✕</span></div>`
@@ -761,7 +714,7 @@ function startScheduleWatcher() {
 }
 
 // ════════════════════════════════════════════════════════════
-// GOOGLE SHEETS SENSOR DATA
+// GOOGLE SHEETS & CHART
 // ════════════════════════════════════════════════════════════
 async function fetchData() {
     try {
@@ -773,11 +726,7 @@ async function fetchData() {
         allData = data;
 
         const latest = data[data.length-1];
-        currentSensorData = {
-            temp: latest.temp.toFixed(1),
-            ph:   latest.ph.toFixed(2),
-            tds:  Math.round(latest.tds)
-        };
+        currentSensorData = { temp: latest.temp.toFixed(1), ph: latest.ph.toFixed(2), tds: Math.round(latest.tds) };
         document.getElementById('tempValue').textContent = currentSensorData.temp;
         document.getElementById('phValue').textContent   = currentSensorData.ph;
         document.getElementById('tdsValue').textContent  = currentSensorData.tds;
@@ -787,15 +736,12 @@ async function fetchData() {
         updateSensorCard('tdsCard', 'tdsStatus',  latest.tds,  TDS_MIN,  TDS_MAX);
 
         document.getElementById('lastUpdate').textContent = formatTimeAgo(latest.timestamp);
-        document.getElementById('statusDot').classList.toggle('offline',
-            (new Date()-new Date(latest.timestamp)) >= 5*60000);
+        document.getElementById('statusDot').classList.toggle('offline', (new Date()-new Date(latest.timestamp)) >= 5*60000);
 
         checkAlerts(latest.temp, latest.ph, latest.tds);
         calculateStats(data);
         updateChart();
-
         fetchEspStatus();
-
     } catch(err) {
         document.getElementById('errorMessage').textContent = '⚠️ ' + err.message;
         document.getElementById('errorMessage').style.display = 'block';
@@ -842,9 +788,6 @@ function calculateStats(data) {
     el.style.color=issues===0?'var(--success)':issues===1?'var(--warning)':'var(--danger)';
 }
 
-// ════════════════════════════════════════════════════════════
-// CHART
-// ════════════════════════════════════════════════════════════
 function switchChart(type) {
     currentChartType=type;
     document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
@@ -880,10 +823,7 @@ function updateChart() {
 // AI CHAT
 // ════════════════════════════════════════════════════════════
 async function askAI(question) {
-    const sp=`Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia.
-Berikan nasihat yang berguna dan ringkas tentang ternakan tilapia berdasarkan data sensor.
-Beri respons yang pendek (2-3 ayat) dan praktikal dalam Bahasa Melayu.
-Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm.`;
+    const sp=`Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia. Berikan nasihat yang berguna dan ringkas tentang ternakan tilapia berdasarkan data sensor. Beri respons yang pendek (2-3 ayat) dan praktikal dalam Bahasa Melayu. Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm.`;
     const r=await fetch(`${VERCEL_URL}/api/chat`,{
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sp},{role:'user',content:getSensorContext()+'\n\nSoalan: '+question}],max_tokens:300,temperature:.7})
@@ -923,10 +863,7 @@ function explainSensor(s){
 // ════════════════════════════════════════════════════════════
 // AUDIO / TTS
 // ════════════════════════════════════════════════════════════
-function showAudioOverlay(){
-    document.getElementById('audioUnlockOverlay').classList.add('show');
-    document.getElementById('audioUnlockOverlay').style.display='flex';
-}
+function showAudioOverlay(){document.getElementById('audioUnlockOverlay').classList.add('show');document.getElementById('audioUnlockOverlay').style.display='flex';}
 function setupAudioUnlock(){
     const overlay=document.getElementById('audioUnlockOverlay');
     const uBtn=document.getElementById('unlockAudioBtn');
@@ -1000,11 +937,16 @@ function toggleVoiceInput(){if(!recognition){alert('Voice input tidak disokong.'
 if(window.speechSynthesis){availableVoices=window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>{availableVoices=window.speechSynthesis.getVoices();};}
 
 // ════════════════════════════════════════════════════════════
-// BOOT
+// BOOT - OPTIMIZED POLLING
 // ════════════════════════════════════════════════════════════
 fetchData();
-setInterval(fetchData, 30000);
-setInterval(fetchEspStatus, 3000);
+setInterval(fetchData, 30000);  // Google Sheets every 30s
+currentPollTimer = setInterval(fetchEspStatus, normalInterval);  // Adaptive polling starts at 30s
+
+console.log('📊 Optimized polling initialized:');
+console.log('  • Normal mode: 30s (saves Redis)');
+console.log('  • Fast mode: 3s (when feeding)');
+console.log('  • Expected usage: ~285K Redis ops/month ✅');
 </script>
 </body>
 </html>
