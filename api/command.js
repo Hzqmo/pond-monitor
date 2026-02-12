@@ -86,13 +86,16 @@ export default async function handler(req, res) {
 
     /* ================= STATUS PUSH ================= */
     if (body.type === "status") {
+      // Handle both nested (body.sensor) and flat structures
+      const sensorData = body.sensor || body;
+      
       await redis("set", "sensorData", JSON.stringify({
-        temp: body.temp,
-        ph: body.ph,
-        tds: body.tds,
-        feedCount: body.feedCount,
-        lastFeed: body.lastFeed,
-        servoOpen: body.servoOpen,
+        temp: sensorData.temp ?? 0,
+        ph: sensorData.ph ?? 0,
+        tds: sensorData.tds ?? 0,
+        feedCount: sensorData.feedCount ?? 0,
+        lastFeed: sensorData.lastFeed || "Belum lagi",
+        servoOpen: sensorData.servoOpen ?? false,
         updatedAt: Date.now()
       }));
       return res.status(200).json({ ok: true });
