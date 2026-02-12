@@ -45,56 +45,29 @@
         .alert-banner.show{display:flex}
         .alert-icon{font-size:1.5em}
         .alert-text{flex:1;font-size:.85em;line-height:1.4}
-
-        /* ── FEEDER ─────────────────────────────── */
         .feeder-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
         .feeder-header h2{font-size:1.15em;font-weight:600;flex:1}
         .feeder-badge{background:linear-gradient(135deg,#ff9a3c,#ffbe5c);color:#1a0f00;padding:4px 12px;border-radius:10px;font-size:.72em;font-weight:700;letter-spacing:.5px}
-
-        /* ESP32 online pill */
         .esp-status{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:.78em;font-weight:600;margin-bottom:16px;transition:all .3s}
         .esp-status.online{background:rgba(0,201,167,.12);color:var(--success);border:1px solid rgba(0,201,167,.25)}
         .esp-status.offline{background:rgba(255,95,95,.1);color:var(--danger);border:1px solid rgba(255,95,95,.2)}
         .esp-status.pending{background:rgba(255,190,92,.1);color:var(--warning);border:1px solid rgba(255,190,92,.2)}
         .esp-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
         .esp-dot.pulse{animation:blink 1.2s infinite}
-
-        /* Feeder stats row - IMPROVED */
         .feeder-stats{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
         .feeder-stat{flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:11px;text-align:center}
         .feeder-stat-label{font-size:.66em;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
         .feeder-stat-val{font-family:'DM Mono',monospace;font-size:1.05em;font-weight:600;color:var(--accent2)}
         .feeder-stat-sublabel{font-size:.62em;color:var(--muted);margin-top:2px;opacity:0.7}
-
-        /* Reset button */
-        .reset-btn{
-            width:100%;padding:10px;border:1px dashed rgba(255,95,95,.3);
-            border-radius:10px;background:rgba(255,95,95,.08);
-            color:var(--danger);font-size:.82em;font-weight:600;
-            cursor:pointer;font-family:'Outfit',sans-serif;
-            margin-bottom:12px;transition:all .2s;
-        }
+        .reset-btn{width:100%;padding:10px;border:1px dashed rgba(255,95,95,.3);border-radius:10px;background:rgba(255,95,95,.08);color:var(--danger);font-size:.82em;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;margin-bottom:12px;transition:all .2s;}
         .reset-btn:hover{background:rgba(255,95,95,.15);border-color:rgba(255,95,95,.5)}
-
-        /* Big feed button */
-        .feed-now-btn{
-            width:100%;padding:18px;border:none;border-radius:16px;
-            background:linear-gradient(135deg,#ff9a3c,#ffbe5c);
-            color:#1a0f00;font-size:1.1em;font-weight:700;cursor:pointer;
-            font-family:'Outfit',sans-serif;
-            box-shadow:0 6px 24px rgba(255,154,60,.3);
-            transition:all .3s;margin-bottom:12px;
-            display:flex;align-items:center;justify-content:center;gap:10px;
-            touch-action:manipulation;
-        }
+        .feed-now-btn{width:100%;padding:18px;border:none;border-radius:16px;background:linear-gradient(135deg,#ff9a3c,#ffbe5c);color:#1a0f00;font-size:1.1em;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 6px 24px rgba(255,154,60,.3);transition:all .3s;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;touch-action:manipulation;}
         .feed-now-btn:active{transform:scale(.97)}
         .feed-now-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
         .feed-now-btn.feeding{background:linear-gradient(135deg,var(--success),var(--accent2));color:#001a16;animation:feedPulse .8s infinite alternate}
         .feed-now-btn.success{background:linear-gradient(135deg,#00c9a7,#3d8bff);color:#fff}
         .feed-now-btn.error{background:linear-gradient(135deg,var(--danger),#ff8c5c);color:#fff}
         @keyframes feedPulse{from{box-shadow:0 6px 24px rgba(0,201,167,.3)}to{box-shadow:0 6px 40px rgba(0,201,167,.7)}}
-
-        /* Servo slider */
         .servo-section{margin-bottom:16px}
         .servo-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
         .servo-row label{font-size:.82em;color:var(--muted);flex-shrink:0}
@@ -103,8 +76,6 @@
         .servo-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:pointer;box-shadow:0 2px 8px rgba(61,139,255,.4)}
         .servo-set-btn{background:rgba(61,139,255,.15);color:var(--accent);border:1px solid rgba(61,139,255,.3);padding:8px 18px;border-radius:10px;font-size:.82em;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;white-space:nowrap}
         .servo-set-btn:hover{background:rgba(61,139,255,.25)}
-
-        /* Schedule */
         .schedule-title{font-size:.78em;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
         .schedule-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
         .schedule-chip{background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:.8em;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px}
@@ -113,8 +84,6 @@
         .time-input{flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:10px;font-family:'DM Mono',monospace;font-size:.88em;background:var(--surface2);color:var(--text);outline:none;transition:border-color .3s}
         .time-input:focus{border-color:rgba(61,139,255,.4)}
         .add-btn{background:rgba(0,229,200,.12);color:var(--accent2);border:1px solid rgba(0,229,200,.25);padding:8px 16px;border-radius:10px;font-size:.82em;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;white-space:nowrap}
-
-        /* Feed log - IMPROVED */
         .log-title{font-size:.75em;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin:14px 0 8px}
         .feed-log{max-height:130px;overflow-y:auto;background:var(--surface2);border-radius:10px;border:1px solid var(--border);padding:8px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
         .log-row{font-size:.78em;font-family:'DM Mono',monospace;padding:4px 6px;border-bottom:1px solid rgba(100,160,255,.06);color:var(--muted);display:flex;gap:8px;align-items:center}
@@ -122,12 +91,8 @@
         .log-t{color:var(--accent2);flex-shrink:0}
         .log-date{color:var(--muted);font-size:.7em;flex-shrink:0;min-width:48px}
         .log-s{color:var(--warning);flex-shrink:0}
-
-        /* Command feedback toast */
         .cmd-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 20px;font-size:.85em;opacity:0;transition:all .3s;pointer-events:none;z-index:500;white-space:nowrap}
         .cmd-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-        /* AI Chat */
         .ai-chat-header{display:flex;align-items:center;gap:10px;margin-bottom:18px}
         .ai-chat-header h2{font-size:1.15em;font-weight:600;flex:1}
         .ai-badge{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:4px 12px;border-radius:10px;font-size:.72em;font-weight:700;letter-spacing:.5px}
@@ -181,17 +146,12 @@
         .audio-unlock-dialog p{margin-bottom:24px;color:var(--muted);line-height:1.6;font-size:.95em}
         .unlock-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:16px 32px;border-radius:28px;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;font-family:'Outfit',sans-serif;min-height:56px;touch-action:manipulation}
         .unlock-btn:active{transform:scale(.96)}
-        @media(max-width:480px){
-            .sensors-grid{gap:10px}.sensor-value{font-size:1.6em}
-            .header h1{font-size:1.5em}.stats-summary{grid-template-columns:1fr}
-            .feeder-stats{flex-wrap:wrap}
-        }
+        @media(max-width:480px){.sensors-grid{gap:10px}.sensor-value{font-size:1.6em}.header h1{font-size:1.5em}.stats-summary{grid-template-columns:1fr}.feeder-stats{flex-wrap:wrap}}
         @media(max-width:360px){.sensors-grid{grid-template-columns:1fr 1fr}}
     </style>
 </head>
 <body>
 
-<!-- Audio unlock -->
 <div class="audio-unlock-overlay" id="audioUnlockOverlay">
     <div class="audio-unlock-dialog" onclick="event.stopPropagation()">
         <h3>🔊 Aktifkan Audio</h3>
@@ -201,12 +161,10 @@
     </div>
 </div>
 
-<!-- Command feedback toast -->
 <div class="cmd-toast" id="cmdToast"></div>
 
 <div class="container">
 
-    <!-- HEADER -->
     <div class="header">
         <div class="header-logo">
             <div class="logo-icon">🐟</div>
@@ -220,13 +178,11 @@
 
     <div id="errorMessage" style="display:none" class="error"></div>
 
-    <!-- ALERT -->
     <div class="alert-banner" id="alertBanner">
         <div class="alert-icon">⚠️</div>
         <div class="alert-text" id="alertText"></div>
     </div>
 
-    <!-- SENSORS -->
     <div class="sensors-grid">
         <div class="sensor-card normal" id="tempCard" onclick="explainSensor('suhu')">
             <span class="sensor-icon">🌡️</span>
@@ -251,7 +207,6 @@
         </div>
     </div>
 
-    <!-- STATS -->
     <div class="stats-summary">
         <div class="stat-item">
             <div class="stat-label">Bacaan Hari Ini</div>
@@ -263,22 +218,17 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════ -->
-    <!--  FEEDER CONTROL - IMPROVED                               -->
-    <!-- ═══════════════════════════════════════════════════════ -->
     <div class="card">
         <div class="feeder-header">
             <h2>🍽️ Kawalan Pemberi Makan</h2>
             <div class="feeder-badge">VERCEL ↔ ESP32</div>
         </div>
 
-        <!-- ESP32 online status -->
         <div class="esp-status offline" id="espStatus">
             <div class="esp-dot" id="espDot"></div>
             <span id="espStatusText">Menyemak ESP32...</span>
         </div>
 
-        <!-- Stats - IMPROVED with date/time context -->
         <div class="feeder-stats">
             <div class="feeder-stat">
                 <div class="feeder-stat-label">Total Feeds</div>
@@ -297,18 +247,15 @@
             </div>
         </div>
 
-        <!-- RESET BUTTON (DEV MODE) -->
         <button class="reset-btn" onclick="resetFeedStats()">
             🔄 Reset Stats (Dev Mode)
         </button>
 
-        <!-- FEED BUTTON -->
         <button class="feed-now-btn" id="feedNowBtn" onclick="feedNow()">
             <span id="feedBtnIcon">🐟</span>
             <span id="feedBtnText">Beri Makan Sekarang</span>
         </button>
 
-        <!-- Servo manual -->
         <div class="servo-section">
             <div class="servo-row">
                 <label>Sudut Servo Manual</label>
@@ -320,7 +267,6 @@
             <button class="servo-set-btn" onclick="setServoAngle()">Tetapkan Sudut</button>
         </div>
 
-        <!-- Auto-feed schedule -->
         <div class="schedule-title">⏰ Jadual Makan Automatik</div>
         <div class="schedule-chips" id="scheduleChips"></div>
         <div class="schedule-add">
@@ -328,14 +274,12 @@
             <button class="add-btn" onclick="addScheduleSlot()">+ Tambah</button>
         </div>
 
-        <!-- Feed log - IMPROVED with dates -->
         <div class="log-title">📋 Log Pemberian Makan</div>
         <div class="feed-log" id="feedLog">
             <div class="log-row"><span class="log-t">--:--</span><span class="log-s">—</span><span>Tiada log lagi</span></div>
         </div>
     </div>
 
-    <!-- AI CHAT -->
     <div class="card">
         <div class="ai-chat-header">
             <h2>🤖 Pembantu Suara AI</h2>
@@ -382,7 +326,6 @@
         </div>
     </div>
 
-    <!-- CHART -->
     <div class="card">
         <div class="chart-toggle">
             <button class="toggle-btn active" id="tempToggle" onclick="switchChart('temp')">🌡️ Suhu</button>
@@ -396,7 +339,6 @@
     <button class="refresh-btn" onclick="fetchData()">🔄 Muat Semula Data</button>
 </div>
 
-<!-- Bottom Nav -->
 <div style="position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-around;z-index:1000;backdrop-filter:blur(10px)">
     <a href="pond-dashboard.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px;background:rgba(61,139,255,.15)">
         <div style="font-size:1.6em">📊</div><div>Dashboard</div>
@@ -462,116 +404,85 @@ function showToast(msg, duration=3000) {
 }
 
 // ════════════════════════════════════════════════════════════
-// DATE/TIME FORMATTING - NEW FUNCTIONS
+// DATE/TIME FORMATTING
 // ════════════════════════════════════════════════════════════
 function formatRelativeDate(timestamp) {
     if (!timestamp || timestamp === "Belum lagi" || timestamp === "Never") return "Never";
-    
+
     const now = new Date();
     const feedTime = new Date(timestamp);
-    
-    // Handle time-only format (HH:MM:SS) from ESP32
-    if (timestamp.match(/^\d{2}:\d{2}:\d{2}$/)) {
-        return "Today";
-    }
-    
+
+    if (timestamp.match(/^\d{2}:\d{2}:\d{2}$/)) return "Today";
+
     const diffMs = now - feedTime;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    
+
     if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
-    
+
     return feedTime.toLocaleDateString('en-MY', { month: 'short', day: 'numeric' });
 }
 
 function formatFeedTime(timestamp) {
-    if (!timestamp || timestamp === "Belum lagi" || timestamp === "Never") {
-        return "Never";
-    }
-    
-    // Handle time-only format (HH:MM:SS) from ESP32
-    if (timestamp.match(/^\d{2}:\d{2}:\d{2}$/)) {
-        return `Today ${timestamp}`;
-    }
-    
+    if (!timestamp || timestamp === "Belum lagi" || timestamp === "Never") return "Never";
+
+    if (timestamp.match(/^\d{2}:\d{2}:\d{2}$/)) return `Today ${timestamp}`;
+
     const feedTime = new Date(timestamp);
     const now = new Date();
     const isToday = feedTime.toDateString() === now.toDateString();
-    
-    const time = feedTime.toLocaleTimeString('en-MY', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-    
-    if (isToday) {
-        return `Today ${time}`;
-    } else {
-        const date = feedTime.toLocaleDateString('en-MY', {
-            day: 'numeric',
-            month: 'short'
-        });
-        return `${date} ${time}`;
-    }
+
+    const time = feedTime.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit' });
+
+    if (isToday) return `Today ${time}`;
+
+    const date = feedTime.toLocaleDateString('en-MY', { day: 'numeric', month: 'short' });
+    return `${date} ${time}`;
 }
 
 // ════════════════════════════════════════════════════════════
-// ESP32 STATUS - UPDATED WITH FEED STATS
+// ESP32 STATUS
 // ════════════════════════════════════════════════════════════
 async function fetchEspStatus() {
     try {
-        const res = await fetch(VERCEL_URL + '/api/status', {
-            method: 'GET'
-        });
-        
-        if (!res.ok) {
-            updateEspStatusUI(false, 0);
-            return;
-        }
-        
+        const res = await fetch(VERCEL_URL + '/api/status', { method: 'GET' });
+
+        if (!res.ok) { updateEspStatusUI(false, 0); return; }
+
         const data = await res.json();
         console.log('ESP32 status:', data);
 
         const sensorData = data.sensor || data;
         const hasData = sensorData && (
-            sensorData.temp !== undefined || 
-            sensorData.ph !== undefined || 
-            sensorData.tds !== undefined
+            sensorData.temp !== undefined ||
+            sensorData.ph   !== undefined ||
+            sensorData.tds  !== undefined
         );
-        
+
         const staleSec = data.staleSec || 0;
         const isOnline = hasData && staleSec < 20;
-        
-        if (isOnline) {
-            esp32LastSeen = Date.now();
-        }
-        
+
+        if (isOnline) esp32LastSeen = Date.now();
+
         updateEspStatusUI(isOnline, staleSec);
 
-        // Update feed stats with improved formatting
-        if (hasData) {
-            updateFeedStatsDisplay(sensorData);
-        }
+        if (hasData) updateFeedStatsDisplay(sensorData);
 
-        // Update feed history
         if (data.feedHistory?.length) {
-            feedLog = data.feedHistory.map(e => ({
-                time: e.time,
-                source: e.source
-            }));
+            feedLog = data.feedHistory.map(e => ({ time: e.time, source: e.source }));
             renderFeedLog();
         }
 
-        // Check ACK
         if (lastCmdId && data.lastAck?.id === lastCmdId) {
             clearInterval(ackPollTimer);
             const ok = data.lastAck.result === 'ok';
             lastCmdId = '';
-            
+
             if (ok) {
                 resetFeedBtn('success');
                 showToast('✅ Ikan berjaya diberi makan!');
@@ -600,81 +511,83 @@ function updateEspStatusUI(online, staleSec) {
     } else {
         el.className = 'esp-status offline';
         dot.className = 'esp-dot';
-        
         const timeSince = esp32LastSeen ? Math.floor((Date.now() - esp32LastSeen) / 1000) : 0;
-        if (timeSince > 0) {
-            txt.textContent = `ESP32 luar talian (${timeSince}s sejak terakhir)`;
-        } else {
-            txt.textContent = 'ESP32 luar talian — menunggu data';
-        }
+        txt.textContent = timeSince > 0
+            ? `ESP32 luar talian (${timeSince}s sejak terakhir)`
+            : 'ESP32 luar talian — menunggu data';
     }
 }
 
 // ════════════════════════════════════════════════════════════
-// UPDATE FEED STATS DISPLAY - NEW FUNCTION
+// UPDATE FEED STATS DISPLAY
 // ════════════════════════════════════════════════════════════
 function updateFeedStatsDisplay(data) {
     const feedCount = data.feedCount || 0;
-    const lastFeed = data.lastFeed || "Belum lagi";
-    
-    document.getElementById('feedCount').textContent = feedCount + '×';
-    document.getElementById('lastFeedTime').textContent = formatFeedTime(lastFeed);
-    document.getElementById('lastFeedDate').textContent = formatRelativeDate(lastFeed);
-    document.getElementById('servoStatus').textContent = (data.servoOpen ? '🔓 Open' : '🔒 Closed');
-    
-    // Calculate today's feeds
+    const lastFeed  = data.lastFeed  || "Belum lagi";
+
+    document.getElementById('feedCount').textContent     = feedCount + '×';
+    document.getElementById('lastFeedTime').textContent  = formatFeedTime(lastFeed);
+    document.getElementById('lastFeedDate').textContent  = formatRelativeDate(lastFeed);
+    document.getElementById('servoStatus').textContent   = (data.servoOpen ? '🔓 Open' : '🔒 Closed');
+
     const todayFeeds = feedLog.filter(f => {
         const feedDate = new Date(f.time);
-        const today = new Date();
-        return feedDate.toDateString() === today.toDateString();
+        return feedDate.toDateString() === new Date().toDateString();
     }).length;
-    
-    document.getElementById('feedCountSub').textContent = 
+
+    document.getElementById('feedCountSub').textContent =
         todayFeeds > 0 ? `${todayFeeds} today` : 'All time';
 }
 
 // ════════════════════════════════════════════════════════════
-// RESET STATS - NEW FUNCTION
+// RESET FEED STATS  ← REPLACED FUNCTION
 // ════════════════════════════════════════════════════════════
 async function resetFeedStats() {
-    if (!confirm('⚠️ Reset ALL feeding stats?\n\nThis will:\n• Clear feed count\n• Clear feed history\n• Reset ESP32 stats\n\nYou will need to restart ESP32 to clear its memory.\n\nContinue?')) {
-        return;
-    }
-    
-    try {
-        showToast('🔄 Resetting stats...');
-        
-        // Reset local
-        feedLog = [];
-        renderFeedLog();
-        
-        // Reset Redis via API
-        const res = await fetch(VERCEL_URL + '/api/reset-stats', {
-            method: 'POST',
+    if (!confirm('⚠️ Reset ALL feeding stats?')) return;
+
+    showToast('🔄 Resetting...');
+
+    // Check if ESP32 is online
+    const espOnline = document.getElementById('espStatus').classList.contains('online');
+
+    // If online, send reset command to ESP32
+    if (espOnline) {
+        const res = await fetch(VERCEL_URL + '/api/command', {
+            method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ confirm: true })
+            body:    JSON.stringify({ action: 'reset' })
         });
-        
+
         if (res.ok) {
-            showToast('✅ Stats reset! Restart ESP32 to clear its memory.', 4000);
-            
-            // Update UI immediately
-            document.getElementById('feedCount').textContent = '0×';
-            document.getElementById('lastFeedTime').textContent = 'Never';
-            document.getElementById('lastFeedDate').textContent = '—';
-            document.getElementById('feedCountSub').textContent = 'All time';
-            
-            setTimeout(() => {
-                fetchEspStatus();
-                fetchData();
-            }, 500);
-        } else {
-            throw new Error('HTTP ' + res.status);
+            showToast('📡 Reset sent to ESP32, waiting...', 3000);
+            // Wait for ESP32 to process and ACK
+            await new Promise(r => setTimeout(r, 3000));
         }
-    } catch(err) {
-        console.error('Reset error:', err);
-        showToast('❌ Reset error: ' + err.message);
     }
+
+    // Clear Redis
+    await fetch(VERCEL_URL + '/api/reset-stats', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ confirm: true })
+    });
+
+    // Clear local UI
+    feedLog = [];
+    renderFeedLog();
+    document.getElementById('feedCount').textContent    = '0×';
+    document.getElementById('lastFeedTime').textContent = 'Never';
+    document.getElementById('lastFeedDate').textContent = '—';
+    document.getElementById('feedCountSub').textContent = 'All time';
+
+    // Show result
+    if (espOnline) {
+        showToast('✅ Complete! ESP32 memory cleared.', 4000);
+    } else {
+        showToast('⚠️ ESP32 offline - Please restart it manually.', 5000);
+    }
+
+    setTimeout(() => fetchEspStatus(), 1000);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -693,9 +606,9 @@ async function feedNow() {
             headers: {'Content-Type':'application/json'},
             body:    JSON.stringify({ action: 'feed' })
         });
-        
+
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        
+
         const data = await res.json();
         console.log('Feed command response:', data);
 
@@ -709,7 +622,7 @@ async function feedNow() {
             ackPollTimer = setInterval(async () => {
                 attempts++;
                 await fetchEspStatus();
-                
+
                 if (!lastCmdId || attempts >= 13) {
                     clearInterval(ackPollTimer);
                     if (lastCmdId) {
@@ -776,7 +689,7 @@ async function setServoAngle() {
 }
 
 // ════════════════════════════════════════════════════════════
-// FEED LOG - UPDATED WITH DATES
+// FEED LOG
 // ════════════════════════════════════════════════════════════
 function addFeedLogLocal(time, source) {
     feedLog.unshift({ time, source });
@@ -790,13 +703,13 @@ function renderFeedLog() {
         el.innerHTML = '<div class="log-row"><span class="log-t">--:--</span><span class="log-s">—</span><span>Tiada log lagi</span></div>';
         return;
     }
-    
+
     el.innerHTML = feedLog.map(e => {
         const feedDate = new Date(e.time);
         const time = feedDate.toLocaleTimeString('en-MY', {hour:'2-digit', minute:'2-digit'});
         const date = feedDate.toLocaleDateString('en-MY', {month:'short', day:'numeric'});
         const isToday = feedDate.toDateString() === new Date().toDateString();
-        
+
         return `<div class="log-row">
             <span class="log-t">${time}</span>
             <span class="log-date">${isToday ? 'Today' : date}</span>
