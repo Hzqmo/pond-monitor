@@ -441,7 +441,7 @@ function startCamera() {
     cameraIP = ip;
     localStorage.setItem('cameraIP', ip);
     
-    const streamUrl = `http://${ip}:81/stream`;
+    const streamUrl = `http://${ip}:8080/stream`;
     console.log('📹 Starting camera stream:', streamUrl);
     
     const streamImg = document.getElementById('cameraStream');
