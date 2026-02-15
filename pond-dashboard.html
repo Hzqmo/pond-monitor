@@ -45,6 +45,14 @@
         .alert-banner.show{display:flex}
         .alert-icon{font-size:1.5em}
         .alert-text{flex:1;font-size:.85em;line-height:1.4}
+        
+        /* Camera Styles */
+        .camera-container{position:relative;background:var(--surface2);border-radius:12px;overflow:hidden;aspect-ratio:4/3;margin-bottom:12px}
+        .camera-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text)}
+        .camera-container img{width:100%;height:100%;object-fit:contain;background:#000;display:none}
+        .camera-container.fullscreen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;border-radius:0;aspect-ratio:auto}
+        .camera-container.fullscreen img{object-fit:contain}
+        
         .feeder-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
         .feeder-header h2{font-size:1.15em;font-weight:600;flex:1}
         .feeder-badge{background:linear-gradient(135deg,#ff9a3c,#ffbe5c);color:#1a0f00;padding:4px 12px;border-radius:10px;font-size:.72em;font-weight:700;letter-spacing:.5px}
@@ -96,41 +104,6 @@
         .ai-chat-header{display:flex;align-items:center;gap:10px;margin-bottom:18px}
         .ai-chat-header h2{font-size:1.15em;font-weight:600;flex:1}
         .ai-badge{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:4px 12px;border-radius:10px;font-size:.72em;font-weight:700;letter-spacing:.5px}
-        .setup-notice{background:rgba(61,139,255,.1);color:#90b8ff;padding:10px 14px;border-radius:10px;font-size:.8em;margin-bottom:14px;border:1px solid rgba(61,139,255,.2);line-height:1.6;display:none}
-        .setup-notice code{background:rgba(61,139,255,.25);padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:.9em}
-        .voice-controls{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);flex-wrap:wrap}
-        .voice-status{flex:1;font-size:.82em;color:var(--muted);min-width:160px}
-        .speaker-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:.78em;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'Outfit',sans-serif}
-        .speaker-btn.active{background:rgba(0,201,167,.15);color:var(--success);border-color:rgba(0,201,167,.3)}
-        .quick-questions{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
-        .quick-question-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:20px;font-size:.78em;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif}
-        .quick-question-btn:hover{background:rgba(61,139,255,.15);color:var(--accent);border-color:rgba(61,139,255,.3)}
-        .chat-messages{max-height:260px;overflow-y:auto;margin-bottom:14px;padding:10px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
-        .chat-message{margin-bottom:14px;display:flex;gap:9px}
-        .message-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;background:var(--surface);border:1px solid var(--border)}
-        .user-avatar{background:rgba(61,139,255,.2);border-color:rgba(61,139,255,.3)}
-        .message-content{flex:1}
-        .message-text{background:var(--surface);border:1px solid var(--border);padding:10px 14px;border-radius:12px;line-height:1.55;font-size:.88em}
-        .user-message .message-text{background:rgba(61,139,255,.15);border-color:rgba(61,139,255,.25)}
-        .message-time{font-size:.68em;color:var(--muted);margin-top:4px;margin-left:4px;font-family:'DM Mono',monospace}
-        .typing-indicator{display:none;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;width:fit-content}
-        .typing-indicator.active{display:block}
-        .typing-indicator span{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin:0 2px;animation:bounce 1.4s infinite}
-        .typing-indicator span:nth-child(2){animation-delay:.2s}
-        .typing-indicator span:nth-child(3){animation-delay:.4s}
-        @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
-        .chat-input-container{display:flex;gap:9px;align-items:center}
-        .voice-btn{width:46px;height:46px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:1.3em;cursor:pointer;transition:all .3s;box-shadow:0 4px 16px rgba(61,139,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation}
-        .voice-btn:active{transform:scale(.93)}
-        .voice-btn.listening{background:linear-gradient(135deg,var(--danger),#ff3366);animation:pulse-ring 1.5s infinite}
-        .voice-btn.speaking{background:linear-gradient(135deg,var(--success),var(--accent2));animation:pulse-ring 1.5s infinite}
-        @keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(61,139,255,.5)}50%{box-shadow:0 0 0 14px rgba(61,139,255,0)}}
-        .chat-input{flex:1;padding:11px 16px;border:1px solid var(--border);border-radius:23px;font-size:.9em;font-family:'Outfit',sans-serif;outline:none;background:var(--surface2);color:var(--text);transition:border-color .3s}
-        .chat-input::placeholder{color:var(--muted)}
-        .chat-input:focus{border-color:rgba(61,139,255,.4)}
-        .send-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:11px 22px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;transition:all .3s;font-family:'Outfit',sans-serif;touch-action:manipulation}
-        .send-btn:active{transform:scale(.97)}
-        .send-btn:disabled{opacity:.4;cursor:not-allowed}
         .chart-title{font-size:.78em;font-weight:600;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
         .chart-toggle{display:flex;gap:8px;margin-bottom:12px}
         .toggle-btn{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:8px 12px;border-radius:10px;font-size:.8em;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif}
@@ -139,26 +112,10 @@
         .refresh-btn{background:var(--surface);color:var(--accent);border:1px solid rgba(61,139,255,.25);padding:12px 28px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;display:block;margin:8px auto 28px;transition:all .3s;font-family:'Outfit',sans-serif}
         .refresh-btn:hover{background:rgba(61,139,255,.12)}
         .error{background:rgba(255,95,95,.1);color:var(--danger);border:1px solid rgba(255,95,95,.25);padding:14px 18px;border-radius:12px;margin-bottom:18px;font-size:.88em}
-        .audio-unlock-overlay{display:none;position:fixed;inset:0;background:rgba(10,22,40,0.95);backdrop-filter:blur(8px);z-index:99999;align-items:center;justify-content:center}
-        .audio-unlock-overlay.show{display:flex}
-        .audio-unlock-dialog{background:var(--surface);border:2px solid var(--accent);padding:32px 24px;border-radius:24px;text-align:center;max-width:320px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-        .audio-unlock-dialog h3{margin-bottom:12px;font-size:1.3em;color:var(--accent2)}
-        .audio-unlock-dialog p{margin-bottom:24px;color:var(--muted);line-height:1.6;font-size:.95em}
-        .unlock-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:16px 32px;border-radius:28px;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;font-family:'Outfit',sans-serif;min-height:56px;touch-action:manipulation}
-        .unlock-btn:active{transform:scale(.96)}
         @media(max-width:480px){.sensors-grid{gap:10px}.sensor-value{font-size:1.6em}.header h1{font-size:1.5em}.stats-summary{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
-
-<div class="audio-unlock-overlay" id="audioUnlockOverlay">
-    <div class="audio-unlock-dialog" onclick="event.stopPropagation()">
-        <h3>🔊 Aktifkan Audio</h3>
-        <p>Tekan butang di bawah untuk membolehkan suara AI bercakap di telefon anda.</p>
-        <button class="unlock-btn" id="unlockAudioBtn" type="button">Aktifkan Suara</button>
-        <button class="unlock-btn" id="skipAudioBtn" type="button" style="background:#555;margin-top:10px;font-size:.9em;padding:12px 24px;">Langkau</button>
-    </div>
-</div>
 
 <div class="cmd-toast" id="cmdToast"></div>
 
@@ -205,6 +162,71 @@
         <div class="stat-item">
             <div class="stat-label">Status Keseluruhan</div>
             <div class="stat-value" id="overallStatus">Normal</div>
+        </div>
+    </div>
+
+    <!-- 📹 NEW: CAMERA CARD -->
+    <div class="card">
+        <div class="ai-chat-header">
+            <h2>📹 Live Camera Feed</h2>
+            <div class="ai-badge">ESP32-CAM</div>
+        </div>
+        
+        <!-- Camera stream -->
+        <div class="camera-container" id="cameraContainerDiv">
+            <img id="cameraStream" 
+                 src="" 
+                 alt="Loading camera..."
+                 onerror="showCameraError()">
+            
+            <div id="cameraPlaceholder" class="camera-placeholder">
+                <div style="text-align:center">
+                    <div style="font-size:3em; margin-bottom:10px">📹</div>
+                    <div style="font-size:1.1em; margin-bottom:8px">Initializing camera...</div>
+                    <div style="font-size:0.8em; color:var(--muted)">Make sure ESP32-CAM is powered on</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Camera status -->
+        <div class="esp-status offline" id="cameraStatus">
+            <div class="esp-dot" id="cameraDot"></div>
+            <span id="cameraStatusText">Checking camera...</span>
+        </div>
+
+        <!-- Quick controls -->
+        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap">
+            <button class="servo-set-btn" onclick="startCamera()" style="flex:1">
+                ▶️ Start Stream
+            </button>
+            <button class="servo-set-btn" onclick="stopCamera()" style="flex:1">
+                ⏸️ Stop
+            </button>
+            <button class="servo-set-btn" onclick="toggleFullscreen()" style="flex:1">
+                ⛶ Fullscreen
+            </button>
+            <button class="servo-set-btn" onclick="openCameraSettings()">
+                ⚙️ Settings
+            </button>
+        </div>
+
+        <!-- Camera URL input -->
+        <div style="margin-top:16px">
+            <label style="font-size:0.75em; color:var(--muted); display:block; margin-bottom:6px">
+                📡 CAMERA IP ADDRESS
+            </label>
+            <div style="display:flex; gap:8px">
+                <input type="text" 
+                       id="cameraIP" 
+                       placeholder="192.168.1.100"
+                       value=""
+                       class="time-input" 
+                       style="flex:1">
+                <button class="add-btn" onclick="saveCameraIP()">💾 Save</button>
+            </div>
+            <div style="font-size:0.7em; color:var(--muted); margin-top:6px; line-height:1.4">
+                ℹ️ Enter the IP address shown on ESP32-CAM Serial Monitor (e.g., 192.168.1.100)
+            </div>
         </div>
     </div>
 
@@ -261,51 +283,6 @@
     </div>
 
     <div class="card">
-        <div class="ai-chat-header">
-            <h2>🤖 Pembantu Suara AI</h2>
-            <div class="ai-badge">VERCEL</div>
-        </div>
-        <div class="setup-notice" id="setupNotice">
-            ⚙️ <strong>Setup:</strong> Pastikan <code>VERCEL_URL</code> dalam kod ESP32 menggunakan URL production Vercel anda.
-        </div>
-        <div class="voice-controls">
-            <div class="voice-status" id="voiceStatus">🎤 Tekan mikrofon untuk bercakap</div>
-            <button class="speaker-btn active" id="speakerToggle" onclick="toggleSpeaker()">
-                <span id="speakerIcon">🔊</span>
-                <span id="speakerText">Suara ON</span>
-            </button>
-            <button class="speaker-btn" onclick="testSpeak()" style="background:rgba(0,229,200,.15);color:var(--accent2);border-color:rgba(0,229,200,.3)">
-                <span>🔊</span><span>Test</span>
-            </button>
-        </div>
-        <div class="quick-questions">
-            <button class="quick-question-btn" onclick="askQuestion('Bagaimana kolam saya?')">Bagaimana kolam?</button>
-            <button class="quick-question-btn" onclick="askQuestion('Patut saya beri makan ikan sekarang?')">Beri makan?</button>
-            <button class="quick-question-btn" onclick="askQuestion('Apa yang patut saya periksa?')">Apa periksa?</button>
-            <button class="quick-question-btn" onclick="askQuestion('Ada masalah?')">Ada masalah?</button>
-        </div>
-        <div class="chat-messages" id="chatMessages">
-            <div class="chat-message">
-                <div class="message-avatar">🤖</div>
-                <div class="message-content">
-                    <div class="message-text">Hai! Saya pembantu AI kolam anda. Apa yang anda ingin tahu?</div>
-                    <div class="message-time">Sekarang</div>
-                </div>
-            </div>
-        </div>
-        <div class="chat-message" style="margin-bottom:14px">
-            <div class="message-avatar">🤖</div>
-            <div class="typing-indicator" id="typingIndicator"><span></span><span></span><span></span></div>
-        </div>
-        <div class="chat-input-container">
-            <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()">🎤</button>
-            <input type="text" class="chat-input" id="chatInput" placeholder="Taip atau tekan mikrofon..."
-                   onkeypress="if(event.key==='Enter')sendMessage()">
-            <button class="send-btn" onclick="sendMessage()" id="sendBtn">Hantar</button>
-        </div>
-    </div>
-
-    <div class="card">
         <div class="chart-toggle">
             <button class="toggle-btn active" id="tempToggle" onclick="switchChart('temp')">🌡️ Suhu</button>
             <button class="toggle-btn" id="tdsToggle" onclick="switchChart('tds')">📊 TDS</button>
@@ -318,10 +295,10 @@
 </div>
 
 <div style="position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-around;z-index:1000;backdrop-filter:blur(10px)">
-    <a href="pond-dashboard.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px;background:rgba(61,139,255,.15)">
+    <a href="#" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--accent);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px;background:rgba(61,139,255,.15)">
         <div style="font-size:1.6em">📊</div><div>Dashboard</div>
     </a>
-    <a href="fish-encyclopedia.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
+    <a href="#" onclick="alert('Coming soon!');return false" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
         <div style="font-size:1.6em">📚</div><div>Ensiklopedia</div>
     </a>
     <a href="#" onclick="alert('Coming soon!');return false" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);text-decoration:none;font-size:.75em;padding:8px 16px;border-radius:12px">
@@ -344,25 +321,177 @@ const TEMP_MIN=20,TEMP_MAX=32,TDS_MIN=300,TDS_MAX=800;
 // ════════════════════════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════════════════════════
-let mainChart, currentSensorData={}, recognition, isListening=false,
-    voiceEnabled=true, isSpeaking=false, availableVoices=[],
-    audioContext=null, audioUnlocked=false,
-    currentChartType='temp', allData=[];
-
+let mainChart, currentSensorData={};
+let currentChartType='temp', allData=[];
 let feedLog      = [];
 let scheduleList = JSON.parse(localStorage.getItem('feedSchedule') || '["07:00","12:00","18:00"]');
 let lastCmdId    = '';
-let ackPollTimer = null;
 let esp32LastSeen = 0;
-
-let sensorPollInterval = 5000;
-let sensorPollTimer = null;
-
 let normalInterval = 30000;
 let fastInterval = 3000;
 let commandPollTimer = null;
 let fastPollActive = false;
 let fastPollTimeout = null;
+
+// 📹 Camera state
+let cameraIP = localStorage.getItem('cameraIP') || '';
+let cameraStreamActive = false;
+
+// ════════════════════════════════════════════════════════════
+// CAMERA FUNCTIONS
+// ════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+    if (cameraIP) {
+        document.getElementById('cameraIP').value = cameraIP;
+        setTimeout(() => startCamera(), 2000);
+    }
+});
+
+function startCamera() {
+    const ip = document.getElementById('cameraIP').value.trim();
+    
+    if (!ip) {
+        showToast('⚠️ Please enter camera IP address first');
+        return;
+    }
+    
+    cameraIP = ip;
+    localStorage.setItem('cameraIP', ip);
+    
+    const streamUrl = `http://${ip}:81/stream`;
+    console.log('📹 Starting camera stream:', streamUrl);
+    
+    const streamImg = document.getElementById('cameraStream');
+    const placeholder = document.getElementById('cameraPlaceholder');
+    
+    streamImg.src = streamUrl + '?t=' + Date.now();
+    
+    streamImg.onload = () => {
+        console.log('✓ Camera stream loaded');
+        streamImg.style.display = 'block';
+        placeholder.style.display = 'none';
+        cameraStreamActive = true;
+        updateCameraStatus(true);
+    };
+    
+    streamImg.onerror = () => {
+        console.error('✗ Camera stream failed');
+        showCameraError();
+    };
+}
+
+function stopCamera() {
+    const streamImg = document.getElementById('cameraStream');
+    const placeholder = document.getElementById('cameraPlaceholder');
+    
+    streamImg.src = '';
+    streamImg.style.display = 'none';
+    placeholder.style.display = 'flex';
+    placeholder.innerHTML = `
+        <div style="text-align:center">
+            <div style="font-size:3em; margin-bottom:10px">⏸️</div>
+            <div style="font-size:1.1em">Stream paused</div>
+        </div>
+    `;
+    
+    cameraStreamActive = false;
+    updateCameraStatus(false);
+}
+
+function showCameraError() {
+    const streamImg = document.getElementById('cameraStream');
+    const placeholder = document.getElementById('cameraPlaceholder');
+    
+    streamImg.style.display = 'none';
+    placeholder.style.display = 'flex';
+    placeholder.innerHTML = `
+        <div style="text-align:center">
+            <div style="font-size:3em; margin-bottom:10px">❌</div>
+            <div style="font-size:1.1em; margin-bottom:8px; color:var(--danger)">Cannot connect to camera</div>
+            <div style="font-size:0.8em; color:var(--muted); line-height:1.6">
+                Make sure:<br>
+                • ESP32-CAM is powered on<br>
+                • IP address is correct<br>
+                • You're on the same WiFi network
+            </div>
+            <button class="servo-set-btn" onclick="startCamera()" style="margin-top:12px">
+                🔄 Retry Connection
+            </button>
+        </div>
+    `;
+    
+    cameraStreamActive = false;
+    updateCameraStatus(false);
+}
+
+function saveCameraIP() {
+    const ip = document.getElementById('cameraIP').value.trim();
+    
+    if (!ip) {
+        showToast('⚠️ Please enter a valid IP address');
+        return;
+    }
+    
+    const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+    if (!ipPattern.test(ip)) {
+        showToast('⚠️ Invalid IP address format');
+        return;
+    }
+    
+    cameraIP = ip;
+    localStorage.setItem('cameraIP', ip);
+    showToast('✅ Camera IP saved: ' + ip);
+    setTimeout(startCamera, 500);
+}
+
+function updateCameraStatus(online) {
+    const statusEl = document.getElementById('cameraStatus');
+    const dotEl = document.getElementById('cameraDot');
+    const textEl = document.getElementById('cameraStatusText');
+    
+    if (online) {
+        statusEl.className = 'esp-status online';
+        dotEl.className = 'esp-dot pulse';
+        textEl.textContent = 'Camera streaming ✓';
+    } else {
+        statusEl.className = 'esp-status offline';
+        dotEl.className = 'esp-dot';
+        textEl.textContent = 'Camera offline';
+    }
+}
+
+function toggleFullscreen() {
+    const container = document.getElementById('cameraContainerDiv');
+    
+    if (!document.fullscreenElement) {
+        container.requestFullscreen().catch(err => {
+            container.classList.add('fullscreen');
+        });
+    } else {
+        document.exitFullscreen();
+        container.classList.remove('fullscreen');
+    }
+}
+
+function openCameraSettings() {
+    const ip = cameraIP || document.getElementById('cameraIP').value.trim();
+    
+    if (!ip) {
+        showToast('⚠️ Please enter camera IP address first');
+        return;
+    }
+    
+    window.open(`http://${ip}`, '_blank');
+}
+
+// Auto-retry camera connection
+setInterval(() => {
+    const streamImg = document.getElementById('cameraStream');
+    if (cameraStreamActive && streamImg.style.display === 'none') {
+        console.log('🔄 Camera reconnecting...');
+        startCamera();
+    }
+}, 30000);
 
 // ════════════════════════════════════════════════════════════
 // INIT
@@ -370,16 +499,12 @@ let fastPollTimeout = null;
 window.addEventListener('DOMContentLoaded', () => {
     renderSchedule();
     startScheduleWatcher();
-    setupAudioUnlock();
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        setTimeout(()=>{ if (!audioUnlocked) showAudioOverlay(); }, 2000);
-    }
 });
 
 function startFastCommandPoll() {
     if (fastPollActive) return;
     fastPollActive = true;
-    console.log('⚡ Fast command polling (3s) - waiting for ACK');
+    console.log('⚡ Fast polling (3s)');
     if (commandPollTimer) clearInterval(commandPollTimer);
     commandPollTimer = setInterval(checkCommandStatus, fastInterval);
     if (fastPollTimeout) clearTimeout(fastPollTimeout);
@@ -391,7 +516,7 @@ function startFastCommandPoll() {
 function stopFastCommandPoll() {
     if (!fastPollActive) return;
     fastPollActive = false;
-    console.log('🐌 Normal command polling resumed (30s)');
+    console.log('🐌 Normal polling (30s)');
     if (commandPollTimer) clearInterval(commandPollTimer);
     if (fastPollTimeout) clearTimeout(fastPollTimeout);
     commandPollTimer = setInterval(checkCommandStatus, normalInterval);
@@ -471,7 +596,7 @@ async function checkCommandStatus() {
                 setTimeout(fetchSensorStatus, 500);
             } else {
                 resetFeedBtn('error');
-                showToast('❌ Arahan gagal — cuba lagi');
+                showToast('❌ Arahan gagal');
             }
         }
     } catch(err) {
@@ -527,7 +652,7 @@ function updateEspStatusUI(online, staleSec) {
         el.className = 'esp-status offline';
         dot.className = 'esp-dot';
         const timeSince = esp32LastSeen ? Math.floor((Date.now() - esp32LastSeen) / 1000) : 0;
-        txt.textContent = timeSince > 0 ? `ESP32 luar talian (${timeSince}s sejak terakhir)` : 'ESP32 luar talian — menunggu data';
+        txt.textContent = timeSince > 0 ? `ESP32 luar talian (${timeSince}s)` : 'ESP32 luar talian';
     }
 }
 
@@ -548,18 +673,6 @@ function updateFeedStatsDisplay(data) {
 async function resetFeedStats() {
     if (!confirm('⚠️ Reset ALL feeding stats?')) return;
     showToast('🔄 Resetting...');
-    const espOnline = document.getElementById('espStatus').classList.contains('online');
-    if (espOnline) {
-        const res = await fetch(VERCEL_URL + '/api/command', {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ action: 'reset' })
-        });
-        if (res.ok) {
-            showToast('📡 Reset sent to ESP32, waiting...', 3000);
-            await new Promise(r => setTimeout(r, 3000));
-        }
-    }
     await fetch(VERCEL_URL + '/api/reset-stats', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -570,12 +683,7 @@ async function resetFeedStats() {
     document.getElementById('feedCount').textContent    = '0×';
     document.getElementById('lastFeedTime').textContent = 'Never';
     document.getElementById('lastFeedDate').textContent = '—';
-    document.getElementById('feedCountSub').textContent = 'All time';
-    if (espOnline) {
-        showToast('✅ Complete! ESP32 memory cleared.', 4000);
-    } else {
-        showToast('⚠️ ESP32 offline - Please restart it manually.', 5000);
-    }
+    showToast('✅ Stats reset!');
     setTimeout(() => fetchSensorStatus(), 1000);
 }
 
@@ -584,7 +692,7 @@ async function feedNow() {
     btn.disabled = true;
     btn.classList.add('feeding');
     document.getElementById('feedBtnIcon').textContent = '⏳';
-    document.getElementById('feedBtnText').textContent = 'Menghantar arahan...';
+    document.getElementById('feedBtnText').textContent = 'Menghantar...';
 
     try {
         const res = await fetch(VERCEL_URL + '/api/command', {
@@ -595,14 +703,12 @@ async function feedNow() {
         if (!res.ok) throw new Error('HTTP ' + res.status);
 
         const data = await res.json();
-        console.log('Feed command response:', data);
 
         if (data.ok && data.queued?.id) {
             lastCmdId = data.queued.id;
             document.getElementById('feedBtnIcon').textContent = '📡';
             document.getElementById('feedBtnText').textContent = 'Menunggu ESP32...';
-            showToast('📡 Arahan dihantar — menunggu balasan...');
-
+            showToast('📡 Menunggu balasan...');
             startFastCommandPoll();
 
             let attempts = 0;
@@ -613,18 +719,12 @@ async function feedNow() {
                     clearInterval(ackPollTimer);
                     stopFastCommandPoll();
                     if (lastCmdId) {
-                        console.log('ACK timeout, final check...');
-                        await checkCommandStatus();
                         lastCmdId = '';
-                        if (document.getElementById('feedBtnText').textContent.includes('Menunggu')) {
-                            resetFeedBtn('success');
-                            showToast('✅ Arahan dihantar (servo mungkin sudah bergerak)');
-                        }
+                        resetFeedBtn('success');
+                        showToast('✅ Arahan dihantar');
                     }
                 }
             }, 1500);
-        } else {
-            throw new Error(data.error || 'No command ID');
         }
     } catch(err) {
         console.error('Feed error:', err);
@@ -639,7 +739,7 @@ function resetFeedBtn(state='normal') {
     btn.disabled = false;
     btn.classList.remove('feeding','success','error');
     const icons = { normal:'🐟', success:'✅', error:'❌' };
-    const texts = { normal:'Beri Makan Sekarang', success:'Berjaya Diberi Makan!', error:'Gagal — Cuba Semula' };
+    const texts = { normal:'Beri Makan Sekarang', success:'Berjaya!', error:'Gagal' };
     document.getElementById('feedBtnIcon').textContent = icons[state];
     document.getElementById('feedBtnText').textContent = texts[state];
     if (state !== 'normal') {
@@ -662,19 +762,13 @@ async function setServoAngle() {
             showToast('📡 Sudut ' + angle + '° dihantar');
             setTimeout(fetchSensorStatus, 1000);
         }
-    } catch(err) { showToast('❌ Gagal hantar arahan'); }
-}
-
-function addFeedLogLocal(time, source) {
-    feedLog.unshift({ time, source });
-    if (feedLog.length > 20) feedLog.pop();
-    renderFeedLog();
+    } catch(err) { showToast('❌ Gagal'); }
 }
 
 function renderFeedLog() {
     const el = document.getElementById('feedLog');
     if (!feedLog.length) {
-        el.innerHTML = '<div class="log-row"><span class="log-t">--:--</span><span class="log-s">—</span><span>Tiada log lagi</span></div>';
+        el.innerHTML = '<div class="log-row"><span class="log-t">--:--</span><span class="log-s">—</span><span>Tiada log</span></div>';
         return;
     }
     el.innerHTML = feedLog.map(e => {
@@ -707,8 +801,7 @@ function removeSchedule(i) {
 }
 
 function startScheduleWatcher() {
-    clearInterval(window._schedWatcher);
-    window._schedWatcher = setInterval(() => {
+    setInterval(() => {
         const now  = new Date();
         const hhmm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
         if (scheduleList.includes(hhmm)) {
@@ -716,9 +809,7 @@ function startScheduleWatcher() {
             const last = localStorage.getItem(key);
             if (last !== hhmm) {
                 localStorage.setItem(key, hhmm);
-                console.log('⏰ Auto feed at', hhmm);
                 feedNow();
-                addFeedLogLocal(new Date().toISOString(), 'auto');
             }
         }
     }, 30000);
@@ -728,16 +819,12 @@ async function fetchData() {
     try {
         document.getElementById('errorMessage').style.display='none';
         const res  = await fetch(SHEET_CSV_URL);
-        if (!res.ok) throw new Error('Gagal ambil data dari Google Sheets');
+        if (!res.ok) throw new Error('Gagal ambil data');
         const data = parseCSV(await res.text());
-        if (!data.length) throw new Error('Tiada data dalam spreadsheet');
+        if (!data.length) throw new Error('Tiada data');
         allData = data;
-
-        const latest = data[data.length-1];
-        
         calculateStats(data);
         updateChart();
-        
     } catch(err) {
         document.getElementById('errorMessage').textContent = '⚠️ ' + err.message;
         document.getElementById('errorMessage').style.display = 'block';
@@ -749,12 +836,6 @@ function parseCSV(csv) {
         const v = line.split(',');
         return v.length>=3 ? {timestamp:v[0],temp:parseFloat(v[1]),tds:parseFloat(v[2])} : null;
     }).filter(Boolean);
-}
-
-function formatTimeAgo(ts) {
-    const d=Math.floor((new Date()-new Date(ts))/60000);
-    if(d<1)return'Baru sahaja';if(d<60)return d+' minit lalu';
-    const h=Math.floor(d/60);if(h<24)return h+' jam lalu';return Math.floor(h/24)+' hari lalu';
 }
 
 function updateSensorCard(cId,bId,v,mn,mx) {
@@ -790,7 +871,7 @@ function switchChart(type) {
     currentChartType=type;
     document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById(type+'Toggle').classList.add('active');
-    const t={temp:'📈 Sejarah Suhu — 24 Jam Terkini',tds:'📊 Sejarah TDS — 24 Jam Terkini'};
+    const t={temp:'📈 Sejarah Suhu — 24 Jam',tds:'📊 Sejarah TDS — 24 Jam'};
     document.getElementById('chartTitle').textContent=t[type];
     updateChart();
 }
@@ -817,176 +898,13 @@ function updateChart() {
     });
 }
 
-async function askAI(question) {
-    const sp=`Anda adalah pakar akuakultur tilapia dengan 20 tahun pengalaman. Anda memahami biologi ikan, kualiti air, penyakit ikan, pemakanan, dan pengurusan kolam secara mendalam.
-
-PENGETAHUAN ANDA:
-- Biologi Tilapia: Spesies (Nile, Mozambique, Red), tingkah laku, pembiakan, kitaran hidup, toleransi persekitaran
-- Parameter Air: Suhu, pH, TDS, ammonia, nitrit, nitrat, oksigen terlarut, alkaliniti, kekerasan air
-- Penyakit: Bacterial infections (Aeromonas, Streptococcus), parasit (ich, flukes, lice), kulat, virus, pencegahan dan rawatan
-- Pemakanan: Jenis makanan (pellet, hidup, sayuran), kandungan protein (28-35%), jadual pemberian makan, FCR, overfeeding vs underfeeding
-- Sistem Kolam: Biofilter, aerasi, water change schedule, stocking density, kolam tanah vs liner vs concrete
-- Masalah Biasa: Cloudy water, algae bloom, fish gasping, tidak makan, pertumbuhan lambat, kematian mendadak
-- Ekonomi: Kos operasi, harga pasaran, break-even analysis, ROI
-
-KEADAAN OPTIMUM TILAPIA:
-- Suhu: 28-30°C (pertumbuhan terbaik), 25-32°C (boleh diterima), <20°C atau >36°C (berbahaya)
-- TDS: 300-800 ppm (ideal), 100-1500 ppm (boleh diterima)
-- pH: 6.5-8.5 (ideal), 7.0-8.0 (terbaik untuk pertumbuhan)
-- Ammonia: 0 ppm (ideal), <0.5 ppm (maksimum)
-- Oksigen: >5 mg/L (minimum), >6 mg/L (ideal)
-- Stocking density: 1-3 kg/m³ untuk kolam, 10-50 kg/m³ untuk RAS
-
-CARA JAWAB:
-1. Analisis data sensor semasa
-2. Kenal pasti masalah atau risiko
-3. Berikan nasihat praktikal dan spesifik
-4. Jelaskan KENAPA (bukan sekadar APA)
-5. Cadangkan tindakan konkrit dengan timeline
-6. Jika tiada masalah, beri tips untuk optimumkan pertumbuhan
-7. Gunakan Bahasa Melayu yang jelas dan profesional
-8. Jawab dalam 3-5 ayat (lebih panjang jika soalan kompleks)
-9. Jika ditanya tentang pH (sensor rosak), jelaskan kepentingan dan cadangkan ujian manual
-
-GAYA KOMUNIKASI:
-- Yakin tetapi rendah hati
-- Praktikal, bukan teoritis
-- Fokus pada tindakan, bukan sekadar maklumat
-- Guna contoh konkrit bila perlu
-- Terangkan istilah teknikal dalam bahasa mudah`;
-    
-    const r=await fetch(`${VERCEL_URL}/api/chat`,{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sp},{role:'user',content:getSensorContext()+'\n\nSoalan: '+question}],max_tokens:300,temperature:.7})
-    });
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const d=await r.json();
-    if(d.error)throw new Error(d.error.message);
-    return d.choices[0].message.content;
-}
-
-function getSensorContext() {
-    const t=currentSensorData.temp??'?',d=currentSensorData.tds??'?';
-    return `Keadaan kolam semasa:\n- Suhu: ${t}°C\n- TDS: ${d} ppm`;
-}
-
-function addMessage(text,isUser=false) {
-    const w=document.getElementById('chatMessages'),div=document.createElement('div');
-    div.className='chat-message'+(isUser?' user-message':'');
-    const time=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    div.innerHTML=`<div class="message-avatar ${isUser?'user-avatar':''}">${isUser?'👤':'🤖'}</div><div class="message-content"><div class="message-text">${text}</div><div class="message-time">${time}</div></div>`;
-    w.appendChild(div);w.scrollTop=w.scrollHeight;
-}
-
-async function sendMessage() {
-    const i=document.getElementById('chatInput'),q=i.value.trim();
-    if(!q)return;
-    addMessage(q,true);i.value='';
-    document.getElementById('typingIndicator').classList.add('active');
-    const b=document.getElementById('sendBtn');b.disabled=true;b.textContent='Berfikir...';
-    try{const r=await askAI(q);addMessage(r,false);speakWithBrowserTTS(r);}
-    catch(e){addMessage('⚠️ '+e.message,false);}
-    finally{document.getElementById('typingIndicator').classList.remove('active');b.disabled=false;b.textContent='Hantar';}
-}
-
-function askQuestion(q){document.getElementById('chatInput').value=q;sendMessage();}
-function explainSensor(s){
-    const q={suhu:'Terangkan kenapa suhu kolam penting untuk ikan tilapia',TDS:'Apa itu TDS dan kenapa ia penting?'};
-    askQuestion(q[s]);
-}
-
-function showAudioOverlay(){document.getElementById('audioUnlockOverlay').classList.add('show');document.getElementById('audioUnlockOverlay').style.display='flex';}
-
-function setupAudioUnlock(){
-    const overlay=document.getElementById('audioUnlockOverlay');
-    const uBtn=document.getElementById('unlockAudioBtn');
-    const sBtn=document.getElementById('skipAudioBtn');
-    function doUnlock(){
-        audioUnlocked=true;overlay.classList.remove('show');overlay.style.display='none';
-        const a=new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
-        a.volume=1;a.play().catch(()=>{});
-        if(!audioContext){try{const AC=window.AudioContext||window.webkitAudioContext;audioContext=new AC();audioContext.resume();}catch(e){}}
-        if(window.speechSynthesis){
-            const lv=()=>{availableVoices=window.speechSynthesis.getVoices();};
-            lv();window.speechSynthesis.onvoiceschanged=lv;
-            const u=new SpeechSynthesisUtterance('Hi');u.volume=.01;u.rate=10;
-            u.onstart=()=>window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(u);
-        }
-        addMessage('✅ Suara diaktifkan!',false);
-    }
-    function doSkip(){
-        audioUnlocked=true;voiceEnabled=false;
-        overlay.classList.remove('show');overlay.style.display='none';
-        document.getElementById('speakerIcon').textContent='🔇';
-        document.getElementById('speakerText').textContent='Suara OFF';
-        document.getElementById('speakerToggle').classList.remove('active');
-    }
-    uBtn.onclick=e=>{e.preventDefault();doUnlock();};
-    sBtn.onclick=e=>{e.preventDefault();doSkip();};
-    uBtn.addEventListener('touchend',e=>{e.preventDefault();doUnlock();},{passive:false});
-    sBtn.addEventListener('touchend',e=>{e.preventDefault();doSkip();},{passive:false});
-}
-
-function toggleSpeaker(){
-    voiceEnabled=!voiceEnabled;
-    document.getElementById('speakerIcon').textContent=voiceEnabled?'🔊':'🔇';
-    document.getElementById('speakerText').textContent=voiceEnabled?'Suara ON':'Suara OFF';
-    document.getElementById('speakerToggle').classList.toggle('active',voiceEnabled);
-    if(!voiceEnabled){window.speechSynthesis.cancel();isSpeaking=false;}
-}
-
-function testSpeak(){
-    if(!audioUnlocked){showAudioOverlay();return;}
-    voiceEnabled=true;
-    document.getElementById('speakerIcon').textContent='🔊';
-    document.getElementById('speakerText').textContent='Suara ON';
-    document.getElementById('speakerToggle').classList.add('active');
-    speakWithBrowserTTS('Hai, saya sedang menguji suara. Boleh dengar saya?');
-}
-
-async function speakWithBrowserTTS(text){
-    if(!voiceEnabled||!audioUnlocked)return;
-    window.speechSynthesis.cancel();
-    await new Promise(r=>setTimeout(r,200));
-    const u=new SpeechSynthesisUtterance(text);
-    u.rate=.9;u.pitch=1;u.volume=1;u.lang='ms-MY';
-    if(availableVoices.length){
-        const v=availableVoices.find(v=>v.lang.startsWith('ms')||v.lang.startsWith('id'));
-        if(v){u.voice=v;u.lang=v.lang;}
-    }
-    u.onstart=()=>{isSpeaking=true;document.getElementById('voiceBtn').classList.add('speaking');};
-    u.onend=()=>{isSpeaking=false;document.getElementById('voiceBtn').classList.remove('speaking');};
-    u.onerror=()=>{isSpeaking=false;document.getElementById('voiceBtn').classList.remove('speaking');};
-    if(audioContext?.state==='suspended')await audioContext.resume();
-    window.speechSynthesis.speak(u);
-}
-
-if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
-    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-    recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='ms-MY';
-    recognition.onstart=()=>{isListening=true;document.getElementById('voiceBtn').classList.add('listening');document.getElementById('voiceStatus').textContent='🎤 Mendengar...';};
-    recognition.onend=()=>{isListening=false;document.getElementById('voiceBtn').classList.remove('listening');document.getElementById('voiceStatus').textContent='🎤 Tekan mikrofon untuk bercakap';};
-    recognition.onresult=e=>{const t=e.results[0][0].transcript;document.getElementById('chatInput').value=t;sendMessage();};
-    recognition.onerror=e=>{document.getElementById('voiceStatus').textContent='🎤 Ralat: '+e.error;};
-}else{document.getElementById('voiceBtn').disabled=true;}
-
-function toggleVoiceInput(){if(!recognition){alert('Voice input tidak disokong.');return;}isListening?recognition.stop():recognition.start();}
-
-if(window.speechSynthesis){availableVoices=window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>{availableVoices=window.speechSynthesis.getVoices();};}
+function explainSensor(s){}
 
 fetchData();
 fetchSensorStatus();
-
 setInterval(fetchData, 60000);
-sensorPollTimer = setInterval(fetchSensorStatus, sensorPollInterval);
+setInterval(fetchSensorStatus, 5000);
 commandPollTimer = setInterval(checkCommandStatus, normalInterval);
-
-console.log('📊 System initialized (TEMP + TDS only):');
-console.log('  • SENSORS: 5s real-time ✅');
-console.log('  • COMMANDS: 30s normal, 3s active ✅');
-console.log('  • pH SENSOR: Disabled ⚠️');
 </script>
 </body>
 </html>
-
