@@ -21,7 +21,7 @@
         @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
         .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:18px;position:relative;overflow:hidden;transition:border-color .3s}
         .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.02) 0%,transparent 60%);pointer-events:none}
-        .sensors-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+        .sensors-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:18px}
         .sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px 16px;text-align:center;transition:border-color .3s,transform .3s;position:relative;overflow:hidden;cursor:pointer}
         .sensor-card:active{transform:scale(0.97)}
         .sensor-card:hover{border-color:rgba(61,139,255,.3);transform:translateY(-2px)}
@@ -146,8 +146,7 @@
         .audio-unlock-dialog p{margin-bottom:24px;color:var(--muted);line-height:1.6;font-size:.95em}
         .unlock-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:16px 32px;border-radius:28px;font-size:1.05em;font-weight:700;cursor:pointer;width:100%;font-family:'Outfit',sans-serif;min-height:56px;touch-action:manipulation}
         .unlock-btn:active{transform:scale(.96)}
-        @media(max-width:480px){.sensors-grid{gap:10px}.sensor-value{font-size:1.6em}.header h1{font-size:1.5em}.stats-summary{grid-template-columns:1fr}.feeder-stats{flex-wrap:wrap}}
-        @media(max-width:360px){.sensors-grid{grid-template-columns:1fr 1fr}}
+        @media(max-width:480px){.sensors-grid{gap:10px}.sensor-value{font-size:1.6em}.header h1{font-size:1.5em}.stats-summary{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
@@ -188,13 +187,6 @@
             <div class="sensor-value" id="tempValue">--</div>
             <div class="sensor-unit">°C</div>
             <span class="sensor-badge badge-normal" id="tempStatus">Normal</span>
-        </div>
-        <div class="sensor-card normal" id="phCard" onclick="explainSensor('pH')">
-            <span class="sensor-icon">💧</span>
-            <div class="sensor-label">pH</div>
-            <div class="sensor-value" id="phValue">--</div>
-            <div class="sensor-unit">pH</div>
-            <span class="sensor-badge badge-normal" id="phStatus">Normal</span>
         </div>
         <div class="sensor-card normal" id="tdsCard" onclick="explainSensor('TDS')">
             <span class="sensor-icon">📊</span>
@@ -316,7 +308,6 @@
     <div class="card">
         <div class="chart-toggle">
             <button class="toggle-btn active" id="tempToggle" onclick="switchChart('temp')">🌡️ Suhu</button>
-            <button class="toggle-btn" id="phToggle"  onclick="switchChart('ph')">💧 pH</button>
             <button class="toggle-btn" id="tdsToggle" onclick="switchChart('tds')">📊 TDS</button>
         </div>
         <div class="chart-title" id="chartTitle">📈 Sejarah Suhu — 24 Jam Terkini</div>
@@ -348,10 +339,10 @@
 // ════════════════════════════════════════════════════════════
 const VERCEL_URL    = 'https://pond-monitor-psi.vercel.app';
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
-const TEMP_MIN=20,TEMP_MAX=32,PH_MIN=6.5,PH_MAX=8.5,TDS_MIN=300,TDS_MAX=800;
+const TEMP_MIN=20,TEMP_MAX=32,TDS_MIN=300,TDS_MAX=800;
 
 // ════════════════════════════════════════════════════════════
-// STATE - ALL VARIABLES DECLARED ONCE HERE
+// STATE
 // ════════════════════════════════════════════════════════════
 let mainChart, currentSensorData={}, recognition, isListening=false,
     voiceEnabled=true, isSpeaking=false, availableVoices=[],
@@ -364,16 +355,11 @@ let lastCmdId    = '';
 let ackPollTimer = null;
 let esp32LastSeen = 0;
 
-// ════════════════════════════════════════════════════════════
-// ⚡ SEPARATE POLLING FOR SENSORS VS COMMANDS
-// ════════════════════════════════════════════════════════════
-// SENSOR POLLING (temp/pH/TDS) - NOT Redis, can poll frequently!
-let sensorPollInterval = 5000;    // 5s for real-time sensor updates
+let sensorPollInterval = 5000;
 let sensorPollTimer = null;
 
-// COMMAND POLLING (feed commands) - Uses Redis, adaptive polling
-let normalInterval = 30000;       // 30s normally to save Redis
-let fastInterval = 3000;          // 3s when waiting for command ACK
+let normalInterval = 30000;
+let fastInterval = 3000;
 let commandPollTimer = null;
 let fastPollActive = false;
 let fastPollTimeout = null;
@@ -390,9 +376,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ════════════════════════════════════════════════════════════
-// ⚡ ADAPTIVE COMMAND POLLING (for feed ACKs only)
-// ════════════════════════════════════════════════════════════
 function startFastCommandPoll() {
     if (fastPollActive) return;
     fastPollActive = true;
@@ -402,7 +385,7 @@ function startFastCommandPoll() {
     if (fastPollTimeout) clearTimeout(fastPollTimeout);
     fastPollTimeout = setTimeout(() => {
         if (fastPollActive) stopFastCommandPoll();
-    }, 60000); // Stop after 1 minute
+    }, 60000);
 }
 
 function stopFastCommandPoll() {
@@ -414,9 +397,6 @@ function stopFastCommandPoll() {
     commandPollTimer = setInterval(checkCommandStatus, normalInterval);
 }
 
-// ════════════════════════════════════════════════════════════
-// 🌡️ SENSOR STATUS POLLING (real-time, NOT Redis!)
-// ════════════════════════════════════════════════════════════
 async function fetchSensorStatus() {
     try {
         const res = await fetch(VERCEL_URL + '/api/status', { method: 'GET' });
@@ -427,14 +407,13 @@ async function fetchSensorStatus() {
 
         const data = await res.json();
         const sensorData = data.sensor || data;
-        const hasData = sensorData && (sensorData.temp !== undefined || sensorData.ph !== undefined || sensorData.tds !== undefined);
+        const hasData = sensorData && (sensorData.temp !== undefined || sensorData.tds !== undefined);
         const staleSec = data.staleSec || 0;
         const isOnline = hasData && staleSec < 20;
 
         if (isOnline) esp32LastSeen = Date.now();
         updateEspStatusUI(isOnline, staleSec);
         
-        // Update sensor displays in real-time
         if (hasData) {
             updateSensorDisplays(sensorData);
             updateFeedStatsDisplay(sensorData);
@@ -458,13 +437,6 @@ function updateSensorDisplays(data) {
         currentSensorData.temp = temp.toFixed(1);
     }
     
-    if (data.ph !== undefined) {
-        const ph = parseFloat(data.ph);
-        document.getElementById('phValue').textContent = ph.toFixed(2);
-        updateSensorCard('phCard', 'phStatus', ph, PH_MIN, PH_MAX);
-        currentSensorData.ph = ph.toFixed(2);
-    }
-    
     if (data.tds !== undefined) {
         const tds = parseFloat(data.tds);
         document.getElementById('tdsValue').textContent = Math.round(tds);
@@ -472,21 +444,15 @@ function updateSensorDisplays(data) {
         currentSensorData.tds = Math.round(tds);
     }
     
-    // Update last update time
     document.getElementById('lastUpdate').textContent = 'Baru sahaja';
     document.getElementById('statusDot').classList.remove('offline');
     
-    // Check for alerts
     checkAlerts(
         currentSensorData.temp || 0,
-        currentSensorData.ph || 0,
         currentSensorData.tds || 0
     );
 }
 
-// ════════════════════════════════════════════════════════════
-// 🔔 COMMAND STATUS CHECK (for feed ACKs, uses Redis)
-// ════════════════════════════════════════════════════════════
 async function checkCommandStatus() {
     try {
         const res = await fetch(VERCEL_URL + '/api/status', { method: 'GET' });
@@ -494,10 +460,9 @@ async function checkCommandStatus() {
 
         const data = await res.json();
         
-        // Check for command ACK
         if (lastCmdId && data.lastAck?.id === lastCmdId) {
             clearInterval(ackPollTimer);
-            stopFastCommandPoll();  // ⚡ Stop fast polling
+            stopFastCommandPoll();
             const ok = data.lastAck.result === 'ok';
             lastCmdId = '';
             if (ok) {
@@ -514,9 +479,6 @@ async function checkCommandStatus() {
     }
 }
 
-// ════════════════════════════════════════════════════════════
-// TOAST
-// ════════════════════════════════════════════════════════════
 function showToast(msg, duration=3000) {
     const t = document.getElementById('cmdToast');
     t.textContent = msg;
@@ -524,9 +486,6 @@ function showToast(msg, duration=3000) {
     setTimeout(() => t.classList.remove('show'), duration);
 }
 
-// ════════════════════════════════════════════════════════════
-// DATE/TIME FORMATTING
-// ════════════════════════════════════════════════════════════
 function formatRelativeDate(timestamp) {
     if (!timestamp || timestamp === "Belum lagi" || timestamp === "Never") return "Never";
     const now = new Date();
@@ -556,9 +515,6 @@ function formatFeedTime(timestamp) {
     return `${date} ${time}`;
 }
 
-// ════════════════════════════════════════════════════════════
-// ESP32 STATUS UI
-// ════════════════════════════════════════════════════════════
 function updateEspStatusUI(online, staleSec) {
     const el  = document.getElementById('espStatus');
     const dot = document.getElementById('espDot');
@@ -589,9 +545,6 @@ function updateFeedStatsDisplay(data) {
     document.getElementById('feedCountSub').textContent = todayFeeds > 0 ? `${todayFeeds} today` : 'All time';
 }
 
-// ════════════════════════════════════════════════════════════
-// RESET FEED STATS
-// ════════════════════════════════════════════════════════════
 async function resetFeedStats() {
     if (!confirm('⚠️ Reset ALL feeding stats?')) return;
     showToast('🔄 Resetting...');
@@ -626,9 +579,6 @@ async function resetFeedStats() {
     setTimeout(() => fetchSensorStatus(), 1000);
 }
 
-// ════════════════════════════════════════════════════════════
-// FEED NOW
-// ════════════════════════════════════════════════════════════
 async function feedNow() {
     const btn = document.getElementById('feedNowBtn');
     btn.disabled = true;
@@ -653,7 +603,7 @@ async function feedNow() {
             document.getElementById('feedBtnText').textContent = 'Menunggu ESP32...';
             showToast('📡 Arahan dihantar — menunggu balasan...');
 
-            startFastCommandPoll();  // ⚡ Activate fast polling for ACK
+            startFastCommandPoll();
 
             let attempts = 0;
             ackPollTimer = setInterval(async () => {
@@ -661,7 +611,7 @@ async function feedNow() {
                 await checkCommandStatus();
                 if (!lastCmdId || attempts >= 13) {
                     clearInterval(ackPollTimer);
-                    stopFastCommandPoll();  // ⚡ Stop fast polling on timeout
+                    stopFastCommandPoll();
                     if (lastCmdId) {
                         console.log('ACK timeout, final check...');
                         await checkCommandStatus();
@@ -680,7 +630,7 @@ async function feedNow() {
         console.error('Feed error:', err);
         resetFeedBtn('error');
         showToast('❌ Gagal: ' + err.message);
-        stopFastCommandPoll();  // ⚡ Stop fast polling on error
+        stopFastCommandPoll();
     }
 }
 
@@ -699,9 +649,6 @@ function resetFeedBtn(state='normal') {
     }
 }
 
-// ════════════════════════════════════════════════════════════
-// SERVO & SCHEDULE & LOG
-// ════════════════════════════════════════════════════════════
 async function setServoAngle() {
     const angle = parseInt(document.getElementById('servoSlider').value);
     try {
@@ -777,9 +724,6 @@ function startScheduleWatcher() {
     }, 30000);
 }
 
-// ════════════════════════════════════════════════════════════
-// GOOGLE SHEETS & CHART
-// ════════════════════════════════════════════════════════════
 async function fetchData() {
     try {
         document.getElementById('errorMessage').style.display='none';
@@ -791,11 +735,8 @@ async function fetchData() {
 
         const latest = data[data.length-1];
         
-        // Update stats and chart
         calculateStats(data);
         updateChart();
-        
-        // Don't update sensor values here - they come from real-time polling
         
     } catch(err) {
         document.getElementById('errorMessage').textContent = '⚠️ ' + err.message;
@@ -806,7 +747,7 @@ async function fetchData() {
 function parseCSV(csv) {
     return csv.trim().split('\n').slice(1).map(line => {
         const v = line.split(',');
-        return v.length>=4 ? {timestamp:v[0],temp:parseFloat(v[1]),ph:parseFloat(v[2]),tds:parseFloat(v[3])} : null;
+        return v.length>=3 ? {timestamp:v[0],temp:parseFloat(v[1]),tds:parseFloat(v[2])} : null;
     }).filter(Boolean);
 }
 
@@ -825,10 +766,9 @@ function updateSensorCard(cId,bId,v,mn,mx) {
     else{c.classList.add('normal');b.classList.add('badge-normal');b.textContent='Normal';}
 }
 
-function checkAlerts(t,p,d) {
+function checkAlerts(t,d) {
     const a=[];
     if(t>=TEMP_MAX)a.push('Suhu terlalu tinggi!');else if(t<TEMP_MIN)a.push('Suhu terlalu rendah!');
-    if(p<PH_MIN)a.push('pH terlalu rendah!');else if(p>PH_MAX)a.push('pH terlalu tinggi!');
     if(d>TDS_MAX)a.push('TDS terlalu tinggi!');else if(d<TDS_MIN)a.push('TDS terlalu rendah!');
     document.getElementById('alertText').textContent=a.join(' ');
     document.getElementById('alertBanner').classList.toggle('show',a.length>0);
@@ -839,7 +779,6 @@ function calculateStats(data) {
     document.getElementById('todayReadings').textContent=data.filter(d=>new Date(d.timestamp)>=today).length;
     const issues=[
         currentSensorData.temp<TEMP_MIN||currentSensorData.temp>TEMP_MAX,
-        currentSensorData.ph<PH_MIN||currentSensorData.ph>PH_MAX,
         currentSensorData.tds<TDS_MIN||currentSensorData.tds>TDS_MAX
     ].filter(Boolean).length;
     const el=document.getElementById('overallStatus');
@@ -851,7 +790,7 @@ function switchChart(type) {
     currentChartType=type;
     document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById(type+'Toggle').classList.add('active');
-    const t={temp:'📈 Sejarah Suhu — 24 Jam Terkini',ph:'💧 Sejarah pH — 24 Jam Terkini',tds:'📊 Sejarah TDS — 24 Jam Terkini'};
+    const t={temp:'📈 Sejarah Suhu — 24 Jam Terkini',tds:'📊 Sejarah TDS — 24 Jam Terkini'};
     document.getElementById('chartTitle').textContent=t[type];
     updateChart();
 }
@@ -861,7 +800,6 @@ function updateChart() {
     const labels=s.map(d=>new Date(d.timestamp).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}));
     const m={
         temp:{data:s.map(d=>d.temp),label:'Suhu (°C)',color:'#3d8bff',bg:'rgba(61,139,255,0.08)'},
-        ph:  {data:s.map(d=>d.ph),  label:'pH',        color:'#00e5c8',bg:'rgba(0,229,200,0.08)'},
         tds: {data:s.map(d=>d.tds), label:'TDS (ppm)', color:'#ffbe5c',bg:'rgba(255,190,92,0.08)'},
     };
     const {data,label,color,bg}=m[currentChartType];
@@ -879,11 +817,43 @@ function updateChart() {
     });
 }
 
-// ════════════════════════════════════════════════════════════
-// AI CHAT
-// ════════════════════════════════════════════════════════════
 async function askAI(question) {
-    const sp=`Anda adalah pembantu AI untuk sistem pemantauan kolam tilapia. Berikan nasihat yang berguna dan ringkas tentang ternakan tilapia berdasarkan data sensor. Beri respons yang pendek (2-3 ayat) dan praktikal dalam Bahasa Melayu. Keadaan optimum tilapia: suhu 28-30°C (maks 32°C), pH 6.5-8.5, TDS 300-800 ppm.`;
+    const sp=`Anda adalah pakar akuakultur tilapia dengan 20 tahun pengalaman. Anda memahami biologi ikan, kualiti air, penyakit ikan, pemakanan, dan pengurusan kolam secara mendalam.
+
+PENGETAHUAN ANDA:
+- Biologi Tilapia: Spesies (Nile, Mozambique, Red), tingkah laku, pembiakan, kitaran hidup, toleransi persekitaran
+- Parameter Air: Suhu, pH, TDS, ammonia, nitrit, nitrat, oksigen terlarut, alkaliniti, kekerasan air
+- Penyakit: Bacterial infections (Aeromonas, Streptococcus), parasit (ich, flukes, lice), kulat, virus, pencegahan dan rawatan
+- Pemakanan: Jenis makanan (pellet, hidup, sayuran), kandungan protein (28-35%), jadual pemberian makan, FCR, overfeeding vs underfeeding
+- Sistem Kolam: Biofilter, aerasi, water change schedule, stocking density, kolam tanah vs liner vs concrete
+- Masalah Biasa: Cloudy water, algae bloom, fish gasping, tidak makan, pertumbuhan lambat, kematian mendadak
+- Ekonomi: Kos operasi, harga pasaran, break-even analysis, ROI
+
+KEADAAN OPTIMUM TILAPIA:
+- Suhu: 28-30°C (pertumbuhan terbaik), 25-32°C (boleh diterima), <20°C atau >36°C (berbahaya)
+- TDS: 300-800 ppm (ideal), 100-1500 ppm (boleh diterima)
+- pH: 6.5-8.5 (ideal), 7.0-8.0 (terbaik untuk pertumbuhan)
+- Ammonia: 0 ppm (ideal), <0.5 ppm (maksimum)
+- Oksigen: >5 mg/L (minimum), >6 mg/L (ideal)
+- Stocking density: 1-3 kg/m³ untuk kolam, 10-50 kg/m³ untuk RAS
+
+CARA JAWAB:
+1. Analisis data sensor semasa
+2. Kenal pasti masalah atau risiko
+3. Berikan nasihat praktikal dan spesifik
+4. Jelaskan KENAPA (bukan sekadar APA)
+5. Cadangkan tindakan konkrit dengan timeline
+6. Jika tiada masalah, beri tips untuk optimumkan pertumbuhan
+7. Gunakan Bahasa Melayu yang jelas dan profesional
+8. Jawab dalam 3-5 ayat (lebih panjang jika soalan kompleks)
+9. Jika ditanya tentang pH (sensor rosak), jelaskan kepentingan dan cadangkan ujian manual
+
+GAYA KOMUNIKASI:
+- Yakin tetapi rendah hati
+- Praktikal, bukan teoritis
+- Fokus pada tindakan, bukan sekadar maklumat
+- Guna contoh konkrit bila perlu
+- Terangkan istilah teknikal dalam bahasa mudah`;;
     const r=await fetch(`${VERCEL_URL}/api/chat`,{
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sp},{role:'user',content:getSensorContext()+'\n\nSoalan: '+question}],max_tokens:300,temperature:.7})
@@ -895,8 +865,8 @@ async function askAI(question) {
 }
 
 function getSensorContext() {
-    const t=currentSensorData.temp??'?',p=currentSensorData.ph??'?',d=currentSensorData.tds??'?';
-    return `Keadaan kolam semasa:\n- Suhu: ${t}°C\n- pH: ${p}\n- TDS: ${d} ppm`;
+    const t=currentSensorData.temp??'?',d=currentSensorData.tds??'?';
+    return `Keadaan kolam semasa:\n- Suhu: ${t}°C\n- TDS: ${d} ppm`;
 }
 
 function addMessage(text,isUser=false) {
@@ -920,13 +890,10 @@ async function sendMessage() {
 
 function askQuestion(q){document.getElementById('chatInput').value=q;sendMessage();}
 function explainSensor(s){
-    const q={suhu:'Terangkan kenapa suhu kolam penting untuk ikan tilapia',pH:'Terangkan kenapa pH air penting',TDS:'Apa itu TDS dan kenapa ia penting?'};
+    const q={suhu:'Terangkan kenapa suhu kolam penting untuk ikan tilapia',TDS:'Apa itu TDS dan kenapa ia penting?'};
     askQuestion(q[s]);
 }
 
-// ════════════════════════════════════════════════════════════
-// AUDIO / TTS
-// ════════════════════════════════════════════════════════════
 function showAudioOverlay(){document.getElementById('audioUnlockOverlay').classList.add('show');document.getElementById('audioUnlockOverlay').style.display='flex';}
 
 function setupAudioUnlock(){
@@ -1007,22 +974,17 @@ function toggleVoiceInput(){if(!recognition){alert('Voice input tidak disokong.'
 
 if(window.speechSynthesis){availableVoices=window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>{availableVoices=window.speechSynthesis.getVoices();};}
 
-// ════════════════════════════════════════════════════════════
-// 🚀 BOOT - OPTIMIZED DUAL POLLING SYSTEM
-// ════════════════════════════════════════════════════════════
-fetchData();                    // Initial Google Sheets load
-fetchSensorStatus();            // Initial sensor status
+fetchData();
+fetchSensorStatus();
 
-// Separate timers for different purposes
-setInterval(fetchData, 60000);              // Google Sheets every 60s (historical data)
-sensorPollTimer = setInterval(fetchSensorStatus, sensorPollInterval);  // Sensors every 5s (real-time)
-commandPollTimer = setInterval(checkCommandStatus, normalInterval);     // Commands every 30s (Redis)
+setInterval(fetchData, 60000);
+sensorPollTimer = setInterval(fetchSensorStatus, sensorPollInterval);
+commandPollTimer = setInterval(checkCommandStatus, normalInterval);
 
-console.log('📊 Dual polling system initialized:');
-console.log('  • SENSORS (temp/pH/TDS): 5s (NOT Redis) ← REAL-TIME! ✅');
-console.log('  • COMMANDS (feed ACK): 30s normal, 3s when active (Redis) ✅');
-console.log('  • GOOGLE SHEETS (chart): 60s (historical data) ✅');
-console.log('  • Expected Redis usage: ~86K ops/month (well under limit!) ✅');
+console.log('📊 System initialized (TEMP + TDS only):');
+console.log('  • SENSORS: 5s real-time ✅');
+console.log('  • COMMANDS: 30s normal, 3s active ✅');
+console.log('  • pH SENSOR: Disabled ⚠️');
 </script>
 </body>
 </html>
