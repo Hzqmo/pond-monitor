@@ -853,7 +853,8 @@ GAYA KOMUNIKASI:
 - Praktikal, bukan teoritis
 - Fokus pada tindakan, bukan sekadar maklumat
 - Guna contoh konkrit bila perlu
-- Terangkan istilah teknikal dalam bahasa mudah`;;
+- Terangkan istilah teknikal dalam bahasa mudah`;
+    
     const r=await fetch(`${VERCEL_URL}/api/chat`,{
         method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sp},{role:'user',content:getSensorContext()+'\n\nSoalan: '+question}],max_tokens:300,temperature:.7})
@@ -988,3 +989,4 @@ console.log('  • pH SENSOR: Disabled ⚠️');
 </script>
 </body>
 </html>
+
