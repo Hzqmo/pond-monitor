@@ -49,7 +49,7 @@
         /* Camera Styles */
         .camera-container{position:relative;background:var(--surface2);border-radius:12px;overflow:hidden;aspect-ratio:4/3;margin-bottom:12px}
         .camera-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text)}
-        .camera-container img{width:100%;height:100%;object-fit:contain;background:#000;display:none}
+        .camera-container img{width:100%;height:100%;object-fit:contain;background:#000}
         .camera-container.fullscreen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;border-radius:0;aspect-ratio:auto}
         .camera-container.fullscreen img{object-fit:contain}
         
@@ -447,20 +447,21 @@ function startCamera() {
     const streamImg = document.getElementById('cameraStream');
     const placeholder = document.getElementById('cameraPlaceholder');
     
+    // Show stream immediately (MJPEG doesn't trigger onload reliably)
+    streamImg.style.display = 'block';
+    placeholder.style.display = 'none';
     streamImg.src = streamUrl + '?t=' + Date.now();
+    cameraStreamActive = true;
+    updateCameraStatus(true);
     
-    streamImg.onload = () => {
-        console.log('✓ Camera stream loaded');
-        streamImg.style.display = 'block';
-        placeholder.style.display = 'none';
-        cameraStreamActive = true;
-        updateCameraStatus(true);
-    };
-    
+    // Handle errors
     streamImg.onerror = () => {
         console.error('✗ Camera stream failed');
         showCameraError();
     };
+    
+    // Show success message
+    showToast('📹 Camera stream started!');
 }
 
 function stopCamera() {
@@ -570,7 +571,7 @@ function openCameraSettings() {
 // Auto-retry camera connection
 setInterval(() => {
     const streamImg = document.getElementById('cameraStream');
-    if (cameraStreamActive && streamImg.style.display === 'none') {
+    if (cameraStreamActive && !streamImg.src) {
         console.log('🔄 Camera reconnecting...');
         startCamera();
     }
