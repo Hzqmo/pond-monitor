@@ -112,6 +112,44 @@
         .refresh-btn{background:var(--surface);color:var(--accent);border:1px solid rgba(61,139,255,.25);padding:12px 28px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;display:block;margin:8px auto 28px;transition:all .3s;font-family:'Outfit',sans-serif}
         .refresh-btn:hover{background:rgba(61,139,255,.12)}
         .error{background:rgba(255,95,95,.1);color:var(--danger);border:1px solid rgba(255,95,95,.25);padding:14px 18px;border-radius:12px;margin-bottom:18px;font-size:.88em}
+        
+        /* AI Assistant Styles */
+        .setup-notice{background:rgba(61,139,255,.1);color:#90b8ff;padding:10px 14px;border-radius:10px;font-size:.8em;margin-bottom:14px;border:1px solid rgba(61,139,255,.2);line-height:1.6;display:none}
+        .setup-notice code{background:rgba(61,139,255,.25);padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:.9em}
+        .voice-controls{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);flex-wrap:wrap}
+        .voice-status{flex:1;font-size:.82em;color:var(--muted);min-width:160px}
+        .speaker-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:.78em;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'Outfit',sans-serif}
+        .speaker-btn.active{background:rgba(0,201,167,.15);color:var(--success);border-color:rgba(0,201,167,.3)}
+        .quick-questions{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+        .quick-question-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:20px;font-size:.78em;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif}
+        .quick-question-btn:hover{background:rgba(61,139,255,.15);color:var(--accent);border-color:rgba(61,139,255,.3)}
+        .chat-messages{max-height:260px;overflow-y:auto;margin-bottom:14px;padding:10px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+        .chat-message{margin-bottom:14px;display:flex;gap:9px}
+        .message-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;background:var(--surface);border:1px solid var(--border)}
+        .user-avatar{background:rgba(61,139,255,.2);border-color:rgba(61,139,255,.3)}
+        .message-content{flex:1}
+        .message-text{background:var(--surface);border:1px solid var(--border);padding:10px 14px;border-radius:12px;line-height:1.55;font-size:.88em}
+        .user-message .message-text{background:rgba(61,139,255,.15);border-color:rgba(61,139,255,.25)}
+        .message-time{font-size:.68em;color:var(--muted);margin-top:4px;margin-left:4px;font-family:'DM Mono',monospace}
+        .typing-indicator{display:none;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;width:fit-content}
+        .typing-indicator.active{display:block}
+        .typing-indicator span{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--muted);margin:0 2px;animation:bounce 1.4s infinite}
+        .typing-indicator span:nth-child(2){animation-delay:.2s}
+        .typing-indicator span:nth-child(3){animation-delay:.4s}
+        @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+        .chat-input-container{display:flex;gap:9px;align-items:center}
+        .voice-btn{width:46px;height:46px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:1.3em;cursor:pointer;transition:all .3s;box-shadow:0 4px 16px rgba(61,139,255,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation}
+        .voice-btn:active{transform:scale(.93)}
+        .voice-btn.listening{background:linear-gradient(135deg,var(--danger),#ff3366);animation:pulse-ring 1.5s infinite}
+        .voice-btn.speaking{background:linear-gradient(135deg,var(--success),var(--accent2));animation:pulse-ring 1.5s infinite}
+        @keyframes pulse-ring{0%,100%{box-shadow:0 0 0 0 rgba(61,139,255,.5)}50%{box-shadow:0 0 0 14px rgba(61,139,255,0)}}
+        .chat-input{flex:1;padding:11px 16px;border:1px solid var(--border);border-radius:23px;font-size:.9em;font-family:'Outfit',sans-serif;outline:none;background:var(--surface2);color:var(--text);transition:border-color .3s}
+        .chat-input::placeholder{color:var(--muted)}
+        .chat-input:focus{border-color:rgba(61,139,255,.4)}
+        .send-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:11px 22px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;transition:all .3s;font-family:'Outfit',sans-serif;touch-action:manipulation}
+        .send-btn:active{transform:scale(.97)}
+        .send-btn:disabled{opacity:.4;cursor:not-allowed}
+        
         @media(max-width:480px){.sensors-grid{gap:10px}.sensor-value{font-size:1.6em}.header h1{font-size:1.5em}.stats-summary{grid-template-columns:1fr}}
     </style>
 </head>
@@ -218,7 +256,7 @@
             <div style="display:flex; gap:8px">
                 <input type="text" 
                        id="cameraIP" 
-                       placeholder="192.168.1.100"
+                       placeholder="192.168.0.14"
                        value=""
                        class="time-input" 
                        style="flex:1">
@@ -279,6 +317,51 @@
         <div class="log-title">📋 Log Pemberian Makan</div>
         <div class="feed-log" id="feedLog">
             <div class="log-row"><span class="log-t">--:--</span><span class="log-s">—</span><span>Tiada log lagi</span></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="ai-chat-header">
+            <h2>🤖 Pembantu Suara AI</h2>
+            <div class="ai-badge">VERCEL</div>
+        </div>
+        <div class="setup-notice" id="setupNotice">
+            ⚙️ <strong>Setup:</strong> Pastikan <code>VERCEL_URL</code> dalam kod ESP32 menggunakan URL production Vercel anda.
+        </div>
+        <div class="voice-controls">
+            <div class="voice-status" id="voiceStatus">🎤 Tekan mikrofon untuk bercakap</div>
+            <button class="speaker-btn active" id="speakerToggle" onclick="toggleSpeaker()">
+                <span id="speakerIcon">🔊</span>
+                <span id="speakerText">Suara ON</span>
+            </button>
+            <button class="speaker-btn" onclick="testSpeak()" style="background:rgba(0,229,200,.15);color:var(--accent2);border-color:rgba(0,229,200,.3)">
+                <span>🔊</span><span>Test</span>
+            </button>
+        </div>
+        <div class="quick-questions">
+            <button class="quick-question-btn" onclick="askQuestion('Bagaimana kolam saya?')">Bagaimana kolam?</button>
+            <button class="quick-question-btn" onclick="askQuestion('Patut saya beri makan ikan sekarang?')">Beri makan?</button>
+            <button class="quick-question-btn" onclick="askQuestion('Apa yang patut saya periksa?')">Apa periksa?</button>
+            <button class="quick-question-btn" onclick="askQuestion('Ada masalah?')">Ada masalah?</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-message">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="message-text">Hai! Saya pembantu AI kolam anda. Apa yang anda ingin tahu?</div>
+                    <div class="message-time">Sekarang</div>
+                </div>
+            </div>
+        </div>
+        <div class="chat-message" style="margin-bottom:14px">
+            <div class="message-avatar">🤖</div>
+            <div class="typing-indicator" id="typingIndicator"><span></span><span></span><span></span></div>
+        </div>
+        <div class="chat-input-container">
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()">🎤</button>
+            <input type="text" class="chat-input" id="chatInput" placeholder="Taip atau tekan mikrofon..."
+                   onkeypress="if(event.key==='Enter')sendMessage()">
+            <button class="send-btn" onclick="sendMessage()" id="sendBtn">Hantar</button>
         </div>
     </div>
 
@@ -900,6 +983,133 @@ function updateChart() {
 
 function explainSensor(s){}
 
+// ════════════════════════════════════════════════════════════
+// AI ASSISTANT FUNCTIONS
+// ════════════════════════════════════════════════════════════
+let recognition, isListening=false, voiceEnabled=true, isSpeaking=false, availableVoices=[];
+
+async function askAI(question) {
+    const sp=`Anda adalah pakar akuakultur tilapia dengan 20 tahun pengalaman. Anda memahami biologi ikan, kualiti air, penyakit ikan, pemakanan, dan pengurusan kolam secara mendalam.
+
+PENGETAHUAN ANDA:
+- Biologi Tilapia: Spesies (Nile, Mozambique, Red), tingkah laku, pembiakan, kitaran hidup, toleransi persekitaran
+- Parameter Air: Suhu, pH, TDS, ammonia, nitrit, nitrat, oksigen terlarut, alkaliniti, kekerasan air
+- Penyakit: Bacterial infections (Aeromonas, Streptococcus), parasit (ich, flukes, lice), kulat, virus, pencegahan dan rawatan
+- Pemakanan: Jenis makanan (pellet, hidup, sayuran), kandungan protein (28-35%), jadual pemberian makan, FCR, overfeeding vs underfeeding
+- Sistem Kolam: Biofilter, aerasi, water change schedule, stocking density, kolam tanah vs liner vs concrete
+- Masalah Biasa: Cloudy water, algae bloom, fish gasping, tidak makan, pertumbuhan lambat, kematian mendadak
+- Ekonomi: Kos operasi, harga pasaran, break-even analysis, ROI
+
+KEADAAN OPTIMUM TILAPIA:
+- Suhu: 28-30°C (pertumbuhan terbaik), 25-32°C (boleh diterima), <20°C atau >36°C (berbahaya)
+- TDS: 300-800 ppm (ideal), 100-1500 ppm (boleh diterima)
+- pH: 6.5-8.5 (ideal), 7.0-8.0 (terbaik untuk pertumbuhan)
+- Ammonia: 0 ppm (ideal), <0.5 ppm (maksimum)
+- Oksigen: >5 mg/L (minimum), >6 mg/L (ideal)
+- Stocking density: 1-3 kg/m³ untuk kolam, 10-50 kg/m³ untuk RAS
+
+CARA JAWAB:
+1. Analisis data sensor semasa
+2. Kenal pasti masalah atau risiko
+3. Berikan nasihat praktikal dan spesifik
+4. Jelaskan KENAPA (bukan sekadar APA)
+5. Cadangkan tindakan konkrit dengan timeline
+6. Jika tiada masalah, beri tips untuk optimumkan pertumbuhan
+7. Gunakan Bahasa Melayu yang jelas dan profesional
+8. Jawab dalam 3-5 ayat (lebih panjang jika soalan kompleks)
+9. Jika ditanya tentang pH (sensor rosak), jelaskan kepentingan dan cadangkan ujian manual
+
+GAYA KOMUNIKASI:
+- Yakin tetapi rendah hati
+- Praktikal, bukan teoritis
+- Fokus pada tindakan, bukan sekadar maklumat
+- Guna contoh konkrit bila perlu
+- Terangkan istilah teknikal dalam bahasa mudah`;
+    
+    const r=await fetch(`${VERCEL_URL}/api/chat`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sp},{role:'user',content:getSensorContext()+'\n\nSoalan: '+question}],max_tokens:300,temperature:.7})
+    });
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(d.error)throw new Error(d.error.message);
+    return d.choices[0].message.content;
+}
+
+function getSensorContext() {
+    const t=currentSensorData.temp??'?',d=currentSensorData.tds??'?';
+    return `Keadaan kolam semasa:\n- Suhu: ${t}°C\n- TDS: ${d} ppm`;
+}
+
+function addMessage(text,isUser=false) {
+    const w=document.getElementById('chatMessages'),div=document.createElement('div');
+    div.className='chat-message'+(isUser?' user-message':'');
+    const time=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    div.innerHTML=`<div class="message-avatar ${isUser?'user-avatar':''}">${isUser?'👤':'🤖'}</div><div class="message-content"><div class="message-text">${text}</div><div class="message-time">${time}</div></div>`;
+    w.appendChild(div);w.scrollTop=w.scrollHeight;
+}
+
+async function sendMessage() {
+    const i=document.getElementById('chatInput'),q=i.value.trim();
+    if(!q)return;
+    addMessage(q,true);i.value='';
+    document.getElementById('typingIndicator').classList.add('active');
+    const b=document.getElementById('sendBtn');b.disabled=true;b.textContent='Berfikir...';
+    try{const r=await askAI(q);addMessage(r,false);speakWithBrowserTTS(r);}
+    catch(e){addMessage('⚠️ '+e.message,false);}
+    finally{document.getElementById('typingIndicator').classList.remove('active');b.disabled=false;b.textContent='Hantar';}
+}
+
+function askQuestion(q){document.getElementById('chatInput').value=q;sendMessage();}
+
+function toggleSpeaker(){
+    voiceEnabled=!voiceEnabled;
+    document.getElementById('speakerIcon').textContent=voiceEnabled?'🔊':'🔇';
+    document.getElementById('speakerText').textContent=voiceEnabled?'Suara ON':'Suara OFF';
+    document.getElementById('speakerToggle').classList.toggle('active',voiceEnabled);
+    if(!voiceEnabled){window.speechSynthesis.cancel();isSpeaking=false;}
+}
+
+function testSpeak(){
+    voiceEnabled=true;
+    document.getElementById('speakerIcon').textContent='🔊';
+    document.getElementById('speakerText').textContent='Suara ON';
+    document.getElementById('speakerToggle').classList.add('active');
+    speakWithBrowserTTS('Hai, saya sedang menguji suara. Boleh dengar saya?');
+}
+
+async function speakWithBrowserTTS(text){
+    if(!voiceEnabled)return;
+    window.speechSynthesis.cancel();
+    await new Promise(r=>setTimeout(r,200));
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=.9;u.pitch=1;u.volume=1;u.lang='ms-MY';
+    if(availableVoices.length){
+        const v=availableVoices.find(v=>v.lang.startsWith('ms')||v.lang.startsWith('id'));
+        if(v){u.voice=v;u.lang=v.lang;}
+    }
+    u.onstart=()=>{isSpeaking=true;document.getElementById('voiceBtn').classList.add('speaking');};
+    u.onend=()=>{isSpeaking=false;document.getElementById('voiceBtn').classList.remove('speaking');};
+    u.onerror=()=>{isSpeaking=false;document.getElementById('voiceBtn').classList.remove('speaking');};
+    window.speechSynthesis.speak(u);
+}
+
+if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='ms-MY';
+    recognition.onstart=()=>{isListening=true;document.getElementById('voiceBtn').classList.add('listening');document.getElementById('voiceStatus').textContent='🎤 Mendengar...';};
+    recognition.onend=()=>{isListening=false;document.getElementById('voiceBtn').classList.remove('listening');document.getElementById('voiceStatus').textContent='🎤 Tekan mikrofon untuk bercakap';};
+    recognition.onresult=e=>{const t=e.results[0][0].transcript;document.getElementById('chatInput').value=t;sendMessage();};
+    recognition.onerror=e=>{document.getElementById('voiceStatus').textContent='🎤 Ralat: '+e.error;};
+}else{document.getElementById('voiceBtn').disabled=true;}
+
+function toggleVoiceInput(){if(!recognition){alert('Voice input tidak disokong.');return;}isListening?recognition.stop():recognition.start();}
+
+if(window.speechSynthesis){availableVoices=window.speechSynthesis.getVoices();window.speechSynthesis.onvoiceschanged=()=>{availableVoices=window.speechSynthesis.getVoices();};}
+
+// ════════════════════════════════════════════════════════════
+// INIT ON LOAD
+// ════════════════════════════════════════════════════════════
 fetchData();
 fetchSensorStatus();
 setInterval(fetchData, 60000);
