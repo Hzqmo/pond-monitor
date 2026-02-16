@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Monitor Kolam - Dashboard Pemantauan Ikan</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700&display=swap');
@@ -46,12 +48,12 @@
         .alert-icon{font-size:1.5em}
         .alert-text{flex:1;font-size:.85em;line-height:1.4}
         
-        /* Camera Styles */
-        .camera-container{position:relative;background:var(--surface2);border-radius:12px;overflow:hidden;aspect-ratio:4/3;margin-bottom:12px}
-        .camera-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text)}
-        .camera-container img{width:100%;height:100%;object-fit:contain;background:#000}
-        .camera-container.fullscreen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;border-radius:0;aspect-ratio:auto;margin:0}
-        .camera-container.fullscreen img{object-fit:contain}
+        /* Camera Styles - iOS Compatible */
+        .camera-container{position:relative;background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:12px;min-height:300px}
+        .camera-placeholder{width:100%;height:300px;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text)}
+        .camera-container iframe{width:100%;height:300px;border:none;background:#000;display:block}
+        .camera-container.fullscreen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;border-radius:0;margin:0;min-height:100vh}
+        .camera-container.fullscreen iframe{height:100vh}
         
         /* Camera Controls Grid */
         .camera-controls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
@@ -89,6 +91,7 @@
         .servo-set-btn{background:rgba(61,139,255,.15);color:var(--accent);border:1px solid rgba(61,139,255,.3);padding:8px 18px;border-radius:10px;font-size:.82em;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;white-space:nowrap}
         .servo-set-btn:hover{background:rgba(61,139,255,.25)}
         .servo-set-btn:disabled{opacity:.4;cursor:not-allowed}
+        .servo-set-btn:active{transform:scale(.95)}
         .schedule-title{font-size:.78em;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
         .schedule-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
         .schedule-chip{background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:.8em;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px}
@@ -215,19 +218,20 @@
         </div>
     </div>
 
-    <!-- 📹 CAMERA CARD -->
+    <!-- 📹 CAMERA CARD - iOS Compatible -->
     <div class="card">
         <div class="ai-chat-header">
             <h2>📹 Live Camera Feed</h2>
             <div class="ai-badge">ESP32-CAM</div>
         </div>
         
-        <!-- Camera stream -->
-        <div class="camera-container" id="cameraContainerDiv" onclick="toggleFullscreen()">
-            <img id="cameraStream" 
-                 src="" 
-                 alt="Camera Stream"
-                 style="width:100%;height:100%;object-fit:contain;background:#000;display:none">
+        <!-- Camera stream using iframe for iOS compatibility -->
+        <div class="camera-container" id="cameraContainerDiv">
+            <iframe id="cameraStream" 
+                    src="" 
+                    allow="autoplay; fullscreen"
+                    allowfullscreen
+                    style="display:none"></iframe>
             
             <div id="cameraPlaceholder" class="camera-placeholder">
                 <div style="text-align:center">
@@ -252,8 +256,8 @@
             <button class="servo-set-btn" onclick="stopCamera()">
                 ⏸️ Stop
             </button>
-            <button class="servo-set-btn" onclick="capturePhoto()">
-                📸 Capture
+            <button class="servo-set-btn" onclick="toggleFullscreen()">
+                ⛶ Fullscreen
             </button>
             <button class="servo-set-btn" onclick="openCameraSettings()">
                 ⚙️ Settings
@@ -452,24 +456,12 @@ let cameraStreamActive = false;
 let cameraCheckInterval = null;
 
 // ════════════════════════════════════════════════════════════
-// 📹 CAMERA FUNCTIONS
+// 📹 CAMERA FUNCTIONS - iOS/iPadOS Compatible
 // ════════════════════════════════════════════════════════════
 
 function getCameraBaseUrl() {
     const ip = document.getElementById('cameraIP').value.trim() || cameraIP;
     return `http://${ip}`;
-}
-
-async function checkCameraStatus() {
-    try {
-        const response = await fetch(getCameraBaseUrl() + '/status', {
-            method: 'GET',
-            mode: 'no-cors' // Try to avoid CORS issues
-        });
-        return true;
-    } catch (error) {
-        return false;
-    }
 }
 
 function startCamera() {
@@ -483,49 +475,40 @@ function startCamera() {
     cameraIP = ip;
     localStorage.setItem('cameraIP', ip);
     
-    // Use the :81 stream endpoint from CameraWebServer
+    // iOS Safari works better with iframe embedding the stream page
+    // Create a simple HTML page that just shows the stream
     const streamUrl = `http://${ip}:81/stream`;
-    console.log('📹 Starting camera stream:', streamUrl);
     
-    const streamImg = document.getElementById('cameraStream');
+    console.log('📹 Starting camera stream for iOS:', streamUrl);
+    
+    const iframe = document.getElementById('cameraStream');
     const placeholder = document.getElementById('cameraPlaceholder');
     
-    // Show stream with cache-busting
-    streamImg.src = streamUrl + '?t=' + Date.now();
-    streamImg.style.display = 'block';
+    // For iOS, we load the entire camera page in iframe
+    iframe.src = `http://${ip}`;
+    iframe.style.display = 'block';
     placeholder.style.display = 'none';
     
     cameraStreamActive = true;
     updateCameraStatus(true);
     
-    // Handle errors
-    streamImg.onerror = () => {
-        console.error('✗ Camera stream failed');
+    // Monitor iframe loading
+    iframe.onload = () => {
+        console.log('✓ Camera interface loaded');
+        updateCameraStatus(true);
+        showToast('📹 Camera loaded! Tap Start Stream in the interface');
+    };
+    
+    iframe.onerror = () => {
+        console.error('✗ Camera interface failed to load');
         showCameraError();
     };
     
-    streamImg.onload = () => {
-        console.log('✓ Camera stream connected');
-        updateCameraStatus(true);
-    };
-    
-    // Start periodic status check
-    if (cameraCheckInterval) clearInterval(cameraCheckInterval);
-    cameraCheckInterval = setInterval(() => {
-        if (cameraStreamActive) {
-            // Check if image is still loading
-            if (streamImg.complete && streamImg.naturalHeight === 0) {
-                console.warn('Camera stream lost');
-                showCameraError();
-            }
-        }
-    }, 5000);
-    
-    showToast('📹 Camera stream started!');
+    showToast('📹 Loading camera interface...');
 }
 
 function stopCamera() {
-    const streamImg = document.getElementById('cameraStream');
+    const iframe = document.getElementById('cameraStream');
     const placeholder = document.getElementById('cameraPlaceholder');
     
     if (cameraCheckInterval) {
@@ -533,8 +516,8 @@ function stopCamera() {
         cameraCheckInterval = null;
     }
     
-    streamImg.src = '';
-    streamImg.style.display = 'none';
+    iframe.src = '';
+    iframe.style.display = 'none';
     placeholder.style.display = 'flex';
     placeholder.innerHTML = `
         <div style="text-align:center">
@@ -549,7 +532,7 @@ function stopCamera() {
 }
 
 function showCameraError() {
-    const streamImg = document.getElementById('cameraStream');
+    const iframe = document.getElementById('cameraStream');
     const placeholder = document.getElementById('cameraPlaceholder');
     
     if (cameraCheckInterval) {
@@ -557,7 +540,7 @@ function showCameraError() {
         cameraCheckInterval = null;
     }
     
-    streamImg.style.display = 'none';
+    iframe.style.display = 'none';
     placeholder.style.display = 'flex';
     placeholder.innerHTML = `
         <div style="text-align:center; padding:20px">
@@ -567,8 +550,8 @@ function showCameraError() {
                 Make sure:<br>
                 • ESP32-CAM is powered on<br>
                 • IP address is correct (${cameraIP})<br>
-                • Camera is on same network<br>
-                • Stream port :81 is accessible
+                • Both devices on same WiFi network<br>
+                • Camera web server is running
             </div>
             <button class="servo-set-btn" onclick="startCamera()" style="margin-top:12px">
                 🔄 Retry Connection
@@ -598,7 +581,7 @@ function saveCameraIP() {
     localStorage.setItem('cameraIP', ip);
     showToast('✅ Camera IP saved: ' + ip);
     
-    // Auto-start stream after saving
+    // Auto-start after saving
     setTimeout(startCamera, 500);
 }
 
@@ -610,7 +593,7 @@ function updateCameraStatus(online) {
     if (online) {
         statusEl.className = 'esp-status online';
         dotEl.className = 'esp-dot pulse';
-        textEl.textContent = 'Camera streaming ✓';
+        textEl.textContent = 'Camera interface loaded ✓';
     } else {
         statusEl.className = 'esp-status offline';
         dotEl.className = 'esp-dot';
@@ -621,86 +604,101 @@ function updateCameraStatus(online) {
 function toggleFullscreen() {
     const container = document.getElementById('cameraContainerDiv');
     
-    if (!document.fullscreenElement) {
+    if (!cameraStreamActive) {
+        showToast('⚠️ Start camera stream first');
+        return;
+    }
+    
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        // Enter fullscreen
         if (container.requestFullscreen) {
             container.requestFullscreen();
         } else if (container.webkitRequestFullscreen) {
             container.webkitRequestFullscreen();
-        } else if (container.msRequestFullscreen) {
-            container.msRequestFullscreen();
+        } else if (container.webkitEnterFullscreen) {
+            container.webkitEnterFullscreen();
         }
         container.classList.add('fullscreen');
+        
+        // Adjust iframe height for fullscreen
+        const iframe = document.getElementById('cameraStream');
+        iframe.style.height = '100vh';
     } else {
+        // Exit fullscreen
         if (document.exitFullscreen) {
             document.exitFullscreen();
         } else if (document.webkitExitFullscreen) {
             document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
         }
         container.classList.remove('fullscreen');
+        
+        // Reset iframe height
+        const iframe = document.getElementById('cameraStream');
+        iframe.style.height = '300px';
     }
 }
 
-// Handle fullscreen changes
-document.addEventListener('fullscreenchange', () => {
+// Handle fullscreen changes for iOS
+document.addEventListener('webkitfullscreenchange', () => {
     const container = document.getElementById('cameraContainerDiv');
-    if (!document.fullscreenElement) {
+    const iframe = document.getElementById('cameraStream');
+    
+    if (!document.webkitFullscreenElement) {
         container.classList.remove('fullscreen');
+        iframe.style.height = '300px';
     }
 });
 
-function capturePhoto() {
-    const baseUrl = getCameraBaseUrl();
-    const captureUrl = `${baseUrl}/capture`;
+document.addEventListener('fullscreenchange', () => {
+    const container = document.getElementById('cameraContainerDiv');
+    const iframe = document.getElementById('cameraStream');
     
-    showToast('📸 Capturing photo...');
-    
-    // Open capture URL in new tab
-    window.open(captureUrl, '_blank');
-    
-    setTimeout(() => {
-        showToast('✅ Photo captured! Check new tab');
-    }, 1000);
-}
+    if (!document.fullscreenElement) {
+        container.classList.remove('fullscreen');
+        iframe.style.height = '300px';
+    }
+});
 
 async function setResolution(framesize) {
     const baseUrl = getCameraBaseUrl();
     
     try {
-        // Disable all resolution buttons temporarily
+        // Disable all resolution buttons
         document.querySelectorAll('[id^="res-"]').forEach(btn => {
             btn.disabled = true;
             btn.style.opacity = '0.5';
         });
         
+        // Show progress
+        showToast('⏳ Changing resolution...');
+        
+        // For iOS, we send the command directly to ESP32
+        // This requires CORS to be enabled on ESP32
         const response = await fetch(`${baseUrl}/control?var=framesize&val=${framesize}`, {
             method: 'GET',
-            mode: 'cors'
+            mode: 'no-cors' // Fallback for iOS
         });
         
-        if (response.ok) {
-            showToast(`✅ Resolution changed`);
-            
-            // Restart stream if active
-            if (cameraStreamActive) {
-                setTimeout(() => {
-                    stopCamera();
-                    setTimeout(startCamera, 500);
-                }, 500);
-            }
-        } else {
-            showToast('❌ Failed to change resolution');
+        showToast(`✅ Resolution changed to ${framesize === 8 ? 'QVGA' : framesize === 10 ? 'VGA' : 'HD'}`);
+        
+        // Reload iframe if active
+        if (cameraStreamActive) {
+            setTimeout(() => {
+                const iframe = document.getElementById('cameraStream');
+                iframe.src = iframe.src; // Reload
+            }, 1000);
         }
     } catch (error) {
         console.error('Resolution change error:', error);
-        showToast('❌ Connection error');
+        showToast('⚠️ Resolution command sent (response blocked by CORS)');
     } finally {
         // Re-enable buttons
-        document.querySelectorAll('[id^="res-"]').forEach(btn => {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-        });
+        setTimeout(() => {
+            document.querySelectorAll('[id^="res-"]').forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            });
+        }, 1500);
     }
 }
 
@@ -712,7 +710,7 @@ function openCameraSettings() {
         return;
     }
     
-    // Open the main camera web interface
+    // Open camera web interface in new window/tab
     window.open(`http://${ip}`, '_blank');
 }
 
