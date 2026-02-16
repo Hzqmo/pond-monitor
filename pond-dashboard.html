@@ -47,14 +47,17 @@
         .alert-icon{font-size:1.5em}
         .alert-text{flex:1;font-size:.85em;line-height:1.4}
         
-        /* Camera Styles - Simple Link Approach */
-        .camera-link-container{background:var(--surface2);border-radius:12px;padding:24px;text-align:center;margin-bottom:12px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-        .camera-icon{font-size:4em;margin-bottom:8px}
-        .camera-instructions{font-size:0.9em;color:var(--muted);line-height:1.6;margin-bottom:12px}
-        .open-camera-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:16px 32px;border-radius:16px;font-size:1em;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 6px 24px rgba(61,139,255,.3);transition:all .3s;display:inline-flex;align-items:center;gap:10px;text-decoration:none}
-        .open-camera-btn:active{transform:scale(.97)}
+        /* Camera Styles - Universal JPEG Snapshot Method */
+        .camera-container{position:relative;background:#000;border-radius:12px;overflow:hidden;margin-bottom:12px;min-height:300px;cursor:pointer}
+        .camera-container img{width:100%;height:auto;display:block;min-height:300px;object-fit:contain}
+        .camera-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text);z-index:1}
+        .camera-container.streaming .camera-placeholder{display:none}
+        .camera-container.fullscreen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;border-radius:0;margin:0;min-height:100vh}
+        .camera-container.fullscreen img{height:100vh;object-fit:contain}
+        .fps-counter{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.7);color:#0f0;padding:4px 8px;border-radius:6px;font-size:0.7em;font-family:'DM Mono',monospace;z-index:2}
         
         .camera-controls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+        .camera-quality-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
         
         .feeder-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
         .feeder-header h2{font-size:1.15em;font-weight:600;flex:1}
@@ -158,6 +161,8 @@
             .sensor-value{font-size:1.6em}
             .header h1{font-size:1.5em}
             .stats-summary{grid-template-columns:1fr}
+            .camera-controls{grid-template-columns:1fr}
+            .camera-quality-grid{grid-template-columns:repeat(2,1fr)}
         }
     </style>
 </head>
@@ -211,29 +216,82 @@
         </div>
     </div>
 
-    <!-- 📹 CAMERA CARD - Simple Link Method -->
+    <!-- 📹 CAMERA CARD - Universal Snapshot Method -->
     <div class="card">
         <div class="ai-chat-header">
             <h2>📹 Live Camera Feed</h2>
             <div class="ai-badge">ESP32-CAM</div>
         </div>
         
-        <div class="camera-link-container">
-            <div class="camera-icon">📹</div>
-            <div style="font-size:1.2em;font-weight:600;margin-bottom:8px">Camera Access</div>
-            <div class="camera-instructions">
-                iOS/Safari doesn't support embedded streams.<br>
-                Tap below to open camera in new tab.
+        <!-- Camera stream using continuous snapshot fetching -->
+        <div class="camera-container" id="cameraContainer" onclick="toggleFullscreen()">
+            <div class="camera-placeholder" id="cameraPlaceholder">
+                <div style="text-align:center">
+                    <div style="font-size:3em; margin-bottom:10px">📹</div>
+                    <div style="font-size:1.1em; margin-bottom:8px">Ready to connect</div>
+                    <div style="font-size:0.8em; color:var(--muted)">Enter IP and click Start Stream</div>
+                </div>
             </div>
-            <a href="#" onclick="openCameraFeed(); return false;" class="open-camera-btn">
-                🎥 Open Camera Feed
-            </a>
+            <img id="cameraImage" src="" alt="Camera Feed">
+            <div class="fps-counter" id="fpsCounter" style="display:none">0 FPS</div>
         </div>
 
         <!-- Camera status -->
         <div class="esp-status offline" id="cameraStatus">
             <div class="esp-dot" id="cameraDot"></div>
-            <span id="cameraStatusText">Ready to connect</span>
+            <span id="cameraStatusText">Camera offline</span>
+        </div>
+
+        <!-- Main Controls -->
+        <div class="camera-controls">
+            <button class="servo-set-btn" onclick="startCameraStream()">
+                ▶️ Start Stream
+            </button>
+            <button class="servo-set-btn" onclick="stopCameraStream()">
+                ⏸️ Stop
+            </button>
+            <button class="servo-set-btn" onclick="captureSnapshot()">
+                📸 Snapshot
+            </button>
+            <button class="servo-set-btn" onclick="openCameraSettings()">
+                ⚙️ Settings
+            </button>
+        </div>
+
+        <!-- FPS Slider -->
+        <div style="margin-bottom:12px">
+            <label style="font-size:0.75em; color:var(--muted); display:block; margin-bottom:6px">
+                ⚡ FRAME RATE: <span id="fpsDisplay">10 FPS</span>
+            </label>
+            <input type="range" 
+                   id="fpsSlider" 
+                   min="1" 
+                   max="20" 
+                   value="10" 
+                   class="servo-slider"
+                   oninput="updateFPS(this.value)"
+                   style="width:100%">
+            <div style="font-size:0.7em; color:var(--muted); margin-top:4px">
+                Lower = Less data usage | Higher = Smoother video
+            </div>
+        </div>
+
+        <!-- Quality Controls -->
+        <div style="margin-bottom:12px">
+            <label style="font-size:0.75em; color:var(--muted); display:block; margin-bottom:6px">
+                🎨 QUALITY
+            </label>
+            <div class="camera-quality-grid">
+                <button class="servo-set-btn" onclick="setResolution(8)" id="res-8">
+                    📱 QVGA
+                </button>
+                <button class="servo-set-btn" onclick="setResolution(10)" id="res-10">
+                    💻 VGA
+                </button>
+                <button class="servo-set-btn" onclick="setResolution(13)" id="res-13">
+                    📺 HD
+                </button>
+            </div>
         </div>
 
         <!-- Camera URL input -->
@@ -251,7 +309,7 @@
                 <button class="add-btn" onclick="saveCameraIP()">💾 Save</button>
             </div>
             <div style="font-size:0.7em; color:var(--muted); margin-top:6px; line-height:1.4">
-                ℹ️ Camera will open at: http://<span id="displayIP">192.168.0.14</span>
+                ℹ️ Works on ALL devices (iOS/Android/Desktop)
             </div>
         </div>
     </div>
@@ -401,27 +459,164 @@ let commandPollTimer = null;
 let fastPollActive = false;
 let fastPollTimeout = null;
 
-// 📹 Camera state
+// 📹 Camera state - Universal Snapshot Method
 let cameraIP = localStorage.getItem('cameraIP') || '192.168.0.14';
+let cameraStreamActive = false;
+let cameraStreamInterval = null;
+let cameraFPS = parseInt(localStorage.getItem('cameraFPS') || '10');
+let fpsCounter = 0;
+let fpsLastTime = Date.now();
 
 // ════════════════════════════════════════════════════════════
-// 📹 CAMERA FUNCTIONS - Direct Link Method
+// 📹 CAMERA FUNCTIONS - UNIVERSAL SNAPSHOT METHOD
+// Works on ALL browsers including iOS Safari!
 // ════════════════════════════════════════════════════════════
 
-function openCameraFeed() {
+function getCameraBaseUrl() {
     const ip = document.getElementById('cameraIP').value.trim() || cameraIP;
+    return `http://${ip}`;
+}
+
+function startCameraStream() {
+    const ip = document.getElementById('cameraIP').value.trim();
     
     if (!ip) {
-        showToast('⚠️ Please enter camera IP first');
+        showToast('⚠️ Please enter camera IP address first');
         return;
     }
     
-    // Open camera in new window/tab
-    const cameraUrl = `http://${ip}`;
-    window.open(cameraUrl, '_blank');
+    cameraIP = ip;
+    localStorage.setItem('cameraIP', ip);
     
-    showToast('📹 Opening camera...');
+    if (cameraStreamActive) {
+        showToast('ℹ️ Stream already running');
+        return;
+    }
+    
+    console.log('📹 Starting snapshot-based stream at', cameraFPS, 'FPS');
+    
+    cameraStreamActive = true;
+    document.getElementById('cameraContainer').classList.add('streaming');
+    document.getElementById('fpsCounter').style.display = 'block';
     updateCameraStatus(true);
+    
+    // Fetch snapshots continuously
+    const interval = 1000 / cameraFPS; // Convert FPS to milliseconds
+    
+    // Initial load
+    fetchSnapshot();
+    
+    // Start interval
+    cameraStreamInterval = setInterval(fetchSnapshot, interval);
+    
+    showToast(`📹 Stream started at ${cameraFPS} FPS`);
+}
+
+function fetchSnapshot() {
+    if (!cameraStreamActive) return;
+    
+    const baseUrl = getCameraBaseUrl();
+    const img = document.getElementById('cameraImage');
+    
+    // Use /capture endpoint for single JPEG (works universally)
+    const snapshotUrl = `${baseUrl}/capture?t=${Date.now()}`;
+    
+    // Create new image to avoid flicker
+    const newImg = new Image();
+    newImg.onload = () => {
+        img.src = newImg.src;
+        updateFPSCounter();
+    };
+    
+    newImg.onerror = () => {
+        console.error('Failed to fetch snapshot');
+        showCameraError();
+        stopCameraStream();
+    };
+    
+    newImg.src = snapshotUrl;
+}
+
+function updateFPSCounter() {
+    fpsCounter++;
+    const now = Date.now();
+    const elapsed = now - fpsLastTime;
+    
+    if (elapsed >= 1000) {
+        const actualFPS = Math.round(fpsCounter / (elapsed / 1000));
+        document.getElementById('fpsCounter').textContent = actualFPS + ' FPS';
+        fpsCounter = 0;
+        fpsLastTime = now;
+    }
+}
+
+function stopCameraStream() {
+    if (!cameraStreamActive) return;
+    
+    cameraStreamActive = false;
+    
+    if (cameraStreamInterval) {
+        clearInterval(cameraStreamInterval);
+        cameraStreamInterval = null;
+    }
+    
+    document.getElementById('cameraContainer').classList.remove('streaming');
+    document.getElementById('fpsCounter').style.display = 'none';
+    document.getElementById('cameraPlaceholder').style.display = 'flex';
+    document.getElementById('cameraPlaceholder').innerHTML = `
+        <div style="text-align:center">
+            <div style="font-size:3em; margin-bottom:10px">⏸️</div>
+            <div style="font-size:1.1em">Stream stopped</div>
+        </div>
+    `;
+    
+    updateCameraStatus(false);
+    showToast('⏸️ Stream stopped');
+}
+
+function showCameraError() {
+    document.getElementById('cameraPlaceholder').style.display = 'flex';
+    document.getElementById('cameraPlaceholder').innerHTML = `
+        <div style="text-align:center; padding:20px">
+            <div style="font-size:3em; margin-bottom:10px">❌</div>
+            <div style="font-size:1.1em; margin-bottom:8px; color:var(--danger)">Cannot connect to camera</div>
+            <div style="font-size:0.8em; color:var(--muted); line-height:1.6">
+                Make sure:<br>
+                • ESP32-CAM is powered on<br>
+                • IP address is correct (${cameraIP})<br>
+                • Both devices on same WiFi network
+            </div>
+            <button class="servo-set-btn" onclick="startCameraStream()" style="margin-top:12px">
+                🔄 Retry Connection
+            </button>
+        </div>
+    `;
+    updateCameraStatus(false);
+}
+
+function updateFPS(value) {
+    cameraFPS = parseInt(value);
+    localStorage.setItem('cameraFPS', cameraFPS);
+    document.getElementById('fpsDisplay').textContent = cameraFPS + ' FPS';
+    
+    // Restart stream with new FPS if active
+    if (cameraStreamActive) {
+        stopCameraStream();
+        setTimeout(startCameraStream, 100);
+    }
+}
+
+function captureSnapshot() {
+    const baseUrl = getCameraBaseUrl();
+    const url = `${baseUrl}/capture`;
+    
+    // Download the snapshot
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pond-snapshot-${Date.now()}.jpg`;
+    a.click();
+    
+    showToast('📸 Snapshot captured!');
 }
 
 function saveCameraIP() {
@@ -440,7 +635,6 @@ function saveCameraIP() {
     
     cameraIP = ip;
     localStorage.setItem('cameraIP', ip);
-    document.getElementById('displayIP').textContent = ip;
     showToast('✅ Camera IP saved: ' + ip);
 }
 
@@ -452,12 +646,94 @@ function updateCameraStatus(online) {
     if (online) {
         statusEl.className = 'esp-status online';
         dotEl.className = 'esp-dot pulse';
-        textEl.textContent = 'Ready to view';
+        textEl.textContent = `Streaming at ${cameraFPS} FPS ✓`;
     } else {
         statusEl.className = 'esp-status offline';
         dotEl.className = 'esp-dot';
-        textEl.textContent = 'Ready to connect';
+        textEl.textContent = 'Camera offline';
     }
+}
+
+function toggleFullscreen() {
+    if (!cameraStreamActive) {
+        showToast('⚠️ Start camera stream first');
+        return;
+    }
+    
+    const container = document.getElementById('cameraContainer');
+    
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (container.requestFullscreen) {
+            container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+            container.webkitRequestFullscreen();
+        }
+        container.classList.add('fullscreen');
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        }
+        container.classList.remove('fullscreen');
+    }
+}
+
+// Handle fullscreen changes
+document.addEventListener('fullscreenchange', () => {
+    const container = document.getElementById('cameraContainer');
+    if (!document.fullscreenElement) {
+        container.classList.remove('fullscreen');
+    }
+});
+
+document.addEventListener('webkitfullscreenchange', () => {
+    const container = document.getElementById('cameraContainer');
+    if (!document.webkitFullscreenElement) {
+        container.classList.remove('fullscreen');
+    }
+});
+
+async function setResolution(framesize) {
+    const baseUrl = getCameraBaseUrl();
+    
+    try {
+        document.querySelectorAll('[id^="res-"]').forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        });
+        
+        showToast('⏳ Changing resolution...');
+        
+        await fetch(`${baseUrl}/control?var=framesize&val=${framesize}`, {
+            method: 'GET',
+            mode: 'no-cors'
+        });
+        
+        const resName = framesize === 8 ? 'QVGA' : framesize === 10 ? 'VGA' : 'HD';
+        showToast(`✅ Resolution changed to ${resName}`);
+    } catch (error) {
+        console.error('Resolution change error:', error);
+        showToast('⚠️ Command sent');
+    } finally {
+        setTimeout(() => {
+            document.querySelectorAll('[id^="res-"]').forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            });
+        }, 1500);
+    }
+}
+
+function openCameraSettings() {
+    const ip = cameraIP || document.getElementById('cameraIP').value.trim();
+    
+    if (!ip) {
+        showToast('⚠️ Please enter camera IP address first');
+        return;
+    }
+    
+    window.open(`http://${ip}`, '_blank');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -467,11 +743,12 @@ window.addEventListener('DOMContentLoaded', () => {
     renderSchedule();
     startScheduleWatcher();
     
-    // Set saved camera IP
+    // Set saved camera settings
     if (cameraIP) {
         document.getElementById('cameraIP').value = cameraIP;
-        document.getElementById('displayIP').textContent = cameraIP;
     }
+    document.getElementById('fpsSlider').value = cameraFPS;
+    document.getElementById('fpsDisplay').textContent = cameraFPS + ' FPS';
 });
 
 function startFastCommandPoll() {
@@ -654,7 +931,7 @@ async function resetFeedStats() {
     feedLog = [];
     renderFeedLog();
     document.getElementById('feedCount').textContent    = '0×';
-    document.getElementById('lastFeedTime').textContent = 'Never';
+    document.getElementById('feedFeedTime').textContent = 'Never';
     document.getElementById('lastFeedDate').textContent = '—';
     showToast('✅ Stats reset!');
     setTimeout(() => fetchSensorStatus(), 1000);
