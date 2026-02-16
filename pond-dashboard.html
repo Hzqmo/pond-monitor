@@ -50,8 +50,12 @@
         .camera-container{position:relative;background:var(--surface2);border-radius:12px;overflow:hidden;aspect-ratio:4/3;margin-bottom:12px}
         .camera-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text)}
         .camera-container img{width:100%;height:100%;object-fit:contain;background:#000}
-        .camera-container.fullscreen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;border-radius:0;aspect-ratio:auto}
+        .camera-container.fullscreen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;border-radius:0;aspect-ratio:auto;margin:0}
         .camera-container.fullscreen img{object-fit:contain}
+        
+        /* Camera Controls Grid */
+        .camera-controls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+        .camera-quality-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
         
         .feeder-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
         .feeder-header h2{font-size:1.15em;font-weight:600;flex:1}
@@ -84,6 +88,7 @@
         .servo-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:pointer;box-shadow:0 2px 8px rgba(61,139,255,.4)}
         .servo-set-btn{background:rgba(61,139,255,.15);color:var(--accent);border:1px solid rgba(61,139,255,.3);padding:8px 18px;border-radius:10px;font-size:.82em;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;white-space:nowrap}
         .servo-set-btn:hover{background:rgba(61,139,255,.25)}
+        .servo-set-btn:disabled{opacity:.4;cursor:not-allowed}
         .schedule-title{font-size:.78em;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
         .schedule-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
         .schedule-chip{background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:.8em;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px}
@@ -150,7 +155,14 @@
         .send-btn:active{transform:scale(.97)}
         .send-btn:disabled{opacity:.4;cursor:not-allowed}
         
-        @media(max-width:480px){.sensors-grid{gap:10px}.sensor-value{font-size:1.6em}.header h1{font-size:1.5em}.stats-summary{grid-template-columns:1fr}}
+        @media(max-width:480px){
+            .sensors-grid{gap:10px}
+            .sensor-value{font-size:1.6em}
+            .header h1{font-size:1.5em}
+            .stats-summary{grid-template-columns:1fr}
+            .camera-controls{grid-template-columns:1fr}
+            .camera-quality-grid{grid-template-columns:repeat(2,1fr)}
+        }
     </style>
 </head>
 <body>
@@ -203,7 +215,7 @@
         </div>
     </div>
 
-    <!-- 📹 NEW: CAMERA CARD -->
+    <!-- 📹 CAMERA CARD -->
     <div class="card">
         <div class="ai-chat-header">
             <h2>📹 Live Camera Feed</h2>
@@ -211,10 +223,10 @@
         </div>
         
         <!-- Camera stream -->
-        <div class="camera-container" id="cameraContainerDiv">
+        <div class="camera-container" id="cameraContainerDiv" onclick="toggleFullscreen()">
             <img id="cameraStream" 
                  src="" 
-                 alt=""
+                 alt="Camera Stream"
                  style="width:100%;height:100%;object-fit:contain;background:#000;display:none">
             
             <div id="cameraPlaceholder" class="camera-placeholder">
@@ -229,23 +241,41 @@
         <!-- Camera status -->
         <div class="esp-status offline" id="cameraStatus">
             <div class="esp-dot" id="cameraDot"></div>
-            <span id="cameraStatusText">Checking camera...</span>
+            <span id="cameraStatusText">Camera offline</span>
         </div>
 
-        <!-- Quick controls -->
-        <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap">
-            <button class="servo-set-btn" onclick="startCamera()" style="flex:1">
+        <!-- Main Controls -->
+        <div class="camera-controls">
+            <button class="servo-set-btn" onclick="startCamera()">
                 ▶️ Start Stream
             </button>
-            <button class="servo-set-btn" onclick="stopCamera()" style="flex:1">
+            <button class="servo-set-btn" onclick="stopCamera()">
                 ⏸️ Stop
             </button>
-            <button class="servo-set-btn" onclick="toggleFullscreen()" style="flex:1">
-                ⛶ Fullscreen
+            <button class="servo-set-btn" onclick="capturePhoto()">
+                📸 Capture
             </button>
             <button class="servo-set-btn" onclick="openCameraSettings()">
                 ⚙️ Settings
             </button>
+        </div>
+
+        <!-- Quality Controls -->
+        <div style="margin-bottom:12px">
+            <label style="font-size:0.75em; color:var(--muted); display:block; margin-bottom:6px">
+                🎨 QUALITY
+            </label>
+            <div class="camera-quality-grid">
+                <button class="servo-set-btn" onclick="setResolution(8)" id="res-8">
+                    📱 QVGA
+                </button>
+                <button class="servo-set-btn" onclick="setResolution(10)" id="res-10">
+                    💻 VGA
+                </button>
+                <button class="servo-set-btn" onclick="setResolution(13)" id="res-13">
+                    📺 HD
+                </button>
+            </div>
         </div>
 
         <!-- Camera URL input -->
@@ -256,14 +286,14 @@
             <div style="display:flex; gap:8px">
                 <input type="text" 
                        id="cameraIP" 
-                       placeholder="192.168.1.100"
-                       value=""
+                       placeholder="192.168.0.14"
+                       value="192.168.0.14"
                        class="time-input" 
                        style="flex:1">
                 <button class="add-btn" onclick="saveCameraIP()">💾 Save</button>
             </div>
             <div style="font-size:0.7em; color:var(--muted); margin-top:6px; line-height:1.4">
-                ℹ️ Enter the IP address shown on ESP32-CAM Serial Monitor (e.g., 192.168.1.100)
+                ℹ️ Default: 192.168.0.14 (your ESP32-CAM IP)
             </div>
         </div>
     </div>
@@ -417,8 +447,30 @@ let fastPollActive = false;
 let fastPollTimeout = null;
 
 // 📹 Camera state
-let cameraIP = localStorage.getItem('cameraIP') || '';
+let cameraIP = localStorage.getItem('cameraIP') || '192.168.0.14';
 let cameraStreamActive = false;
+let cameraCheckInterval = null;
+
+// ════════════════════════════════════════════════════════════
+// 📹 CAMERA FUNCTIONS
+// ════════════════════════════════════════════════════════════
+
+function getCameraBaseUrl() {
+    const ip = document.getElementById('cameraIP').value.trim() || cameraIP;
+    return `http://${ip}`;
+}
+
+async function checkCameraStatus() {
+    try {
+        const response = await fetch(getCameraBaseUrl() + '/status', {
+            method: 'GET',
+            mode: 'no-cors' // Try to avoid CORS issues
+        });
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
 
 function startCamera() {
     const ip = document.getElementById('cameraIP').value.trim();
@@ -431,14 +483,14 @@ function startCamera() {
     cameraIP = ip;
     localStorage.setItem('cameraIP', ip);
     
-    // Use direct stream URL (now on port 80!)
-    const streamUrl = `http://${ip}/stream`;
+    // Use the :81 stream endpoint from CameraWebServer
+    const streamUrl = `http://${ip}:81/stream`;
     console.log('📹 Starting camera stream:', streamUrl);
     
     const streamImg = document.getElementById('cameraStream');
     const placeholder = document.getElementById('cameraPlaceholder');
     
-    // Show stream
+    // Show stream with cache-busting
     streamImg.src = streamUrl + '?t=' + Date.now();
     streamImg.style.display = 'block';
     placeholder.style.display = 'none';
@@ -452,12 +504,34 @@ function startCamera() {
         showCameraError();
     };
     
+    streamImg.onload = () => {
+        console.log('✓ Camera stream connected');
+        updateCameraStatus(true);
+    };
+    
+    // Start periodic status check
+    if (cameraCheckInterval) clearInterval(cameraCheckInterval);
+    cameraCheckInterval = setInterval(() => {
+        if (cameraStreamActive) {
+            // Check if image is still loading
+            if (streamImg.complete && streamImg.naturalHeight === 0) {
+                console.warn('Camera stream lost');
+                showCameraError();
+            }
+        }
+    }, 5000);
+    
     showToast('📹 Camera stream started!');
 }
 
 function stopCamera() {
     const streamImg = document.getElementById('cameraStream');
     const placeholder = document.getElementById('cameraPlaceholder');
+    
+    if (cameraCheckInterval) {
+        clearInterval(cameraCheckInterval);
+        cameraCheckInterval = null;
+    }
     
     streamImg.src = '';
     streamImg.style.display = 'none';
@@ -471,11 +545,17 @@ function stopCamera() {
     
     cameraStreamActive = false;
     updateCameraStatus(false);
+    showToast('⏸️ Camera stream stopped');
 }
 
 function showCameraError() {
     const streamImg = document.getElementById('cameraStream');
     const placeholder = document.getElementById('cameraPlaceholder');
+    
+    if (cameraCheckInterval) {
+        clearInterval(cameraCheckInterval);
+        cameraCheckInterval = null;
+    }
     
     streamImg.style.display = 'none';
     placeholder.style.display = 'flex';
@@ -486,8 +566,9 @@ function showCameraError() {
             <div style="font-size:0.8em; color:var(--muted); line-height:1.6">
                 Make sure:<br>
                 • ESP32-CAM is powered on<br>
-                • IP address is correct<br>
-                • Tailscale is connected on both devices
+                • IP address is correct (${cameraIP})<br>
+                • Camera is on same network<br>
+                • Stream port :81 is accessible
             </div>
             <button class="servo-set-btn" onclick="startCamera()" style="margin-top:12px">
                 🔄 Retry Connection
@@ -516,6 +597,8 @@ function saveCameraIP() {
     cameraIP = ip;
     localStorage.setItem('cameraIP', ip);
     showToast('✅ Camera IP saved: ' + ip);
+    
+    // Auto-start stream after saving
     setTimeout(startCamera, 500);
 }
 
@@ -539,12 +622,85 @@ function toggleFullscreen() {
     const container = document.getElementById('cameraContainerDiv');
     
     if (!document.fullscreenElement) {
-        container.requestFullscreen().catch(err => {
-            container.classList.add('fullscreen');
-        });
+        if (container.requestFullscreen) {
+            container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+            container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) {
+            container.msRequestFullscreen();
+        }
+        container.classList.add('fullscreen');
     } else {
-        document.exitFullscreen();
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
         container.classList.remove('fullscreen');
+    }
+}
+
+// Handle fullscreen changes
+document.addEventListener('fullscreenchange', () => {
+    const container = document.getElementById('cameraContainerDiv');
+    if (!document.fullscreenElement) {
+        container.classList.remove('fullscreen');
+    }
+});
+
+function capturePhoto() {
+    const baseUrl = getCameraBaseUrl();
+    const captureUrl = `${baseUrl}/capture`;
+    
+    showToast('📸 Capturing photo...');
+    
+    // Open capture URL in new tab
+    window.open(captureUrl, '_blank');
+    
+    setTimeout(() => {
+        showToast('✅ Photo captured! Check new tab');
+    }, 1000);
+}
+
+async function setResolution(framesize) {
+    const baseUrl = getCameraBaseUrl();
+    
+    try {
+        // Disable all resolution buttons temporarily
+        document.querySelectorAll('[id^="res-"]').forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+        });
+        
+        const response = await fetch(`${baseUrl}/control?var=framesize&val=${framesize}`, {
+            method: 'GET',
+            mode: 'cors'
+        });
+        
+        if (response.ok) {
+            showToast(`✅ Resolution changed`);
+            
+            // Restart stream if active
+            if (cameraStreamActive) {
+                setTimeout(() => {
+                    stopCamera();
+                    setTimeout(startCamera, 500);
+                }, 500);
+            }
+        } else {
+            showToast('❌ Failed to change resolution');
+        }
+    } catch (error) {
+        console.error('Resolution change error:', error);
+        showToast('❌ Connection error');
+    } finally {
+        // Re-enable buttons
+        document.querySelectorAll('[id^="res-"]').forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        });
     }
 }
 
@@ -556,6 +712,7 @@ function openCameraSettings() {
         return;
     }
     
+    // Open the main camera web interface
     window.open(`http://${ip}`, '_blank');
 }
 
@@ -565,6 +722,8 @@ function openCameraSettings() {
 window.addEventListener('DOMContentLoaded', () => {
     renderSchedule();
     startScheduleWatcher();
+    
+    // Set saved camera IP
     if (cameraIP) {
         document.getElementById('cameraIP').value = cameraIP;
     }
