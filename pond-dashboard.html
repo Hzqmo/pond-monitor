@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Monitor Kolam - Dashboard Pemantauan Ikan</title>
@@ -26,7 +26,6 @@
         .sensors-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:18px}
         .sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px 16px;text-align:center;transition:border-color .3s,transform .3s;position:relative;overflow:hidden;cursor:pointer}
         .sensor-card:active{transform:scale(0.97)}
-        .sensor-card:hover{border-color:rgba(61,139,255,.3);transform:translateY(-2px)}
         .sensor-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
         .sensor-card.normal::after{background:var(--success);opacity:.6}
         .sensor-card.warning::after{background:var(--warning);opacity:.8}
@@ -48,16 +47,14 @@
         .alert-icon{font-size:1.5em}
         .alert-text{flex:1;font-size:.85em;line-height:1.4}
         
-        /* Camera Styles - iOS Compatible */
-        .camera-container{position:relative;background:var(--surface2);border-radius:12px;overflow:hidden;margin-bottom:12px;min-height:300px}
-        .camera-placeholder{width:100%;height:300px;display:flex;align-items:center;justify-content:center;background:var(--surface2);color:var(--text)}
-        .camera-container iframe{width:100%;height:300px;border:none;background:#000;display:block}
-        .camera-container.fullscreen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;border-radius:0;margin:0;min-height:100vh}
-        .camera-container.fullscreen iframe{height:100vh}
+        /* Camera Styles - Simple Link Approach */
+        .camera-link-container{background:var(--surface2);border-radius:12px;padding:24px;text-align:center;margin-bottom:12px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+        .camera-icon{font-size:4em;margin-bottom:8px}
+        .camera-instructions{font-size:0.9em;color:var(--muted);line-height:1.6;margin-bottom:12px}
+        .open-camera-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:16px 32px;border-radius:16px;font-size:1em;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 6px 24px rgba(61,139,255,.3);transition:all .3s;display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+        .open-camera-btn:active{transform:scale(.97)}
         
-        /* Camera Controls Grid */
         .camera-controls{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
-        .camera-quality-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
         
         .feeder-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
         .feeder-header h2{font-size:1.15em;font-weight:600;flex:1}
@@ -122,8 +119,6 @@
         .error{background:rgba(255,95,95,.1);color:var(--danger);border:1px solid rgba(255,95,95,.25);padding:14px 18px;border-radius:12px;margin-bottom:18px;font-size:.88em}
         
         /* AI Assistant Styles */
-        .setup-notice{background:rgba(61,139,255,.1);color:#90b8ff;padding:10px 14px;border-radius:10px;font-size:.8em;margin-bottom:14px;border:1px solid rgba(61,139,255,.2);line-height:1.6;display:none}
-        .setup-notice code{background:rgba(61,139,255,.25);padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:.9em}
         .voice-controls{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);flex-wrap:wrap}
         .voice-status{flex:1;font-size:.82em;color:var(--muted);min-width:160px}
         .speaker-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:.78em;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'Outfit',sans-serif}
@@ -163,8 +158,6 @@
             .sensor-value{font-size:1.6em}
             .header h1{font-size:1.5em}
             .stats-summary{grid-template-columns:1fr}
-            .camera-controls{grid-template-columns:1fr}
-            .camera-quality-grid{grid-template-columns:repeat(2,1fr)}
         }
     </style>
 </head>
@@ -191,14 +184,14 @@
     </div>
 
     <div class="sensors-grid">
-        <div class="sensor-card normal" id="tempCard" onclick="explainSensor('suhu')">
+        <div class="sensor-card normal" id="tempCard">
             <span class="sensor-icon">🌡️</span>
             <div class="sensor-label">Suhu</div>
             <div class="sensor-value" id="tempValue">--</div>
             <div class="sensor-unit">°C</div>
             <span class="sensor-badge badge-normal" id="tempStatus">Normal</span>
         </div>
-        <div class="sensor-card normal" id="tdsCard" onclick="explainSensor('TDS')">
+        <div class="sensor-card normal" id="tdsCard">
             <span class="sensor-icon">📊</span>
             <div class="sensor-label">TDS</div>
             <div class="sensor-value" id="tdsValue">--</div>
@@ -218,68 +211,29 @@
         </div>
     </div>
 
-    <!-- 📹 CAMERA CARD - iOS Compatible -->
+    <!-- 📹 CAMERA CARD - Simple Link Method -->
     <div class="card">
         <div class="ai-chat-header">
             <h2>📹 Live Camera Feed</h2>
             <div class="ai-badge">ESP32-CAM</div>
         </div>
         
-        <!-- Camera stream using iframe for iOS compatibility -->
-        <div class="camera-container" id="cameraContainerDiv">
-            <iframe id="cameraStream" 
-                    src="" 
-                    allow="autoplay; fullscreen"
-                    allowfullscreen
-                    style="display:none"></iframe>
-            
-            <div id="cameraPlaceholder" class="camera-placeholder">
-                <div style="text-align:center">
-                    <div style="font-size:3em; margin-bottom:10px">📹</div>
-                    <div style="font-size:1.1em; margin-bottom:8px">Ready to connect</div>
-                    <div style="font-size:0.8em; color:var(--muted)">Enter IP and click Start Stream</div>
-                </div>
+        <div class="camera-link-container">
+            <div class="camera-icon">📹</div>
+            <div style="font-size:1.2em;font-weight:600;margin-bottom:8px">Camera Access</div>
+            <div class="camera-instructions">
+                iOS/Safari doesn't support embedded streams.<br>
+                Tap below to open camera in new tab.
             </div>
+            <a href="#" onclick="openCameraFeed(); return false;" class="open-camera-btn">
+                🎥 Open Camera Feed
+            </a>
         </div>
 
         <!-- Camera status -->
         <div class="esp-status offline" id="cameraStatus">
             <div class="esp-dot" id="cameraDot"></div>
-            <span id="cameraStatusText">Camera offline</span>
-        </div>
-
-        <!-- Main Controls -->
-        <div class="camera-controls">
-            <button class="servo-set-btn" onclick="startCamera()">
-                ▶️ Start Stream
-            </button>
-            <button class="servo-set-btn" onclick="stopCamera()">
-                ⏸️ Stop
-            </button>
-            <button class="servo-set-btn" onclick="toggleFullscreen()">
-                ⛶ Fullscreen
-            </button>
-            <button class="servo-set-btn" onclick="openCameraSettings()">
-                ⚙️ Settings
-            </button>
-        </div>
-
-        <!-- Quality Controls -->
-        <div style="margin-bottom:12px">
-            <label style="font-size:0.75em; color:var(--muted); display:block; margin-bottom:6px">
-                🎨 QUALITY
-            </label>
-            <div class="camera-quality-grid">
-                <button class="servo-set-btn" onclick="setResolution(8)" id="res-8">
-                    📱 QVGA
-                </button>
-                <button class="servo-set-btn" onclick="setResolution(10)" id="res-10">
-                    💻 VGA
-                </button>
-                <button class="servo-set-btn" onclick="setResolution(13)" id="res-13">
-                    📺 HD
-                </button>
-            </div>
+            <span id="cameraStatusText">Ready to connect</span>
         </div>
 
         <!-- Camera URL input -->
@@ -297,7 +251,7 @@
                 <button class="add-btn" onclick="saveCameraIP()">💾 Save</button>
             </div>
             <div style="font-size:0.7em; color:var(--muted); margin-top:6px; line-height:1.4">
-                ℹ️ Default: 192.168.0.14 (your ESP32-CAM IP)
+                ℹ️ Camera will open at: http://<span id="displayIP">192.168.0.14</span>
             </div>
         </div>
     </div>
@@ -358,9 +312,6 @@
         <div class="ai-chat-header">
             <h2>🤖 Pembantu Suara AI</h2>
             <div class="ai-badge">VERCEL</div>
-        </div>
-        <div class="setup-notice" id="setupNotice">
-            ⚙️ <strong>Setup:</strong> Pastikan <code>VERCEL_URL</code> dalam kod ESP32 menggunakan URL production Vercel anda.
         </div>
         <div class="voice-controls">
             <div class="voice-status" id="voiceStatus">🎤 Tekan mikrofon untuk bercakap</div>
@@ -452,115 +403,25 @@ let fastPollTimeout = null;
 
 // 📹 Camera state
 let cameraIP = localStorage.getItem('cameraIP') || '192.168.0.14';
-let cameraStreamActive = false;
-let cameraCheckInterval = null;
 
 // ════════════════════════════════════════════════════════════
-// 📹 CAMERA FUNCTIONS - iOS/iPadOS Compatible
+// 📹 CAMERA FUNCTIONS - Direct Link Method
 // ════════════════════════════════════════════════════════════
 
-function getCameraBaseUrl() {
+function openCameraFeed() {
     const ip = document.getElementById('cameraIP').value.trim() || cameraIP;
-    return `http://${ip}`;
-}
-
-function startCamera() {
-    const ip = document.getElementById('cameraIP').value.trim();
     
     if (!ip) {
-        showToast('⚠️ Please enter camera IP address first');
+        showToast('⚠️ Please enter camera IP first');
         return;
     }
     
-    cameraIP = ip;
-    localStorage.setItem('cameraIP', ip);
+    // Open camera in new window/tab
+    const cameraUrl = `http://${ip}`;
+    window.open(cameraUrl, '_blank');
     
-    // iOS Safari works better with iframe embedding the stream page
-    // Create a simple HTML page that just shows the stream
-    const streamUrl = `http://${ip}:81/stream`;
-    
-    console.log('📹 Starting camera stream for iOS:', streamUrl);
-    
-    const iframe = document.getElementById('cameraStream');
-    const placeholder = document.getElementById('cameraPlaceholder');
-    
-    // For iOS, we load the entire camera page in iframe
-    iframe.src = `http://${ip}`;
-    iframe.style.display = 'block';
-    placeholder.style.display = 'none';
-    
-    cameraStreamActive = true;
+    showToast('📹 Opening camera...');
     updateCameraStatus(true);
-    
-    // Monitor iframe loading
-    iframe.onload = () => {
-        console.log('✓ Camera interface loaded');
-        updateCameraStatus(true);
-        showToast('📹 Camera loaded! Tap Start Stream in the interface');
-    };
-    
-    iframe.onerror = () => {
-        console.error('✗ Camera interface failed to load');
-        showCameraError();
-    };
-    
-    showToast('📹 Loading camera interface...');
-}
-
-function stopCamera() {
-    const iframe = document.getElementById('cameraStream');
-    const placeholder = document.getElementById('cameraPlaceholder');
-    
-    if (cameraCheckInterval) {
-        clearInterval(cameraCheckInterval);
-        cameraCheckInterval = null;
-    }
-    
-    iframe.src = '';
-    iframe.style.display = 'none';
-    placeholder.style.display = 'flex';
-    placeholder.innerHTML = `
-        <div style="text-align:center">
-            <div style="font-size:3em; margin-bottom:10px">⏸️</div>
-            <div style="font-size:1.1em">Stream paused</div>
-        </div>
-    `;
-    
-    cameraStreamActive = false;
-    updateCameraStatus(false);
-    showToast('⏸️ Camera stream stopped');
-}
-
-function showCameraError() {
-    const iframe = document.getElementById('cameraStream');
-    const placeholder = document.getElementById('cameraPlaceholder');
-    
-    if (cameraCheckInterval) {
-        clearInterval(cameraCheckInterval);
-        cameraCheckInterval = null;
-    }
-    
-    iframe.style.display = 'none';
-    placeholder.style.display = 'flex';
-    placeholder.innerHTML = `
-        <div style="text-align:center; padding:20px">
-            <div style="font-size:3em; margin-bottom:10px">❌</div>
-            <div style="font-size:1.1em; margin-bottom:8px; color:var(--danger)">Cannot connect to camera</div>
-            <div style="font-size:0.8em; color:var(--muted); line-height:1.6">
-                Make sure:<br>
-                • ESP32-CAM is powered on<br>
-                • IP address is correct (${cameraIP})<br>
-                • Both devices on same WiFi network<br>
-                • Camera web server is running
-            </div>
-            <button class="servo-set-btn" onclick="startCamera()" style="margin-top:12px">
-                🔄 Retry Connection
-            </button>
-        </div>
-    `;
-    
-    cameraStreamActive = false;
-    updateCameraStatus(false);
 }
 
 function saveCameraIP() {
@@ -579,10 +440,8 @@ function saveCameraIP() {
     
     cameraIP = ip;
     localStorage.setItem('cameraIP', ip);
+    document.getElementById('displayIP').textContent = ip;
     showToast('✅ Camera IP saved: ' + ip);
-    
-    // Auto-start after saving
-    setTimeout(startCamera, 500);
 }
 
 function updateCameraStatus(online) {
@@ -593,125 +452,12 @@ function updateCameraStatus(online) {
     if (online) {
         statusEl.className = 'esp-status online';
         dotEl.className = 'esp-dot pulse';
-        textEl.textContent = 'Camera interface loaded ✓';
+        textEl.textContent = 'Ready to view';
     } else {
         statusEl.className = 'esp-status offline';
         dotEl.className = 'esp-dot';
-        textEl.textContent = 'Camera offline';
+        textEl.textContent = 'Ready to connect';
     }
-}
-
-function toggleFullscreen() {
-    const container = document.getElementById('cameraContainerDiv');
-    
-    if (!cameraStreamActive) {
-        showToast('⚠️ Start camera stream first');
-        return;
-    }
-    
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-        // Enter fullscreen
-        if (container.requestFullscreen) {
-            container.requestFullscreen();
-        } else if (container.webkitRequestFullscreen) {
-            container.webkitRequestFullscreen();
-        } else if (container.webkitEnterFullscreen) {
-            container.webkitEnterFullscreen();
-        }
-        container.classList.add('fullscreen');
-        
-        // Adjust iframe height for fullscreen
-        const iframe = document.getElementById('cameraStream');
-        iframe.style.height = '100vh';
-    } else {
-        // Exit fullscreen
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        }
-        container.classList.remove('fullscreen');
-        
-        // Reset iframe height
-        const iframe = document.getElementById('cameraStream');
-        iframe.style.height = '300px';
-    }
-}
-
-// Handle fullscreen changes for iOS
-document.addEventListener('webkitfullscreenchange', () => {
-    const container = document.getElementById('cameraContainerDiv');
-    const iframe = document.getElementById('cameraStream');
-    
-    if (!document.webkitFullscreenElement) {
-        container.classList.remove('fullscreen');
-        iframe.style.height = '300px';
-    }
-});
-
-document.addEventListener('fullscreenchange', () => {
-    const container = document.getElementById('cameraContainerDiv');
-    const iframe = document.getElementById('cameraStream');
-    
-    if (!document.fullscreenElement) {
-        container.classList.remove('fullscreen');
-        iframe.style.height = '300px';
-    }
-});
-
-async function setResolution(framesize) {
-    const baseUrl = getCameraBaseUrl();
-    
-    try {
-        // Disable all resolution buttons
-        document.querySelectorAll('[id^="res-"]').forEach(btn => {
-            btn.disabled = true;
-            btn.style.opacity = '0.5';
-        });
-        
-        // Show progress
-        showToast('⏳ Changing resolution...');
-        
-        // For iOS, we send the command directly to ESP32
-        // This requires CORS to be enabled on ESP32
-        const response = await fetch(`${baseUrl}/control?var=framesize&val=${framesize}`, {
-            method: 'GET',
-            mode: 'no-cors' // Fallback for iOS
-        });
-        
-        showToast(`✅ Resolution changed to ${framesize === 8 ? 'QVGA' : framesize === 10 ? 'VGA' : 'HD'}`);
-        
-        // Reload iframe if active
-        if (cameraStreamActive) {
-            setTimeout(() => {
-                const iframe = document.getElementById('cameraStream');
-                iframe.src = iframe.src; // Reload
-            }, 1000);
-        }
-    } catch (error) {
-        console.error('Resolution change error:', error);
-        showToast('⚠️ Resolution command sent (response blocked by CORS)');
-    } finally {
-        // Re-enable buttons
-        setTimeout(() => {
-            document.querySelectorAll('[id^="res-"]').forEach(btn => {
-                btn.disabled = false;
-                btn.style.opacity = '1';
-            });
-        }, 1500);
-    }
-}
-
-function openCameraSettings() {
-    const ip = cameraIP || document.getElementById('cameraIP').value.trim();
-    
-    if (!ip) {
-        showToast('⚠️ Please enter camera IP address first');
-        return;
-    }
-    
-    // Open camera web interface in new window/tab
-    window.open(`http://${ip}`, '_blank');
 }
 
 // ════════════════════════════════════════════════════════════
@@ -724,6 +470,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Set saved camera IP
     if (cameraIP) {
         document.getElementById('cameraIP').value = cameraIP;
+        document.getElementById('displayIP').textContent = cameraIP;
     }
 });
 
@@ -1123,8 +870,6 @@ function updateChart() {
         }
     });
 }
-
-function explainSensor(s){}
 
 // ════════════════════════════════════════════════════════════
 // AI ASSISTANT FUNCTIONS
