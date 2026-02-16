@@ -212,16 +212,11 @@
         
         <!-- Camera stream -->
         <div class="camera-container" id="cameraContainerDiv">
-            <img id="cameraStream" 
-                 src="" 
-                 alt="Loading camera..."
-                 onerror="showCameraError()">
-            
             <div id="cameraPlaceholder" class="camera-placeholder">
                 <div style="text-align:center">
                     <div style="font-size:3em; margin-bottom:10px">📹</div>
-                    <div style="font-size:1.1em; margin-bottom:8px">Initializing camera...</div>
-                    <div style="font-size:0.8em; color:var(--muted)">Make sure ESP32-CAM is powered on</div>
+                    <div style="font-size:1.1em; margin-bottom:8px">Ready to connect</div>
+                    <div style="font-size:0.8em; color:var(--muted)">Enter IP and click Start Stream</div>
                 </div>
             </div>
         </div>
@@ -256,7 +251,7 @@
             <div style="display:flex; gap:8px">
                 <input type="text" 
                        id="cameraIP" 
-                       placeholder="192.168.0.14"
+                       placeholder="192.168.1.100"
                        value=""
                        class="time-input" 
                        style="flex:1">
@@ -420,16 +415,6 @@ let fastPollTimeout = null;
 let cameraIP = localStorage.getItem('cameraIP') || '';
 let cameraStreamActive = false;
 
-// ════════════════════════════════════════════════════════════
-// CAMERA FUNCTIONS
-// ════════════════════════════════════════════════════════════
-window.addEventListener('DOMContentLoaded', () => {
-    if (cameraIP) {
-        document.getElementById('cameraIP').value = cameraIP;
-        setTimeout(() => startCamera(), 2000);
-    }
-});
-
 function startCamera() {
     const ip = document.getElementById('cameraIP').value.trim();
     
@@ -441,36 +426,33 @@ function startCamera() {
     cameraIP = ip;
     localStorage.setItem('cameraIP', ip);
     
-    const streamUrl = `http://${ip}:8080/stream`;
-    console.log('📹 Starting camera stream:', streamUrl);
+    // Open camera page in iframe instead of direct stream
+    // Port 80 works through Tailscale, port 8080 doesn't
+    const cameraUrl = `http://${ip}`;
+    console.log('📹 Opening camera page:', cameraUrl);
     
-    const streamImg = document.getElementById('cameraStream');
     const placeholder = document.getElementById('cameraPlaceholder');
     
-    // Show stream immediately (MJPEG doesn't trigger onload reliably)
-    streamImg.style.display = 'block';
-    placeholder.style.display = 'none';
-    streamImg.src = streamUrl + '?t=' + Date.now();
+    // Replace img with iframe for full camera page
+    placeholder.innerHTML = `
+        <iframe 
+            src="${cameraUrl}" 
+            style="width:100%;height:100%;border:none;background:#000"
+            allow="camera"
+        ></iframe>
+    `;
+    
+    placeholder.style.display = 'block';
     cameraStreamActive = true;
     updateCameraStatus(true);
     
-    // Handle errors
-    streamImg.onerror = () => {
-        console.error('✗ Camera stream failed');
-        showCameraError();
-    };
-    
     // Show success message
-    showToast('📹 Camera stream started!');
+    showToast('📹 Camera page loaded!');
 }
 
 function stopCamera() {
-    const streamImg = document.getElementById('cameraStream');
     const placeholder = document.getElementById('cameraPlaceholder');
     
-    streamImg.src = '';
-    streamImg.style.display = 'none';
-    placeholder.style.display = 'flex';
     placeholder.innerHTML = `
         <div style="text-align:center">
             <div style="font-size:3em; margin-bottom:10px">⏸️</div>
@@ -483,20 +465,17 @@ function stopCamera() {
 }
 
 function showCameraError() {
-    const streamImg = document.getElementById('cameraStream');
     const placeholder = document.getElementById('cameraPlaceholder');
     
-    streamImg.style.display = 'none';
-    placeholder.style.display = 'flex';
     placeholder.innerHTML = `
-        <div style="text-align:center">
+        <div style="text-align:center; padding:20px">
             <div style="font-size:3em; margin-bottom:10px">❌</div>
             <div style="font-size:1.1em; margin-bottom:8px; color:var(--danger)">Cannot connect to camera</div>
             <div style="font-size:0.8em; color:var(--muted); line-height:1.6">
                 Make sure:<br>
                 • ESP32-CAM is powered on<br>
                 • IP address is correct<br>
-                • You're on the same WiFi network
+                • Tailscale is connected on both devices
             </div>
             <button class="servo-set-btn" onclick="startCamera()" style="margin-top:12px">
                 🔄 Retry Connection
@@ -568,21 +547,15 @@ function openCameraSettings() {
     window.open(`http://${ip}`, '_blank');
 }
 
-// Auto-retry camera connection
-setInterval(() => {
-    const streamImg = document.getElementById('cameraStream');
-    if (cameraStreamActive && !streamImg.src) {
-        console.log('🔄 Camera reconnecting...');
-        startCamera();
-    }
-}, 30000);
-
 // ════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
     renderSchedule();
     startScheduleWatcher();
+    if (cameraIP) {
+        document.getElementById('cameraIP').value = cameraIP;
+    }
 });
 
 function startFastCommandPoll() {
