@@ -9,10 +9,20 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600;700&display=swap');
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-        :root{--bg:#0a1628;--surface:#0f2040;--surface2:#162a50;--border:rgba(100,160,255,0.12);--accent:#3d8bff;--accent2:#00e5c8;--text:#e8f0ff;--muted:#7899cc;--success:#00c9a7;--warning:#ffbe5c;--danger:#ff5f5f}
+        :root{
+            --bg:#0a1628;--surface:#0f2040;--surface2:#162a50;
+            --border:rgba(100,160,255,0.12);--accent:#3d8bff;--accent2:#00e5c8;
+            --text:#e8f0ff;--muted:#7899cc;--success:#00c9a7;
+            --warning:#ffbe5c;--danger:#ff5f5f
+        }
         body{font-family:'Outfit',sans-serif;background:var(--bg);min-height:100vh;padding:20px;color:var(--text);-webkit-font-smoothing:antialiased;padding-bottom:80px}
-        body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 20% -10%,rgba(61,139,255,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 110%,rgba(0,229,200,0.08) 0%,transparent 60%);pointer-events:none;z-index:0}
+        body::before{content:'';position:fixed;inset:0;background:
+            radial-gradient(ellipse 80% 60% at 20% -10%,rgba(61,139,255,0.12) 0%,transparent 60%),
+            radial-gradient(ellipse 60% 50% at 80% 110%,rgba(0,229,200,0.08) 0%,transparent 60%);
+            pointer-events:none;z-index:0}
         .container{max-width:620px;margin:0 auto;position:relative;z-index:1}
+
+        /* ── HEADER ── */
         .header{text-align:center;margin-bottom:32px;padding-top:10px}
         .header-logo{display:inline-flex;align-items:center;gap:12px;margin-bottom:14px}
         .logo-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.7em;box-shadow:0 0 24px rgba(61,139,255,0.35)}
@@ -21,36 +31,39 @@
         .status-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:blink 2s infinite}
         .status-dot.offline{background:var(--danger);animation:none}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-        .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:18px;position:relative;overflow:hidden;transition:border-color .3s}
+
+        /* ── CARDS ── */
+        .card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:18px;position:relative;overflow:hidden}
         .card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.02) 0%,transparent 60%);pointer-events:none}
+
+        /* ── SENSORS ── */
         .sensors-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:18px}
-        .sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px 16px;text-align:center;transition:border-color .3s,transform .3s;position:relative;overflow:hidden;cursor:pointer}
+        .sensor-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px 16px;text-align:center;transition:border-color .3s,transform .2s;position:relative;overflow:hidden;cursor:pointer}
         .sensor-card:active{transform:scale(0.97)}
         .sensor-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px}
         .sensor-card.normal::after{background:var(--success);opacity:.6}
         .sensor-card.warning::after{background:var(--warning);opacity:.8}
         .sensor-card.danger::after{background:var(--danger);opacity:.8}
-        .sensor-card.init::after{background:var(--muted);opacity:.4}
+        .sensor-card.init::after{background:var(--muted);opacity:.3}
         .sensor-icon{font-size:1.7em;margin-bottom:8px;display:block}
         .sensor-label{font-size:.72em;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:8px}
         .sensor-value{font-family:'DM Mono',monospace;font-size:2em;font-weight:500;line-height:1;margin-bottom:4px}
-        .sensor-value.small{font-size:1.2em}
+        .sensor-value.small{font-size:1.3em}
         .sensor-unit{font-size:.72em;color:var(--muted);margin-bottom:10px}
         .sensor-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7em;font-weight:600;letter-spacing:.5px}
         .badge-normal{background:rgba(0,201,167,.15);color:var(--success)}
         .badge-warning{background:rgba(255,190,92,.15);color:var(--warning)}
         .badge-danger{background:rgba(255,95,95,.15);color:var(--danger)}
-        .badge-init{background:rgba(120,153,204,.15);color:var(--muted)}
+        .badge-init{background:rgba(120,153,204,.12);color:var(--muted)}
         .stats-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
         .stat-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
         .stat-label{font-size:.7em;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
         .stat-value{font-family:'DM Mono',monospace;font-size:1.1em;font-weight:600;color:var(--accent2)}
         .alert-banner{background:linear-gradient(135deg,rgba(255,95,95,0.15),rgba(255,190,92,0.15));border:1px solid rgba(255,95,95,0.3);border-radius:12px;padding:12px 16px;margin-bottom:18px;display:none;align-items:center;gap:10px}
         .alert-banner.show{display:flex}
-        .alert-icon{font-size:1.5em}
         .alert-text{flex:1;font-size:.85em;line-height:1.4}
 
-        /* Motor Pulse Status */
+        /* ── MOTOR STATUS ── */
         .motor-status-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:16px}
         .motor-status-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
         .motor-status-title{font-size:.75em;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
@@ -67,51 +80,55 @@
         .cycle-progress{margin-top:10px;background:var(--surface);border-radius:4px;height:6px;overflow:hidden}
         .cycle-progress-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease}
 
-        /* Camera */
-        .camera-link-container{background:var(--surface2);border-radius:12px;padding:24px;text-align:center;margin-bottom:12px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
-        .camera-icon{font-size:4em;margin-bottom:8px}
-        .camera-instructions{font-size:0.9em;color:var(--muted);line-height:1.6;margin-bottom:12px}
-        .open-camera-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:16px 32px;border-radius:16px;font-size:1em;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 6px 24px rgba(61,139,255,.3);transition:all .3s;display:inline-flex;align-items:center;gap:10px;text-decoration:none}
-        .open-camera-btn:active{transform:scale(.97)}
+        /* ── FEED PARAMS ── */
+        .param-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+        .param-cell{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
+        .param-label{font-size:.68em;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+        .param-stepper{display:flex;align-items:center;justify-content:center;gap:8px}
+        .stepper-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1.1em;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+        .stepper-btn:active{background:rgba(61,139,255,.2);border-color:rgba(61,139,255,.4);transform:scale(.9)}
+        .param-val{font-family:'DM Mono',monospace;font-size:1.4em;font-weight:600;color:var(--accent2);min-width:32px;text-align:center}
+        .param-range{font-size:.62em;color:var(--muted);margin-top:4px;opacity:.7}
+        .param-summary{background:var(--surface2);border:1px solid rgba(61,139,255,.15);border-radius:10px;padding:10px 14px;font-size:.8em;color:var(--muted);display:flex;align-items:center;gap:8px;margin-bottom:16px}
+        .param-summary-time{color:var(--accent2);font-family:'DM Mono',monospace;font-weight:600}
+        .param-summary-note{margin-left:auto;font-size:.72em;opacity:.6}
 
+        /* ── ESP STATUS ── */
         .feeder-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
         .feeder-header h2{font-size:1.15em;font-weight:600;flex:1}
         .feeder-badge{background:linear-gradient(135deg,#ff9a3c,#ffbe5c);color:#1a0f00;padding:4px 12px;border-radius:10px;font-size:.72em;font-weight:700;letter-spacing:.5px}
-        .esp-status{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:.78em;font-weight:600;margin-bottom:16px;transition:all .3s}
+        .esp-status{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:.78em;font-weight:600;margin-bottom:10px;transition:all .3s}
         .esp-status.online{background:rgba(0,201,167,.12);color:var(--success);border:1px solid rgba(0,201,167,.25)}
         .esp-status.offline{background:rgba(255,95,95,.1);color:var(--danger);border:1px solid rgba(255,95,95,.2)}
-        .esp-status.pending{background:rgba(255,190,92,.1);color:var(--warning);border:1px solid rgba(255,190,92,.2)}
         .esp-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
         .esp-dot.pulse{animation:blink 1.2s infinite}
+        .uptime-row{font-size:.72em;color:var(--muted);margin-bottom:12px;font-family:'DM Mono',monospace}
+
+        /* ── FEED STATS ── */
         .feeder-stats{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
         .feeder-stat{flex:1;min-width:80px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:11px;text-align:center}
         .feeder-stat-label{font-size:.66em;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
         .feeder-stat-val{font-family:'DM Mono',monospace;font-size:1.05em;font-weight:600;color:var(--accent2)}
-        .feeder-stat-sublabel{font-size:.62em;color:var(--muted);margin-top:2px;opacity:0.7}
-        .reset-btn{width:100%;padding:10px;border:1px dashed rgba(255,95,95,.3);border-radius:10px;background:rgba(255,95,95,.08);color:var(--danger);font-size:.82em;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;margin-bottom:12px;transition:all .2s;}
-        .reset-btn:hover{background:rgba(255,95,95,.15);border-color:rgba(255,95,95,.5)}
+        .feeder-stat-sublabel{font-size:.62em;color:var(--muted);margin-top:2px;opacity:.7}
 
-        /* Feed + Stop buttons */
+        /* ── BUTTONS ── */
+        .reset-btn{width:100%;padding:10px;border:1px dashed rgba(255,95,95,.3);border-radius:10px;background:rgba(255,95,95,.08);color:var(--danger);font-size:.82em;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;margin-bottom:12px;transition:all .2s}
+        .reset-btn:hover{background:rgba(255,95,95,.15);border-color:rgba(255,95,95,.5)}
         .feeder-actions{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:16px}
-        .feed-now-btn{padding:18px;border:none;border-radius:16px;background:linear-gradient(135deg,#ff9a3c,#ffbe5c);color:#1a0f00;font-size:1.05em;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 6px 24px rgba(255,154,60,.3);transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px;touch-action:manipulation;}
+        .feed-now-btn{padding:18px;border:none;border-radius:16px;background:linear-gradient(135deg,#ff9a3c,#ffbe5c);color:#1a0f00;font-size:1.05em;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 6px 24px rgba(255,154,60,.3);transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px;touch-action:manipulation}
         .feed-now-btn:active{transform:scale(.97)}
         .feed-now-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
         .feed-now-btn.feeding{background:linear-gradient(135deg,var(--success),var(--accent2));color:#001a16;animation:feedPulse .8s infinite alternate}
         .feed-now-btn.success{background:linear-gradient(135deg,#00c9a7,#3d8bff);color:#fff}
         .feed-now-btn.error{background:linear-gradient(135deg,var(--danger),#ff8c5c);color:#fff}
+        @keyframes feedPulse{from{box-shadow:0 6px 24px rgba(0,201,167,.3)}to{box-shadow:0 6px 40px rgba(0,201,167,.7)}}
         .stop-btn{padding:18px 20px;border:1px solid rgba(255,95,95,.35);border-radius:16px;background:rgba(255,95,95,.1);color:var(--danger);font-size:1.05em;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation;white-space:nowrap}
         .stop-btn:hover{background:rgba(255,95,95,.2);border-color:rgba(255,95,95,.5)}
         .stop-btn:disabled{opacity:.3;cursor:not-allowed}
         .stop-btn:active{transform:scale(.95)}
-        @keyframes feedPulse{from{box-shadow:0 6px 24px rgba(0,201,167,.3)}to{box-shadow:0 6px 40px rgba(0,201,167,.7)}}
 
-        /* Motor config info */
-        .motor-config{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-        .motor-cfg-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center}
-        .motor-cfg-val{font-family:'DM Mono',monospace;font-size:1em;font-weight:600;color:var(--accent)}
-        .motor-cfg-lbl{font-size:.64em;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.4px}
-
-        .schedule-title{font-size:.78em;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+        /* ── SCHEDULE + LOG ── */
+        .section-title{font-size:.78em;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
         .schedule-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
         .schedule-chip{background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:.8em;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:6px}
         .chip-del{color:var(--danger);cursor:pointer;line-height:1;font-size:1.1em}
@@ -126,24 +143,17 @@
         .log-t{color:var(--accent2);flex-shrink:0}
         .log-date{color:var(--muted);font-size:.7em;flex-shrink:0;min-width:48px}
         .log-s{color:var(--warning);flex-shrink:0}
-        .cmd-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 20px;font-size:.85em;opacity:0;transition:all .3s;pointer-events:none;z-index:500;white-space:nowrap}
-        .cmd-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        .log-params{color:var(--muted);font-size:.85em;opacity:.7}
+
+        /* ── CAMERA ── */
         .ai-chat-header{display:flex;align-items:center;gap:10px;margin-bottom:18px}
         .ai-chat-header h2{font-size:1.15em;font-weight:600;flex:1}
         .ai-badge{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:4px 12px;border-radius:10px;font-size:.72em;font-weight:700;letter-spacing:.5px}
-        .chart-title{font-size:.78em;font-weight:600;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
-        .chart-toggle{display:flex;gap:8px;margin-bottom:12px}
-        .toggle-btn{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:8px 12px;border-radius:10px;font-size:.8em;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif}
-        .toggle-btn.active{background:rgba(61,139,255,.15);color:var(--accent);border-color:rgba(61,139,255,.3)}
-        canvas{max-width:100%;height:auto !important}
-        .refresh-btn{background:var(--surface);color:var(--accent);border:1px solid rgba(61,139,255,.25);padding:12px 28px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;display:block;margin:8px auto 28px;transition:all .3s;font-family:'Outfit',sans-serif}
-        .refresh-btn:hover{background:rgba(61,139,255,.12)}
-        .error{background:rgba(255,95,95,.1);color:var(--danger);border:1px solid rgba(255,95,95,.25);padding:14px 18px;border-radius:12px;margin-bottom:18px;font-size:.88em}
+        .camera-link-container{background:var(--surface2);border-radius:12px;padding:24px;text-align:center;margin-bottom:12px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+        .open-camera-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:14px 28px;border-radius:14px;font-size:.95em;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;box-shadow:0 6px 24px rgba(61,139,255,.3);transition:all .3s;display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+        .open-camera-btn:active{transform:scale(.97)}
 
-        /* Uptime info */
-        .uptime-row{font-size:.72em;color:var(--muted);text-align:right;margin-top:-8px;margin-bottom:12px;font-family:'DM Mono',monospace}
-
-        /* AI Assistant */
+        /* ── AI ASSISTANT ── */
         .voice-controls{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);flex-wrap:wrap}
         .voice-status{flex:1;font-size:.82em;color:var(--muted);min-width:160px}
         .speaker-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:.78em;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;font-family:'Outfit',sans-serif}
@@ -151,7 +161,7 @@
         .quick-questions{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
         .quick-question-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:20px;font-size:.78em;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif}
         .quick-question-btn:hover{background:rgba(61,139,255,.15);color:var(--accent);border-color:rgba(61,139,255,.3)}
-        .chat-messages{max-height:260px;overflow-y:auto;margin-bottom:14px;padding:10px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+        .chat-messages{max-height:260px;overflow-y:auto;margin-bottom:14px;padding:10px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);scrollbar-width:thin}
         .chat-message{margin-bottom:14px;display:flex;gap:9px}
         .message-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;background:var(--surface);border:1px solid var(--border)}
         .user-avatar{background:rgba(61,139,255,.2);border-color:rgba(61,139,255,.3)}
@@ -174,9 +184,20 @@
         .chat-input{flex:1;padding:11px 16px;border:1px solid var(--border);border-radius:23px;font-size:.9em;font-family:'Outfit',sans-serif;outline:none;background:var(--surface2);color:var(--text);transition:border-color .3s}
         .chat-input::placeholder{color:var(--muted)}
         .chat-input:focus{border-color:rgba(61,139,255,.4)}
-        .send-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:11px 22px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;transition:all .3s;font-family:'Outfit',sans-serif;touch-action:manipulation}
-        .send-btn:active{transform:scale(.97)}
+        .send-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:11px 22px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif;touch-action:manipulation}
         .send-btn:disabled{opacity:.4;cursor:not-allowed}
+
+        /* ── CHART ── */
+        .chart-toggle{display:flex;gap:8px;margin-bottom:12px}
+        .toggle-btn{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:8px 12px;border-radius:10px;font-size:.8em;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif}
+        .toggle-btn.active{background:rgba(61,139,255,.15);color:var(--accent);border-color:rgba(61,139,255,.3)}
+        canvas{max-width:100%;height:auto !important}
+
+        /* ── MISC ── */
+        .refresh-btn{background:var(--surface);color:var(--accent);border:1px solid rgba(61,139,255,.25);padding:12px 28px;border-radius:23px;font-size:.88em;font-weight:600;cursor:pointer;display:block;margin:8px auto 28px;font-family:'Outfit',sans-serif}
+        .error{background:rgba(255,95,95,.1);color:var(--danger);border:1px solid rgba(255,95,95,.25);padding:14px 18px;border-radius:12px;margin-bottom:18px;font-size:.88em}
+        .cmd-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 20px;font-size:.85em;opacity:0;transition:all .3s;pointer-events:none;z-index:500;white-space:nowrap}
+        .cmd-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
         @media(max-width:480px){
             .sensors-grid{gap:10px}
@@ -184,7 +205,7 @@
             .header h1{font-size:1.5em}
             .stats-summary{grid-template-columns:1fr}
             .feeder-actions{grid-template-columns:1fr}
-            .motor-config{grid-template-columns:repeat(3,1fr)}
+            .param-grid{gap:8px}
         }
     </style>
 </head>
@@ -193,6 +214,8 @@
 <div class="cmd-toast" id="cmdToast"></div>
 
 <div class="container">
+
+    <!-- HEADER -->
     <div class="header">
         <div class="header-logo">
             <div class="logo-icon">🐟</div>
@@ -205,12 +228,14 @@
     </div>
 
     <div id="errorMessage" style="display:none" class="error"></div>
+
+    <!-- ALERT -->
     <div class="alert-banner" id="alertBanner">
-        <div class="alert-icon">⚠️</div>
+        <div style="font-size:1.5em">⚠️</div>
         <div class="alert-text" id="alertText"></div>
     </div>
 
-    <!-- SENSOR CARDS -->
+    <!-- SENSORS -->
     <div class="sensors-grid">
         <div class="sensor-card normal" id="tempCard">
             <span class="sensor-icon">🌡️</span>
@@ -222,7 +247,7 @@
         <div class="sensor-card init" id="tdsCard">
             <span class="sensor-icon">📊</span>
             <div class="sensor-label">TDS</div>
-            <div class="sensor-value" id="tdsValue" style="font-size:1.4em">--</div>
+            <div class="sensor-value small" id="tdsValue">--</div>
             <div class="sensor-unit" id="tdsUnit">ppm</div>
             <span class="sensor-badge badge-init" id="tdsStatus">Init</span>
         </div>
@@ -239,37 +264,34 @@
         </div>
     </div>
 
-    <!-- CAMERA CARD -->
+    <!-- CAMERA -->
     <div class="card">
         <div class="ai-chat-header">
             <h2>📹 Live Camera Feed</h2>
             <div class="ai-badge">ESP32-CAM</div>
         </div>
         <div class="camera-link-container">
-            <div class="camera-icon">📹</div>
-            <div style="font-size:1.2em;font-weight:600;margin-bottom:8px">Camera Access</div>
-            <div class="camera-instructions">
-                iOS/Safari doesn't support embedded streams.<br>
-                Tap below to open camera in new tab.
+            <div style="font-size:3.5em">📹</div>
+            <div style="font-size:1.1em;font-weight:600">Camera Access</div>
+            <div style="font-size:.85em;color:var(--muted);line-height:1.5;text-align:center">
+                iOS/Safari tidak menyokong embedded stream.<br>Ketik butang di bawah untuk buka dalam tab baru.
             </div>
-            <a href="#" onclick="openCameraFeed(); return false;" class="open-camera-btn">
-                🎥 Open Camera Feed
+            <a href="#" onclick="openCameraFeed();return false" class="open-camera-btn">
+                🎥 Buka Camera Feed
             </a>
         </div>
-        <div class="esp-status offline" id="cameraStatus">
+        <div class="esp-status offline" id="cameraStatus" style="margin-bottom:14px">
             <div class="esp-dot" id="cameraDot"></div>
-            <span id="cameraStatusText">Ready to connect</span>
+            <span id="cameraStatusText">Sedia untuk sambung</span>
         </div>
-        <div style="margin-top:16px">
-            <label style="font-size:0.75em; color:var(--muted); display:block; margin-bottom:6px">
-                📡 CAMERA IP ADDRESS
-            </label>
-            <div style="display:flex; gap:8px">
+        <div>
+            <label style="font-size:.75em;color:var(--muted);display:block;margin-bottom:6px">📡 CAMERA IP ADDRESS</label>
+            <div style="display:flex;gap:8px">
                 <input type="text" id="cameraIP" placeholder="192.168.0.14" value="192.168.0.14" class="time-input" style="flex:1">
-                <button class="add-btn" onclick="saveCameraIP()">💾 Save</button>
+                <button class="add-btn" onclick="saveCameraIP()">💾 Simpan</button>
             </div>
-            <div style="font-size:0.7em; color:var(--muted); margin-top:6px; line-height:1.4">
-                ℹ️ Camera will open at: http://<span id="displayIP">192.168.0.14</span>
+            <div style="font-size:.7em;color:var(--muted);margin-top:6px">
+                ℹ️ Camera: http://<span id="displayIP">192.168.0.14</span>
             </div>
         </div>
     </div>
@@ -280,29 +302,16 @@
             <h2>⚙️ Kawalan Motor Pemberi Makan</h2>
             <div class="feeder-badge">PULSE MODE</div>
         </div>
+
         <div class="esp-status offline" id="espStatus">
             <div class="esp-dot" id="espDot"></div>
             <span id="espStatusText">Menyemak ESP32...</span>
         </div>
-        <div id="uptimeRow" class="uptime-row" style="display:none">Uptime: <span id="uptimeVal">--</span></div>
-
-        <!-- Motor Pulse Config (read from Arduino constants) -->
-        <div class="motor-config">
-            <div class="motor-cfg-item">
-                <div class="motor-cfg-val">15</div>
-                <div class="motor-cfg-lbl">Cycles</div>
-            </div>
-            <div class="motor-cfg-item">
-                <div class="motor-cfg-val">10s</div>
-                <div class="motor-cfg-lbl">Run / Cycle</div>
-            </div>
-            <div class="motor-cfg-item">
-                <div class="motor-cfg-val">3s</div>
-                <div class="motor-cfg-lbl">Pause</div>
-            </div>
+        <div class="uptime-row" id="uptimeRow" style="display:none">
+            ⏱ Uptime: <span id="uptimeVal">--</span>
         </div>
 
-        <!-- Motor Live Status -->
+        <!-- Motor live status -->
         <div class="motor-status-card">
             <div class="motor-status-header">
                 <div class="motor-status-title">Motor State</div>
@@ -314,8 +323,8 @@
                     <div class="motor-cycle-lbl">Cycle</div>
                 </div>
                 <div class="motor-cycle-cell">
-                    <div class="motor-cycle-num" id="motorTimeLeft">—</div>
-                    <div class="motor-cycle-lbl">Time Left</div>
+                    <div class="motor-cycle-num" id="motorRunInfo">—</div>
+                    <div class="motor-cycle-lbl">Run/Cycle</div>
                 </div>
                 <div class="motor-cycle-cell">
                     <div class="motor-cycle-num" id="motorCooldownVal">—</div>
@@ -327,7 +336,7 @@
             </div>
         </div>
 
-        <!-- Feed Stats -->
+        <!-- Feed stats -->
         <div class="feeder-stats">
             <div class="feeder-stat">
                 <div class="feeder-stat-label">Total Feeds</div>
@@ -346,9 +355,55 @@
             </div>
         </div>
 
+        <!-- ── FEED PARAMETER CONTROLS ── -->
+        <div class="section-title">⚙️ Parameter Pemberian Makan</div>
+        <div class="param-grid">
+
+            <!-- Cycles -->
+            <div class="param-cell">
+                <div class="param-label">Kitaran</div>
+                <div class="param-stepper">
+                    <button class="stepper-btn" onclick="adjustParam('cycles',-1)">−</button>
+                    <div class="param-val" id="cyclesVal">15</div>
+                    <button class="stepper-btn" onclick="adjustParam('cycles',+1)">+</button>
+                </div>
+                <div class="param-range">1 – 30</div>
+            </div>
+
+            <!-- Run time -->
+            <div class="param-cell">
+                <div class="param-label">Masa Jalan</div>
+                <div class="param-stepper">
+                    <button class="stepper-btn" onclick="adjustParam('runSec',-1)">−</button>
+                    <div class="param-val" id="runSecVal">10</div>
+                    <button class="stepper-btn" onclick="adjustParam('runSec',+1)">+</button>
+                </div>
+                <div class="param-range">2 – 30s</div>
+            </div>
+
+            <!-- Pause time -->
+            <div class="param-cell">
+                <div class="param-label">Rehat</div>
+                <div class="param-stepper">
+                    <button class="stepper-btn" onclick="adjustParam('pauseSec',-1)">−</button>
+                    <div class="param-val" id="pauseSecVal">3</div>
+                    <button class="stepper-btn" onclick="adjustParam('pauseSec',+1)">+</button>
+                </div>
+                <div class="param-range">1 – 10s</div>
+            </div>
+
+        </div>
+
+        <!-- Total time summary -->
+        <div class="param-summary">
+            <span>⏱️</span>
+            <span>Jumlah masa: <span class="param-summary-time" id="totalTimeVal">~2m 30s</span></span>
+            <span class="param-summary-note">+30s cooldown</span>
+        </div>
+
         <button class="reset-btn" onclick="resetFeedStats()">🔄 Reset Stats (Dev Mode)</button>
 
-        <!-- Feed + Stop buttons -->
+        <!-- Feed + Stop -->
         <div class="feeder-actions">
             <button class="feed-now-btn" id="feedNowBtn" onclick="feedNow()">
                 <span id="feedBtnIcon">🐟</span>
@@ -359,15 +414,22 @@
             </button>
         </div>
 
-        <div class="schedule-title">⏰ Jadual Makan Automatik</div>
+        <!-- Schedule -->
+        <div class="section-title">⏰ Jadual Makan Automatik</div>
         <div class="schedule-chips" id="scheduleChips"></div>
         <div class="schedule-add">
             <input type="time" class="time-input" id="newFeedTime" value="08:00">
             <button class="add-btn" onclick="addScheduleSlot()">+ Tambah</button>
         </div>
+
+        <!-- Feed log -->
         <div class="log-title">📋 Log Pemberian Makan</div>
         <div class="feed-log" id="feedLog">
-            <div class="log-row"><span class="log-t">--:--</span><span class="log-s">—</span><span>Tiada log lagi</span></div>
+            <div class="log-row">
+                <span class="log-t">--:--</span>
+                <span class="log-s">—</span>
+                <span>Tiada log lagi</span>
+            </div>
         </div>
     </div>
 
@@ -375,7 +437,7 @@
     <div class="card">
         <div class="ai-chat-header">
             <h2>🤖 Pembantu Suara AI</h2>
-            <div class="ai-badge">VERCEL</div>
+            <div class="ai-badge">VERCEL AI</div>
         </div>
         <div class="voice-controls">
             <div class="voice-status" id="voiceStatus">🎤 Tekan mikrofon untuk bercakap</div>
@@ -384,7 +446,7 @@
                 <span id="speakerText">Suara ON</span>
             </button>
             <button class="speaker-btn" onclick="testSpeak()" style="background:rgba(0,229,200,.15);color:var(--accent2);border-color:rgba(0,229,200,.3)">
-                <span>🔊</span><span>Test</span>
+                🔊 Test
             </button>
         </div>
         <div class="quick-questions">
@@ -420,7 +482,9 @@
             <button class="toggle-btn active" id="tempToggle" onclick="switchChart('temp')">🌡️ Suhu</button>
             <button class="toggle-btn" id="tdsToggle" onclick="switchChart('tds')">📊 TDS</button>
         </div>
-        <div class="chart-title" id="chartTitle">📈 Sejarah Suhu — 24 Jam Terkini</div>
+        <div style="font-size:.78em;font-weight:600;margin-bottom:16px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px" id="chartTitle">
+            📈 Sejarah Suhu — 24 Jam Terkini
+        </div>
         <canvas id="mainChart"></canvas>
     </div>
 
@@ -446,51 +510,68 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
 // ════════════════════════════════════════════════════════════
-// CONFIG — matches Arduino constants
+// CONFIG — thresholds match Arduino constants
 // ════════════════════════════════════════════════════════════
 const VERCEL_URL    = 'https://pond-monitor-psi.vercel.app';
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSwNbkIPxY7RfotLijQuiaGD9r8PBoz55-IKWvUzLK-QkAUAIHZwE5rwI0swgKVGpI5un-0VqejzFyy/pub?gid=56484358&single=true&output=csv';
 
-// Thresholds matching Arduino
-const TEMP_MIN      = 20;
-const TEMP_MAX      = 32;   // TEMP_THRESHOLD in Arduino
-const TDS_MIN       = 300;
-const TDS_MAX       = 1000; // TDS_MAX in Arduino
+const TEMP_MIN = 20,  TEMP_MAX = 32;   // TEMP_THRESHOLD = 32 in Arduino
+const TDS_MIN  = 300, TDS_MAX  = 1000; // TDS_MAX = 1000 in Arduino
 
-// Motor pulse config (mirrors Arduino defines)
-const MOTOR_CYCLES    = 15;
-const MOTOR_RUN_MS    = 10000;
-const MOTOR_PAUSE_MS  = 3000;
-const MOTOR_COOLDOWN  = 30; // seconds
+// ════════════════════════════════════════════════════════════
+// FEED PARAMS STATE — persisted in localStorage
+// ════════════════════════════════════════════════════════════
+const PARAM_LIMITS = {
+    cycles:   { min: 1,  max: 30,  default: 15 },
+    runSec:   { min: 2,  max: 30,  default: 10 },
+    pauseSec: { min: 1,  max: 10,  default: 3  },
+};
+
+const feedParams = {
+    cycles:   parseInt(localStorage.getItem('fp_cycles'))   || PARAM_LIMITS.cycles.default,
+    runSec:   parseInt(localStorage.getItem('fp_runSec'))   || PARAM_LIMITS.runSec.default,
+    pauseSec: parseInt(localStorage.getItem('fp_pauseSec')) || PARAM_LIMITS.pauseSec.default,
+};
+
+function adjustParam(key, delta) {
+    const lim = PARAM_LIMITS[key];
+    feedParams[key] = Math.min(lim.max, Math.max(lim.min, feedParams[key] + delta));
+    localStorage.setItem('fp_' + key, feedParams[key]);
+    renderFeedParams();
+}
+
+function renderFeedParams() {
+    document.getElementById('cyclesVal').textContent   = feedParams.cycles;
+    document.getElementById('runSecVal').textContent   = feedParams.runSec;
+    document.getElementById('pauseSecVal').textContent = feedParams.pauseSec;
+
+    // Total = cycles * runSec + (cycles-1) * pauseSec
+    const totalSec = feedParams.cycles * feedParams.runSec
+                   + (feedParams.cycles - 1) * feedParams.pauseSec;
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    document.getElementById('totalTimeVal').textContent = m > 0 ? `~${m}m ${s}s` : `~${s}s`;
+}
 
 // ════════════════════════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════════════════════════
-let mainChart, currentSensorData = {};
-let currentChartType = 'temp', allData = [];
-let feedLog      = [];
+let mainChart, currentSensorData = {}, currentChartType = 'temp', allData = [];
+let feedLog = [];
 let scheduleList = JSON.parse(localStorage.getItem('feedSchedule') || '["07:00","12:00","18:00"]');
-let lastCmdId    = '';
-let esp32LastSeen = 0;
-let commandPollTimer = null;
-let fastPollActive   = false;
-let fastPollTimeout  = null;
-let ackPollTimer     = null;
-let lastMotorState   = null; // track for UI update
-
-// Camera
+let lastCmdId = '', esp32LastSeen = 0;
+let commandPollTimer = null, fastPollActive = false, fastPollTimeout = null, ackPollTimer = null;
 let cameraIP = localStorage.getItem('cameraIP') || '192.168.0.14';
 
 // ════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
+    renderFeedParams();
     renderSchedule();
     startScheduleWatcher();
-    if (cameraIP) {
-        document.getElementById('cameraIP').value = cameraIP;
-        document.getElementById('displayIP').textContent = cameraIP;
-    }
+    document.getElementById('cameraIP').value = cameraIP;
+    document.getElementById('displayIP').textContent = cameraIP;
 });
 
 // ════════════════════════════════════════════════════════════
@@ -498,23 +579,21 @@ window.addEventListener('DOMContentLoaded', () => {
 // ════════════════════════════════════════════════════════════
 function openCameraFeed() {
     const ip = document.getElementById('cameraIP').value.trim() || cameraIP;
-    if (!ip) { showToast('⚠️ Please enter camera IP first'); return; }
+    if (!ip) { showToast('⚠️ Masukkan IP camera'); return; }
     window.open('http://' + ip, '_blank');
-    showToast('📹 Opening camera...');
-    const s = document.getElementById('cameraStatus');
-    const d = document.getElementById('cameraDot');
-    s.className = 'esp-status online';
-    d.className = 'esp-dot pulse';
-    document.getElementById('cameraStatusText').textContent = 'Ready to view';
+    showToast('📹 Membuka camera...');
+    document.getElementById('cameraStatus').className = 'esp-status online';
+    document.getElementById('cameraDot').className = 'esp-dot pulse';
+    document.getElementById('cameraStatusText').textContent = 'Sedia';
 }
 
 function saveCameraIP() {
     const ip = document.getElementById('cameraIP').value.trim();
-    if (!ip || !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) { showToast('⚠️ Invalid IP address format'); return; }
+    if (!ip || !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) { showToast('⚠️ Format IP tidak sah'); return; }
     cameraIP = ip;
     localStorage.setItem('cameraIP', ip);
     document.getElementById('displayIP').textContent = ip;
-    showToast('✅ Camera IP saved: ' + ip);
+    showToast('✅ IP disimpan: ' + ip);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -525,7 +604,6 @@ function startFastCommandPoll() {
     fastPollActive = true;
     if (commandPollTimer) clearInterval(commandPollTimer);
     commandPollTimer = setInterval(checkCommandStatus, 3000);
-    if (fastPollTimeout) clearTimeout(fastPollTimeout);
     fastPollTimeout = setTimeout(() => { if (fastPollActive) stopFastCommandPoll(); }, 60000);
 }
 
@@ -538,34 +616,32 @@ function stopFastCommandPoll() {
 }
 
 // ════════════════════════════════════════════════════════════
-// SENSOR STATUS FETCH
+// FETCH SENSOR STATUS
 // ════════════════════════════════════════════════════════════
 async function fetchSensorStatus() {
     try {
-        const res = await fetch(VERCEL_URL + '/api/status', { method: 'GET' });
+        const res = await fetch(VERCEL_URL + '/api/status');
         if (!res.ok) { updateEspStatusUI(false, 0); return; }
 
         const data = await res.json();
-        const sensorData = data.sensor || data;
-        const hasData  = sensorData && (sensorData.temp !== undefined || sensorData.tds !== undefined);
+        const sd = data.sensor;
         const staleSec = data.staleSec || 0;
-        const isOnline = hasData && staleSec < 20;
+        const isOnline = sd && staleSec < 20;
 
         if (isOnline) esp32LastSeen = Date.now();
         updateEspStatusUI(isOnline, staleSec);
 
-        if (hasData) {
-            updateSensorDisplays(sensorData);
-            updateFeedStatsDisplay(sensorData);
-            updateMotorStatusDisplay(sensorData);
+        if (sd) {
+            updateSensorDisplays(sd);
+            updateFeedStatsDisplay(sd);
+            updateMotorStatusDisplay(sd);
         }
 
         if (data.feedHistory?.length) {
-            feedLog = data.feedHistory.map(e => ({ time: e.time, source: e.source }));
+            feedLog = data.feedHistory;
             renderFeedLog();
         }
     } catch(err) {
-        console.error('Sensor poll error:', err);
         updateEspStatusUI(false, 0);
     }
 }
@@ -573,23 +649,27 @@ async function fetchSensorStatus() {
 // ════════════════════════════════════════════════════════════
 // SENSOR DISPLAYS
 // ════════════════════════════════════════════════════════════
-function updateSensorDisplays(data) {
-    if (data.temp !== undefined) {
-        const temp = parseFloat(data.temp);
-        document.getElementById('tempValue').textContent = temp.toFixed(1);
-        updateSensorCard('tempCard', 'tempStatus', temp, TEMP_MIN, TEMP_MAX);
-        currentSensorData.temp = temp.toFixed(1);
+function updateSensorDisplays(sd) {
+    // Temperature
+    if (sd.temp !== undefined) {
+        const t = parseFloat(sd.temp);
+        document.getElementById('tempValue').textContent = t.toFixed(1);
+        document.getElementById('tempValue').classList.remove('small');
+        updateSensorCard('tempCard', 'tempStatus', t, TEMP_MIN, TEMP_MAX);
+        currentSensorData.temp = t;
     }
 
-    if (data.tds !== undefined) {
-        const tds = parseFloat(data.tds);
+    // TDS — handle init state (tds = -1)
+    if (sd.tds !== undefined) {
+        const tds = parseFloat(sd.tds);
         if (tds < 0) {
-            // TDS buffer still initialising — show init progress if available
-            const initProg = data.tdsInitProgress; // optional field from ESP32
-            document.getElementById('tdsValue').textContent = initProg ? initProg + '/30' : 'Init';
+            document.getElementById('tdsValue').textContent = 'Init';
             document.getElementById('tdsValue').classList.add('small');
             document.getElementById('tdsUnit').textContent = 'warming up';
-            setTdsCardInit();
+            const c = document.getElementById('tdsCard'), b = document.getElementById('tdsStatus');
+            c.classList.remove('normal','warning','danger'); c.classList.add('init');
+            b.classList.remove('badge-normal','badge-warning','badge-danger'); b.classList.add('badge-init');
+            b.textContent = 'Init';
             currentSensorData.tds = null;
         } else {
             document.getElementById('tdsValue').textContent = Math.round(tds);
@@ -602,90 +682,84 @@ function updateSensorDisplays(data) {
 
     document.getElementById('lastUpdate').textContent = 'Baru sahaja';
     document.getElementById('statusDot').classList.remove('offline');
-    checkAlerts(parseFloat(currentSensorData.temp) || 0, currentSensorData.tds || 0);
+    checkAlerts(currentSensorData.temp || 0, currentSensorData.tds);
 }
 
-function setTdsCardInit() {
-    const c = document.getElementById('tdsCard');
-    const b = document.getElementById('tdsStatus');
-    c.classList.remove('normal','warning','danger');
-    c.classList.add('init');
-    b.classList.remove('badge-normal','badge-warning','badge-danger');
-    b.classList.add('badge-init');
-    b.textContent = 'Init';
+function updateSensorCard(cId, bId, v, mn, mx) {
+    const c = document.getElementById(cId), b = document.getElementById(bId);
+    c.classList.remove('normal','warning','danger','init');
+    b.classList.remove('badge-normal','badge-warning','badge-danger','badge-init');
+    if (v < mn)      { c.classList.add('warning'); b.classList.add('badge-warning'); b.textContent='Rendah'; }
+    else if (v > mx) { c.classList.add('danger');  b.classList.add('badge-danger');  b.textContent='Tinggi'; }
+    else             { c.classList.add('normal');  b.classList.add('badge-normal');  b.textContent='Normal'; }
+}
+
+function checkAlerts(t, tds) {
+    const a = [];
+    if (t >= TEMP_MAX)       a.push(`Suhu terlalu tinggi! (${t}°C)`);
+    else if (t < TEMP_MIN)   a.push(`Suhu terlalu rendah! (${t}°C)`);
+    if (tds !== null) {
+        if (tds > TDS_MAX)   a.push(`TDS terlalu tinggi! (${tds}ppm)`);
+        else if (tds < TDS_MIN) a.push(`TDS terlalu rendah! (${tds}ppm)`);
+    }
+    document.getElementById('alertText').textContent = a.join(' | ');
+    document.getElementById('alertBanner').classList.toggle('show', a.length > 0);
 }
 
 // ════════════════════════════════════════════════════════════
-// MOTOR STATUS DISPLAY — reflects Arduino pulse mode
+// MOTOR STATUS DISPLAY
 // ════════════════════════════════════════════════════════════
-function updateMotorStatusDisplay(data) {
-    const motorActive  = data.motorActive || false;   // true if running OR pausing
-    const cycle        = data.cycle       || 0;       // motorCycleCount
-    const uptime       = data.uptime;                 // seconds
+function updateMotorStatusDisplay(sd) {
+    const motorActive = sd.motorActive || false;
+    const cycle       = sd.cycle       || 0;
+    const uptime      = sd.uptime;
+    // Active params reported by ESP32 (what it's actually running)
+    const aC = sd.activeCycles  || 15;
+    const aR = sd.activeRunMs   || 10000;
+    const aP = sd.activePauseMs || 3000;
 
-    const badge     = document.getElementById('motorStateBadge');
-    const cycleNum  = document.getElementById('motorCycleNum');
-    const timeLeft  = document.getElementById('motorTimeLeft');
-    const coolEl    = document.getElementById('motorCooldownVal');
-    const progWrap  = document.getElementById('cycleProgressWrap');
-    const progBar   = document.getElementById('cycleProgressBar');
-    const stopBtn   = document.getElementById('stopMotorBtn');
-    const activeEl  = document.getElementById('motorActiveStatus');
-    const uptimeRow = document.getElementById('uptimeRow');
+    const badge    = document.getElementById('motorStateBadge');
+    const cycleNum = document.getElementById('motorCycleNum');
+    const runInfo  = document.getElementById('motorRunInfo');
+    const coolEl   = document.getElementById('motorCooldownVal');
+    const progWrap = document.getElementById('cycleProgressWrap');
+    const progBar  = document.getElementById('cycleProgressBar');
+    const stopBtn  = document.getElementById('stopMotorBtn');
+    const activeEl = document.getElementById('motorActiveStatus');
 
-    // Uptime
     if (uptime !== undefined) {
-        uptimeRow.style.display = 'block';
+        document.getElementById('uptimeRow').style.display = 'block';
         document.getElementById('uptimeVal').textContent = formatUptime(uptime);
     }
 
-    // Determine state from data
-    // motorActive=true can mean RUN or PAUSE — we rely on cycle count to infer
-    // The ESP32 status pushes motorActive=true for both running and pausing states
     if (motorActive) {
-        // Motor is in a cycle (running or between-pause)
-        const pct = Math.min((cycle / MOTOR_CYCLES) * 100, 100);
-        cycleNum.textContent  = cycle + '/' + MOTOR_CYCLES;
-        timeLeft.textContent  = '~' + Math.max(0, (MOTOR_CYCLES - cycle)) + ' left';
-        coolEl.textContent    = '—';
+        const pct = Math.min((cycle / Math.max(aC, 1)) * 100, 100);
+        cycleNum.textContent = `${cycle}/${aC}`;
+        runInfo.textContent  = `${aR/1000}s/${aP/1000}s`;
+        coolEl.textContent   = '—';
         progWrap.style.display = 'block';
         progBar.style.width    = pct + '%';
-
-        badge.className = 'motor-state-badge running';
-        badge.textContent = 'RUNNING';
+        badge.className = 'motor-state-badge running'; badge.textContent = 'RUNNING';
         activeEl.textContent = '🟢 ACTIVE';
         stopBtn.disabled = false;
-    } else if (data.cooldownRemaining > 0) {
-        // Cooldown period
-        cycleNum.textContent  = MOTOR_CYCLES + '/' + MOTOR_CYCLES;
-        timeLeft.textContent  = 'Done';
-        coolEl.textContent    = data.cooldownRemaining + 's';
-        progWrap.style.display = 'block';
-        progBar.style.width    = '100%';
-
-        badge.className = 'motor-state-badge cooldown';
-        badge.textContent = 'COOLDOWN';
-        activeEl.textContent = '🔵 COOL';
+    } else if (sd.cooldownRemaining > 0) {
+        cycleNum.textContent = `${aC}/${aC}`;
+        runInfo.textContent  = 'Selesai';
+        coolEl.textContent   = sd.cooldownRemaining + 's';
+        progWrap.style.display = 'block'; progBar.style.width = '100%';
+        badge.className = 'motor-state-badge cooldown'; badge.textContent = 'COOLDOWN';
+        activeEl.textContent = '🔵 COOLDOWN';
         stopBtn.disabled = true;
-    } else if (data.manualStop) {
-        cycleNum.textContent   = '—';
-        timeLeft.textContent   = '—';
-        coolEl.textContent     = '—';
+    } else if (sd.manualStop) {
+        cycleNum.textContent = '—'; runInfo.textContent = '—'; coolEl.textContent = '—';
         progWrap.style.display = 'none';
-
-        badge.className = 'motor-state-badge stopped';
-        badge.textContent = 'STOPPED';
+        badge.className = 'motor-state-badge stopped'; badge.textContent = 'STOPPED';
         activeEl.textContent = '🔴 STOPPED';
         stopBtn.disabled = true;
     } else {
-        // Ready
-        cycleNum.textContent   = '—';
-        timeLeft.textContent   = '—';
-        coolEl.textContent     = '—';
+        cycleNum.textContent = '—'; runInfo.textContent = '—'; coolEl.textContent = '—';
         progWrap.style.display = 'none';
-
-        badge.className = 'motor-state-badge ready';
-        badge.textContent = 'READY';
+        badge.className = 'motor-state-badge ready'; badge.textContent = 'READY';
         activeEl.textContent = '⬛ OFF';
         stopBtn.disabled = true;
     }
@@ -695,72 +769,63 @@ function formatUptime(sec) {
     const h = Math.floor(sec / 3600);
     const m = Math.floor((sec % 3600) / 60);
     const s = sec % 60;
-    if (h > 0) return h + 'h ' + m + 'm';
-    if (m > 0) return m + 'm ' + s + 's';
-    return s + 's';
+    if (h > 0) return `${h}j ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
 }
 
 // ════════════════════════════════════════════════════════════
 // ESP STATUS UI
 // ════════════════════════════════════════════════════════════
 function updateEspStatusUI(online, staleSec) {
-    const el  = document.getElementById('espStatus');
+    const el = document.getElementById('espStatus');
     const dot = document.getElementById('espDot');
     const txt = document.getElementById('espStatusText');
     if (online) {
-        el.className  = 'esp-status online';
-        dot.className = 'esp-dot pulse';
-        txt.textContent = 'ESP32 dalam talian ✓ (' + staleSec + 's lalu)';
+        el.className = 'esp-status online'; dot.className = 'esp-dot pulse';
+        txt.textContent = `ESP32 dalam talian ✓ (${staleSec}s lalu)`;
     } else {
-        el.className  = 'esp-status offline';
-        dot.className = 'esp-dot';
-        const timeSince = esp32LastSeen ? Math.floor((Date.now() - esp32LastSeen) / 1000) : 0;
-        txt.textContent = timeSince > 0 ? 'ESP32 luar talian (' + timeSince + 's)' : 'ESP32 luar talian';
+        el.className = 'esp-status offline'; dot.className = 'esp-dot';
+        const ts = esp32LastSeen ? Math.floor((Date.now() - esp32LastSeen) / 1000) : 0;
+        txt.textContent = ts > 0 ? `ESP32 luar talian (${ts}s)` : 'ESP32 luar talian';
     }
 }
 
 // ════════════════════════════════════════════════════════════
 // FEED STATS DISPLAY
 // ════════════════════════════════════════════════════════════
-function updateFeedStatsDisplay(data) {
-    const feedCount = data.feedCount || 0;
-    const lastFeed  = data.lastFeed  || 'Belum lagi';
-    document.getElementById('feedCount').textContent    = feedCount + '×';
-    document.getElementById('lastFeedTime').textContent = formatFeedTime(lastFeed);
-    document.getElementById('lastFeedDate').textContent = formatRelativeDate(lastFeed);
-    const todayFeeds = feedLog.filter(f => {
-        const d = new Date(f.time);
-        return d.toDateString() === new Date().toDateString();
-    }).length;
-    document.getElementById('feedCountSub').textContent = todayFeeds > 0 ? todayFeeds + ' today' : 'All time';
+function updateFeedStatsDisplay(sd) {
+    document.getElementById('feedCount').textContent    = (sd.feedCount || 0) + '×';
+    document.getElementById('lastFeedTime').textContent = formatFeedTime(sd.lastFeed || 'Belum lagi');
+    document.getElementById('lastFeedDate').textContent = formatRelativeDate(sd.lastFeed || 'Belum lagi');
+    const todayFeeds = feedLog.filter(f => new Date(f.time).toDateString() === new Date().toDateString()).length;
+    document.getElementById('feedCountSub').textContent = todayFeeds > 0 ? `${todayFeeds} hari ini` : 'All time';
 }
 
 function formatRelativeDate(ts) {
-    if (!ts || ts === 'Belum lagi' || ts === 'Never') return 'Never';
-    if (/^\d{2}:\d{2}:\d{2}$/.test(ts)) return 'Today';
-    const now = new Date(), t = new Date(ts);
-    const diffMins  = Math.floor((now - t) / 60000);
-    const diffHours = Math.floor((now - t) / 3600000);
-    const diffDays  = Math.floor((now - t) / 86400000);
-    if (diffMins < 1)  return 'Just now';
-    if (diffMins < 60) return diffMins + 'm ago';
-    if (diffHours < 24) return diffHours + 'h ago';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7)   return diffDays + ' days ago';
-    return t.toLocaleDateString('en-MY', { month: 'short', day: 'numeric' });
+    if (!ts || ts === 'Belum lagi') return 'Never';
+    if (/^\d{2}:\d{2}:\d{2}$/.test(ts)) return 'Hari ini';
+    const diff = Date.now() - new Date(ts);
+    const mins = Math.floor(diff / 60000), hrs = Math.floor(diff / 3600000), days = Math.floor(diff / 86400000);
+    if (mins < 1) return 'Baru sahaja';
+    if (mins < 60) return `${mins}m lalu`;
+    if (hrs < 24) return `${hrs}j lalu`;
+    if (days === 1) return 'Semalam';
+    if (days < 7) return `${days} hari lalu`;
+    return new Date(ts).toLocaleDateString('ms-MY', { month: 'short', day: 'numeric' });
 }
 
 function formatFeedTime(ts) {
-    if (!ts || ts === 'Belum lagi' || ts === 'Never') return 'Belum lagi';
-    if (/^\d{2}:\d{2}:\d{2}$/.test(ts)) return 'Today ' + ts;
+    if (!ts || ts === 'Belum lagi') return 'Belum lagi';
+    if (/^\d{2}:\d{2}:\d{2}$/.test(ts)) return 'Hari ini ' + ts;
     const t = new Date(ts), now = new Date();
-    const time = t.toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit' });
-    if (t.toDateString() === now.toDateString()) return 'Today ' + time;
-    return t.toLocaleDateString('en-MY', { day: 'numeric', month: 'short' }) + ' ' + time;
+    const time = t.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+    if (t.toDateString() === now.toDateString()) return 'Hari ini ' + time;
+    return t.toLocaleDateString('ms-MY', { day: 'numeric', month: 'short' }) + ' ' + time;
 }
 
 // ════════════════════════════════════════════════════════════
-// COMMANDS
+// FEED COMMANDS
 // ════════════════════════════════════════════════════════════
 async function feedNow() {
     const btn = document.getElementById('feedNowBtn');
@@ -772,8 +837,13 @@ async function feedNow() {
     try {
         const res = await fetch(VERCEL_URL + '/api/command', {
             method:  'POST',
-            headers: {'Content-Type':'application/json'},
-            body:    JSON.stringify({ action: 'feed' })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action:   'feed',
+                cycles:   feedParams.cycles,
+                runMs:    feedParams.runSec   * 1000,
+                pauseMs:  feedParams.pauseSec * 1000,
+            })
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
@@ -782,7 +852,7 @@ async function feedNow() {
             lastCmdId = data.queued.id;
             document.getElementById('feedBtnIcon').textContent = '📡';
             document.getElementById('feedBtnText').textContent = 'Menunggu ESP32...';
-            showToast('📡 Arahan dihantar — menunggu balasan...');
+            showToast(`📡 ${feedParams.cycles} kitaran × ${feedParams.runSec}s — menunggu balasan...`);
             startFastCommandPoll();
 
             let attempts = 0;
@@ -792,47 +862,34 @@ async function feedNow() {
                 if (!lastCmdId || attempts >= 13) {
                     clearInterval(ackPollTimer);
                     stopFastCommandPoll();
-                    if (lastCmdId) {
-                        lastCmdId = '';
-                        resetFeedBtn('success');
-                        showToast('✅ Arahan dihantar');
-                    }
+                    if (lastCmdId) { lastCmdId = ''; resetFeedBtn('success'); showToast('✅ Arahan dihantar'); }
                 }
             }, 1500);
         }
     } catch(err) {
-        console.error('Feed error:', err);
         resetFeedBtn('error');
         showToast('❌ Gagal: ' + err.message);
         stopFastCommandPoll();
     }
 }
 
-// Stop = send "close" command, matches Arduino command == "close"
 async function stopMotor() {
     showToast('⛔ Menghantar arahan stop...');
     try {
         const res = await fetch(VERCEL_URL + '/api/command', {
             method:  'POST',
-            headers: {'Content-Type':'application/json'},
-            body:    JSON.stringify({ action: 'close' })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'close' })
         });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
-        if (data.ok) {
-            showToast('✅ Motor dihentikan');
-            setTimeout(fetchSensorStatus, 1500);
-        } else {
-            showToast('❌ Gagal hantar arahan stop');
-        }
-    } catch(err) {
-        showToast('❌ Gagal: ' + err.message);
-    }
+        showToast(data.ok ? '✅ Motor dihentikan' : '❌ Gagal hantar arahan stop');
+        if (data.ok) setTimeout(fetchSensorStatus, 1500);
+    } catch(err) { showToast('❌ Gagal: ' + err.message); }
 }
 
 async function checkCommandStatus() {
     try {
-        const res = await fetch(VERCEL_URL + '/api/status', { method: 'GET' });
+        const res = await fetch(VERCEL_URL + '/api/status');
         if (!res.ok) return;
         const data = await res.json();
         if (lastCmdId && data.lastAck?.id === lastCmdId) {
@@ -840,18 +897,11 @@ async function checkCommandStatus() {
             stopFastCommandPoll();
             const ok = data.lastAck.result === 'ok';
             lastCmdId = '';
-            if (ok) {
-                resetFeedBtn('success');
-                showToast('✅ Ikan berjaya diberi makan!');
-                setTimeout(fetchSensorStatus, 500);
-            } else {
-                resetFeedBtn('error');
-                showToast('❌ Arahan gagal');
-            }
+            resetFeedBtn(ok ? 'success' : 'error');
+            showToast(ok ? '✅ Ikan berjaya diberi makan!' : '❌ Arahan gagal');
+            if (ok) setTimeout(fetchSensorStatus, 500);
         }
-    } catch(err) {
-        console.error('Command check error:', err);
-    }
+    } catch(err) {}
 }
 
 function resetFeedBtn(state = 'normal') {
@@ -862,49 +912,22 @@ function resetFeedBtn(state = 'normal') {
     const texts = { normal:'Beri Makan Sekarang', success:'Berjaya!', error:'Gagal' };
     document.getElementById('feedBtnIcon').textContent = icons[state];
     document.getElementById('feedBtnText').textContent = texts[state];
-    if (state !== 'normal') {
-        btn.classList.add(state);
-        setTimeout(() => resetFeedBtn('normal'), 3500);
-    }
+    if (state !== 'normal') { btn.classList.add(state); setTimeout(() => resetFeedBtn('normal'), 3500); }
 }
 
 async function resetFeedStats() {
-    if (!confirm('⚠️ Reset ALL feeding stats? This sends a "reset" command to ESP32.')) return;
-    showToast('🔄 Resetting...');
-    await fetch(VERCEL_URL + '/api/command', {
-        method:  'POST',
-        headers: {'Content-Type':'application/json'},
-        body:    JSON.stringify({ action: 'reset' })
-    });
-    feedLog = [];
-    renderFeedLog();
-    document.getElementById('feedCount').textContent    = '0×';
-    document.getElementById('lastFeedTime').textContent = 'Belum lagi';
-    document.getElementById('lastFeedDate').textContent = '—';
-    showToast('✅ Stats reset!');
-    setTimeout(fetchSensorStatus, 1500);
-}
-
-// ════════════════════════════════════════════════════════════
-// SENSOR CARD HELPERS
-// ════════════════════════════════════════════════════════════
-function updateSensorCard(cId, bId, v, mn, mx) {
-    const c = document.getElementById(cId), b = document.getElementById(bId);
-    c.classList.remove('normal','warning','danger','init');
-    b.classList.remove('badge-normal','badge-warning','badge-danger','badge-init');
-    if (v < mn)      { c.classList.add('warning'); b.classList.add('badge-warning'); b.textContent = 'Rendah'; }
-    else if (v > mx) { c.classList.add('danger');  b.classList.add('badge-danger');  b.textContent = 'Tinggi'; }
-    else             { c.classList.add('normal');  b.classList.add('badge-normal');  b.textContent = 'Normal'; }
-}
-
-function checkAlerts(t, d) {
-    const a = [];
-    if (t >= TEMP_MAX)    a.push('Suhu terlalu tinggi! (' + t + '°C)');
-    else if (t < TEMP_MIN) a.push('Suhu terlalu rendah! (' + t + '°C)');
-    if (d !== null && d > TDS_MAX)  a.push('TDS terlalu tinggi! (' + d + 'ppm)');
-    else if (d !== null && d > 0 && d < TDS_MIN) a.push('TDS terlalu rendah! (' + d + 'ppm)');
-    document.getElementById('alertText').textContent = a.join(' | ');
-    document.getElementById('alertBanner').classList.toggle('show', a.length > 0);
+    if (!confirm('⚠️ Reset semua statistik pemberian makan?\nIni akan hantar arahan "reset" ke ESP32.')) return;
+    showToast('🔄 Menghantar arahan reset...');
+    try {
+        const res = await fetch(VERCEL_URL + '/api/command', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'reset' })
+        });
+        const data = await res.json();
+        showToast(data.ok ? '✅ Arahan reset dihantar ke ESP32' : '❌ Gagal');
+        if (data.ok) setTimeout(fetchSensorStatus, 2000);
+    } catch(err) { showToast('❌ Gagal: ' + err.message); }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -918,10 +941,17 @@ function renderFeedLog() {
     }
     el.innerHTML = feedLog.map(e => {
         const fd = new Date(e.time);
-        const time = fd.toLocaleTimeString('en-MY', { hour:'2-digit', minute:'2-digit' });
-        const date = fd.toLocaleDateString('en-MY', { month:'short', day:'numeric' });
+        const time = fd.toLocaleTimeString('ms-MY', { hour:'2-digit', minute:'2-digit' });
+        const date = fd.toLocaleDateString('ms-MY', { month:'short', day:'numeric' });
         const isToday = fd.toDateString() === new Date().toDateString();
-        return `<div class="log-row"><span class="log-t">${time}</span><span class="log-date">${isToday ? 'Today' : date}</span><span class="log-s">[${e.source}]</span><span>Fed</span></div>`;
+        const params = (e.cycles && e.runMs)
+            ? ` <span class="log-params">${e.cycles}×${e.runMs/1000}s</span>` : '';
+        return `<div class="log-row">
+            <span class="log-t">${time}</span>
+            <span class="log-date">${isToday ? 'Hari ini' : date}</span>
+            <span class="log-s">[${e.source || '?'}]</span>
+            <span>Fed${params}</span>
+        </div>`;
     }).join('');
 }
 
@@ -952,12 +982,9 @@ function startScheduleWatcher() {
     setInterval(() => {
         const now  = new Date();
         const hhmm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-        if (scheduleList.includes(hhmm)) {
-            const key = 'lastAutoFeed';
-            if (localStorage.getItem(key) !== hhmm) {
-                localStorage.setItem(key, hhmm);
-                feedNow();
-            }
+        if (scheduleList.includes(hhmm) && localStorage.getItem('lastAutoFeed') !== hhmm) {
+            localStorage.setItem('lastAutoFeed', hhmm);
+            feedNow(); // uses current feedParams
         }
     }, 30000);
 }
@@ -993,11 +1020,11 @@ function calculateStats(data) {
     document.getElementById('todayReadings').textContent = data.filter(d => new Date(d.timestamp) >= today).length;
     const issues = [
         currentSensorData.temp < TEMP_MIN || currentSensorData.temp > TEMP_MAX,
-        currentSensorData.tds  < TDS_MIN  || currentSensorData.tds  > TDS_MAX
+        currentSensorData.tds !== null && (currentSensorData.tds < TDS_MIN || currentSensorData.tds > TDS_MAX)
     ].filter(Boolean).length;
     const el = document.getElementById('overallStatus');
-    el.textContent = issues === 0 ? 'Normal' : issues === 1 ? 'Peringatan' : 'Kritikal';
-    el.style.color = issues === 0 ? 'var(--success)' : issues === 1 ? 'var(--warning)' : 'var(--danger)';
+    el.textContent  = issues === 0 ? 'Normal' : issues === 1 ? 'Peringatan' : 'Kritikal';
+    el.style.color  = issues === 0 ? 'var(--success)' : issues === 1 ? 'var(--warning)' : 'var(--danger)';
 }
 
 function switchChart(type) {
@@ -1005,7 +1032,7 @@ function switchChart(type) {
     document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(type + 'Toggle').classList.add('active');
     document.getElementById('chartTitle').textContent = type === 'temp'
-        ? '📈 Sejarah Suhu — 24 Jam' : '📊 Sejarah TDS — 24 Jam';
+        ? '📈 Sejarah Suhu — 24 Jam Terkini' : '📊 Sejarah TDS — 24 Jam Terkini';
     updateChart();
 }
 
@@ -1049,38 +1076,27 @@ function showToast(msg, duration = 3000) {
 let recognition, isListening = false, voiceEnabled = true, isSpeaking = false, availableVoices = [];
 
 async function askAI(question) {
-    const sp = `Anda adalah pakar akuakultur tilapia dengan 20 tahun pengalaman. Anda memahami biologi ikan, kualiti air, penyakit ikan, pemakanan, dan pengurusan kolam secara mendalam.
-
-PENGETAHUAN ANDA:
-- Biologi Tilapia: Spesies (Nile, Mozambique, Red), tingkah laku, pembiakan, kitaran hidup, toleransi persekitaran
-- Parameter Air: Suhu, pH, TDS, ammonia, nitrit, nitrat, oksigen terlarut, alkaliniti, kekerasan air
-- Penyakit: Bacterial infections (Aeromonas, Streptococcus), parasit (ich, flukes, lice), kulat, virus, pencegahan dan rawatan
-- Pemakanan: Jenis makanan (pellet, hidup, sayuran), kandungan protein (28-35%), jadual pemberian makan, FCR, overfeeding vs underfeeding
-- Sistem Kolam: Biofilter, aerasi, water change schedule, stocking density, kolam tanah vs liner vs concrete
-- Masalah Biasa: Cloudy water, algae bloom, fish gasping, tidak makan, pertumbuhan lambat, kematian mendadak
-- Ekonomi: Kos operasi, harga pasaran, break-even analysis, ROI
+    const sp = `Anda adalah pakar akuakultur tilapia dengan 20 tahun pengalaman.
 
 KEADAAN OPTIMUM TILAPIA:
-- Suhu: 28-30°C (pertumbuhan terbaik), 25-32°C (boleh diterima), <20°C atau >36°C (berbahaya)
+- Suhu: 28-30°C (terbaik), 25-32°C (boleh diterima), <20°C atau >36°C (bahaya)
 - TDS: 300-800 ppm (ideal), 100-1500 ppm (boleh diterima)
-- pH: 6.5-8.5 (ideal), 7.0-8.0 (terbaik untuk pertumbuhan)
+- pH: 7.0-8.0 (terbaik)
 - Ammonia: 0 ppm (ideal), <0.5 ppm (maksimum)
-- Oksigen: >5 mg/L (minimum), >6 mg/L (ideal)
-- Stocking density: 1-3 kg/m³ untuk kolam, 10-50 kg/m³ untuk RAS
+- Oksigen: >5 mg/L (minimum)
 
-CARA JAWAB:
-1. Analisis data sensor semasa
-2. Kenal pasti masalah atau risiko
-3. Berikan nasihat praktikal dan spesifik
-4. Jelaskan KENAPA (bukan sekadar APA)
-5. Cadangkan tindakan konkrit dengan timeline
-6. Jika tiada masalah, beri tips untuk optimumkan pertumbuhan
-7. Gunakan Bahasa Melayu yang jelas dan profesional
-8. Jawab dalam 3-5 ayat (lebih panjang jika soalan kompleks)`;
+CARA JAWAB: Analisis data sensor, kenal pasti masalah, beri nasihat praktikal dalam Bahasa Melayu, 3-5 ayat.`;
 
     const r = await fetch(VERCEL_URL + '/api/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'system', content: sp }, { role: 'user', content: getSensorContext() + '\n\nSoalan: ' + question }], max_tokens: 300, temperature: .7 })
+        body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+                { role: 'system', content: sp },
+                { role: 'user', content: `Kolam semasa:\n- Suhu: ${currentSensorData.temp ?? '?'}°C\n- TDS: ${currentSensorData.tds ?? 'Init'} ppm\n\nSoalan: ${question}` }
+            ],
+            max_tokens: 300, temperature: .7
+        })
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
@@ -1088,17 +1104,15 @@ CARA JAWAB:
     return d.choices[0].message.content;
 }
 
-function getSensorContext() {
-    const t = currentSensorData.temp ?? '?';
-    const d = currentSensorData.tds  ?? 'Init';
-    return `Keadaan kolam semasa:\n- Suhu: ${t}°C\n- TDS: ${d} ppm`;
-}
-
 function addMessage(text, isUser = false) {
     const w = document.getElementById('chatMessages'), div = document.createElement('div');
     div.className = 'chat-message' + (isUser ? ' user-message' : '');
     const time = new Date().toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
-    div.innerHTML = `<div class="message-avatar ${isUser ? 'user-avatar' : ''}">${isUser ? '👤' : '🤖'}</div><div class="message-content"><div class="message-text">${text}</div><div class="message-time">${time}</div></div>`;
+    div.innerHTML = `<div class="message-avatar ${isUser ? 'user-avatar' : ''}">${isUser ? '👤' : '🤖'}</div>
+        <div class="message-content">
+            <div class="message-text">${text}</div>
+            <div class="message-time">${time}</div>
+        </div>`;
     w.appendChild(div); w.scrollTop = w.scrollHeight;
 }
 
@@ -1137,10 +1151,8 @@ async function speakWithBrowserTTS(text) {
     await new Promise(r => setTimeout(r, 200));
     const u = new SpeechSynthesisUtterance(text);
     u.rate = .9; u.pitch = 1; u.volume = 1; u.lang = 'ms-MY';
-    if (availableVoices.length) {
-        const v = availableVoices.find(v => v.lang.startsWith('ms') || v.lang.startsWith('id'));
-        if (v) { u.voice = v; u.lang = v.lang; }
-    }
+    const v = availableVoices.find(v => v.lang.startsWith('ms') || v.lang.startsWith('id'));
+    if (v) { u.voice = v; u.lang = v.lang; }
     u.onstart = () => { isSpeaking = true;  document.getElementById('voiceBtn').classList.add('speaking'); };
     u.onend   = () => { isSpeaking = false; document.getElementById('voiceBtn').classList.remove('speaking'); };
     u.onerror = () => { isSpeaking = false; document.getElementById('voiceBtn').classList.remove('speaking'); };
@@ -1152,16 +1164,12 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     recognition = new SR(); recognition.continuous = false; recognition.interimResults = false; recognition.lang = 'ms-MY';
     recognition.onstart  = () => { isListening = true;  document.getElementById('voiceBtn').classList.add('listening');    document.getElementById('voiceStatus').textContent = '🎤 Mendengar...'; };
     recognition.onend    = () => { isListening = false; document.getElementById('voiceBtn').classList.remove('listening'); document.getElementById('voiceStatus').textContent = '🎤 Tekan mikrofon untuk bercakap'; };
-    recognition.onresult = e => { const t = e.results[0][0].transcript; document.getElementById('chatInput').value = t; sendMessage(); };
-    recognition.onerror  = e => { document.getElementById('voiceStatus').textContent = '🎤 Ralat: ' + e.error; };
+    recognition.onresult = e  => { document.getElementById('chatInput').value = e.results[0][0].transcript; sendMessage(); };
+    recognition.onerror  = e  => { document.getElementById('voiceStatus').textContent = '🎤 Ralat: ' + e.error; };
 } else { document.getElementById('voiceBtn').disabled = true; }
 
 function toggleVoiceInput() { if (!recognition) { alert('Voice input tidak disokong.'); return; } isListening ? recognition.stop() : recognition.start(); }
-
-if (window.speechSynthesis) {
-    availableVoices = window.speechSynthesis.getVoices();
-    window.speechSynthesis.onvoiceschanged = () => { availableVoices = window.speechSynthesis.getVoices(); };
-}
+if (window.speechSynthesis) { availableVoices = window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = () => { availableVoices = window.speechSynthesis.getVoices(); }; }
 
 // ════════════════════════════════════════════════════════════
 // BOOT
